@@ -1,6 +1,7 @@
 "use client";
 
 import { t } from "@/i18n";
+import { Tip } from "@/components/ui/tip";
 import { createContext, useContext } from "react";
 import { useEditor } from "@/editor/use-editor";
 import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
@@ -1077,14 +1078,16 @@ function EffectsButton({
 	};
 
 	return (
-		<button
-			type="button"
-			className="flex shrink-0 justify-center text-white cursor-pointer"
-			onMouseDown={(event) => event.stopPropagation()}
-			onClick={handleClick}
-		>
-			<HugeiconsIcon icon={MagicWand05Icon} size={12} />
-		</button>
+		<Tip label={t("tips.effects")}>
+			<button
+				type="button"
+				className="flex shrink-0 justify-center text-white cursor-pointer"
+				onMouseDown={(event) => event.stopPropagation()}
+				onClick={handleClick}
+			>
+				<HugeiconsIcon icon={MagicWand05Icon} size={12} />
+			</button>
+		</Tip>
 	);
 }
 

@@ -17,9 +17,14 @@ import { ExportButton } from "./export-button";
 import { ThemeButton } from "@/theme/components/theme-picker";
 import { Emblem } from "../brand/emblem";
 import { SaveStatus } from "./save-status";
+import { openGuidedTour } from "./guided-tour";
 import { toast } from "sonner";
 import { useEditor } from "@/editor/use-editor";
-import { CommandIcon, Logout05Icon } from "@hugeicons/core-free-icons";
+import {
+	CommandIcon,
+	HelpCircleIcon,
+	Logout05Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ShortcutsDialog } from "@/actions/components/shortcuts-dialog";
 import { cn } from "@/utils/ui";
@@ -110,7 +115,12 @@ function ProjectDropdown() {
 		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button variant="ghost" size="icon" className="p-1 rounded-sm size-8">
+					<Button
+						variant="ghost"
+						size="icon"
+						className="p-1 rounded-sm size-8"
+						data-tour="logo-menu"
+					>
 						<Emblem size={28} />
 						<span className="sr-only">THEBOSS CUT</span>
 					</Button>
@@ -129,6 +139,13 @@ function ProjectDropdown() {
 						icon={<HugeiconsIcon icon={CommandIcon} />}
 					>
 						{t("editor.header.shortcuts")}
+					</DropdownMenuItem>
+
+					<DropdownMenuItem
+						onClick={() => openGuidedTour()}
+						icon={<HugeiconsIcon icon={HelpCircleIcon} />}
+					>
+						{t("tour.replay")}
 					</DropdownMenuItem>
 
 					<DropdownMenuSeparator />

@@ -1,6 +1,7 @@
 "use client";
 
 import { t } from "@/i18n";
+import { Tip } from "@/components/ui/tip";
 import { useState, useEffect } from "react";
 import { useEditor } from "@/editor/use-editor";
 import { formatTimecode } from "opencut-wasm";
@@ -52,9 +53,11 @@ export function PreviewToolbar({
 						)}
 					</Button>
 				</GridPopover> */}
-				<Button variant="text" onClick={onToggleFullscreen}>
-					<HugeiconsIcon icon={FullScreenIcon} />
-				</Button>
+				<Tip label={t("tips.fullscreen")}>
+					<Button variant="text" onClick={onToggleFullscreen}>
+						<HugeiconsIcon icon={FullScreenIcon} />
+					</Button>
+				</Tip>
 			</div>
 		</div>
 	);
@@ -136,12 +139,17 @@ function PlayPauseButton() {
 	const isPlaying = useEditor((e) => e.playback.getIsPlaying());
 
 	return (
-		<Button
-			variant="text"
-			size="icon"
-			onClick={() => invokeAction("toggle-play")}
+		<Tip
+			label={isPlaying ? t("tips.pause") : t("tips.play")}
+			shortcut={t("tips.spaceKey")}
 		>
-			<HugeiconsIcon icon={isPlaying ? PauseIcon : PlayIcon} />
-		</Button>
+			<Button
+				variant="text"
+				size="icon"
+				onClick={() => invokeAction("toggle-play")}
+			>
+				<HugeiconsIcon icon={isPlaying ? PauseIcon : PlayIcon} />
+			</Button>
+		</Tip>
 	);
 }

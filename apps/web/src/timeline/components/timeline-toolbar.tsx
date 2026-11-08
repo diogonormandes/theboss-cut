@@ -1,4 +1,5 @@
 import { t } from "@/i18n";
+import { Tip } from "@/components/ui/tip";
 import { useEditor } from "@/editor/use-editor";
 import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
 import {
@@ -306,13 +307,15 @@ function ToolbarRightSection({
 			<div className="bg-border mx-1 h-6 w-px" />
 
 			<div className="flex items-center gap-1">
-				<Button
-					variant="text"
-					size="icon"
-					onClick={() => onZoom({ direction: "out" })}
-				>
-					<HugeiconsIcon icon={SearchMinusIcon} />
-				</Button>
+				<Tip label={t("tips.zoomOut")}>
+					<Button
+						variant="text"
+						size="icon"
+						onClick={() => onZoom({ direction: "out" })}
+					>
+						<HugeiconsIcon icon={SearchMinusIcon} />
+					</Button>
+				</Tip>
 				<Slider
 					className="w-28"
 					value={[zoomToSlider({ zoomLevel, minZoom })]}
@@ -323,13 +326,15 @@ function ToolbarRightSection({
 					max={1}
 					step={0.005}
 				/>
-				<Button
-					variant="text"
-					size="icon"
-					onClick={() => onZoom({ direction: "in" })}
-				>
-					<HugeiconsIcon icon={SearchAddIcon} />
-				</Button>
+				<Tip label={t("tips.zoomIn")}>
+					<Button
+						variant="text"
+						size="icon"
+						onClick={() => onZoom({ direction: "in" })}
+					>
+						<HugeiconsIcon icon={SearchAddIcon} />
+					</Button>
+				</Tip>
 			</div>
 		</div>
 	);

@@ -11,6 +11,8 @@ import media from "./media";
 import effects from "./effects";
 import theme from "./theme";
 import update from "./update";
+import tips from "./tips";
+import tour from "./tour";
 
 export const pt = {
 	common,
@@ -26,4 +28,6 @@ export const pt = {
 	effects,
 	theme,
 	update,
+	tips,
+	tour,
 };

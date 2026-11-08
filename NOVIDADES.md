@@ -5,6 +5,8 @@ Próxima versão
 • Corrija uma palavra direto na tela e o destaque continua certo
 • Dicionário de correções: troque "Bosch" por "BOSS" uma vez e ele corrige sozinho nas próximas legendas
 • No vídeo vertical, a legenda já nasce acima dos botões do TikTok, Reels e Shorts
+• Tour de boas-vindas: na primeira vez, o THEBOSS CUT pergunta o idioma e mostra em 1 minuto onde fica cada coisa (dá para ver de novo no menu do tridente)
+• Dicas ao parar o mouse nos botões, com o atalho do teclado
 • Corrigido: editar um texto direto na tela não muda mais a fonte, o tamanho e a posição
 
 Versão 1.1.0

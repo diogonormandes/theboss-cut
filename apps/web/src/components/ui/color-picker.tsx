@@ -1,4 +1,5 @@
 import { t } from "@/i18n";
+import { Tip } from "@/components/ui/tip";
 import { type ComponentProps, forwardRef, useEffect, useRef, useState } from "react";
 import { cn } from "@/utils/ui";
 import { Input } from "./input";
@@ -301,17 +302,25 @@ function ColorPickerContent({
 				</Select>
 				<div>
 					{isEyeDropperSupported && (
+						<Tip label={t("tips.eyedropper")}>
+							<Button
+								variant="ghost"
+								size="icon"
+								type="button"
+								onClick={handleEyeDropper}
+							>
+								<HugeiconsIcon icon={ColorPickerIcon} />
+							</Button>
+						</Tip>
+					)}
+					<PopoverClose asChild>
 						<Button
 							variant="ghost"
 							size="icon"
 							type="button"
-							onClick={handleEyeDropper}
+							aria-label={t("tips.close")}
+							title={t("tips.close")}
 						>
-							<HugeiconsIcon icon={ColorPickerIcon} />
-						</Button>
-					)}
-					<PopoverClose asChild>
-						<Button variant="ghost" size="icon" type="button">
 							<HugeiconsIcon icon={Cancel01Icon} />
 						</Button>
 					</PopoverClose>

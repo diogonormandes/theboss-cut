@@ -65,6 +65,7 @@ import { ProjectInfoDialog } from "@/project/components/project-info-dialog";
 import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
 import { cn } from "@/utils/ui";
 import { LanguageButton } from "@/i18n/components/language-picker";
+import { Tip } from "@/components/ui/tip";
 import { ThemeButton } from "@/theme/components/theme-picker";
 import { Emblem, Wordmark } from "@/components/brand/emblem";
 import {
@@ -358,6 +359,8 @@ function SearchBar({
 						size="icon"
 						variant="outline"
 						className="size-10.5 rounded-full"
+						aria-label={t("tips.search")}
+						title={t("tips.search")}
 					>
 						<HugeiconsIcon icon={Search01Icon} />
 					</Button>
@@ -468,21 +471,28 @@ function ProjectActions() {
 			<div className="flex items-center gap-2.5 px-3">
 				<div className="hidden sm:flex items-center gap-2.5">
 					{PROJECT_ACTIONS.map((action) => (
-						<Button
-							key={action.id}
-							size="icon"
-							variant={action.variant}
-							className="size-9"
-							onClick={actionHandlers[action.id]}
-						>
-							<HugeiconsIcon icon={action.icon} />
-						</Button>
+						<Tip key={action.id} label={action.label}>
+							<Button
+								size="icon"
+								variant={action.variant}
+								className="size-9"
+								onClick={actionHandlers[action.id]}
+							>
+								<HugeiconsIcon icon={action.icon} />
+							</Button>
+						</Tip>
 					))}
 				</div>
 
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild className="sm:hidden">
-						<Button size="icon" variant="outline" className="size-9">
+						<Button
+							size="icon"
+							variant="outline"
+							className="size-9"
+							aria-label={t("tips.moreActions")}
+							title={t("tips.moreActions")}
+						>
 							<HugeiconsIcon icon={MoreHorizontalIcon} />
 						</Button>
 					</DropdownMenuTrigger>

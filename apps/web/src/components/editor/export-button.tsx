@@ -66,6 +66,7 @@ export function ExportButton() {
 			<PopoverTrigger asChild>
 				<button
 					type="button"
+					data-tour="export"
 					className={cn(
 						"btn-boss flex items-center gap-1.5 rounded-[0.6rem] px-4 py-1.5 font-semibold",
 						hasProject ? "cursor-pointer" : "cursor-not-allowed opacity-50",

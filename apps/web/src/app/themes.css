@@ -239,3 +239,23 @@ html[data-tema="sombras"] body { background: radial-gradient(120% 80% at 80% -10
 .tb-caption-template:disabled { opacity: 0.6; cursor: progress; }
 .tb-caption-stage { container-type: inline-size; display: grid; place-items: center; height: 54px; border-radius: 8px; overflow: hidden; background: radial-gradient(90% 120% at 50% 0%, #2a2f3a, #0b0c10 70%); }
 .tb-caption-preview { font-size: min(15px, 12.5cqw); line-height: 1.1; white-space: nowrap; }
+
+/* ---------- tour de boas-vindas ---------- */
+.tb-tour-backdrop { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgba(0, 0, 0, 0.62); backdrop-filter: blur(3px); animation: tb-tour-fade 0.25s ease both; }
+.tb-tour-layer { position: fixed; inset: 0; z-index: 200; }
+/* a "janela" iluminada: tudo em volta fica escuro */
+.tb-tour-spot { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62), 0 0 0 2px var(--tb-gold), 0 0 34px 4px rgba(var(--tb-gold-rgb), 0.45); transition: top 0.35s cubic-bezier(0.16, 1, 0.3, 1), left 0.35s cubic-bezier(0.16, 1, 0.3, 1), width 0.35s cubic-bezier(0.16, 1, 0.3, 1), height 0.35s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
+.tb-tour-card { position: fixed; z-index: 201; display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 18px; color: var(--tb-text); border: 1px solid rgba(var(--tb-gold-rgb), 0.45); background: linear-gradient(150deg, rgba(var(--tb-gold-rgb), 0.12), transparent 50%), color-mix(in srgb, var(--tb-surface) 94%, transparent); backdrop-filter: blur(16px); box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.9), 0 0 50px -24px rgba(var(--tb-gold-rgb), 0.8); animation: tb-tour-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; transition: top 0.35s cubic-bezier(0.16, 1, 0.3, 1), left 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+.tb-tour-card.is-welcome { position: relative; width: min(440px, calc(100vw - 32px)); gap: 14px; padding: 24px; }
+.tb-tour-lang { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px; border-radius: 12px; border: 1px solid var(--tb-border); background: var(--tb-surface-2); color: var(--tb-text); cursor: pointer; transition: border-color 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+.tb-tour-lang:hover { transform: translateY(-2px); border-color: rgba(var(--tb-gold-rgb), 0.5); }
+.tb-tour-lang.is-on { border-color: var(--tb-gold); box-shadow: 0 0 0 1px var(--tb-gold); }
+.tb-tour-dots { display: flex; gap: 6px; }
+.tb-tour-dots i { width: 6px; height: 6px; border-radius: 99px; background: var(--tb-border-strong); transition: width 0.25s, background 0.25s; }
+.tb-tour-dots i.is-on { width: 18px; background: var(--tb-gold); }
+@keyframes tb-tour-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tb-tour-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .tb-tour-backdrop, .tb-tour-card { animation: none; }
+  .tb-tour-spot, .tb-tour-card { transition: none; }
+}

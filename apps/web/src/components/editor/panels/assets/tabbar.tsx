@@ -60,6 +60,7 @@ export function TabBar() {
 									variant={activeTab === tabKey ? "secondary" : "ghost"}
 									size="icon"
 									aria-label={tab.label}
+									data-tour={`tab-${tabKey}`}
 									className={cn(
 										"shrink-0",
 										"h-8 w-8",

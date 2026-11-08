@@ -12,7 +12,7 @@ import { Timeline } from "@/timeline/components";
 import { PreviewPanel } from "@/preview/components";
 import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorProvider } from "@/components/providers/editor-provider";
-import { Onboarding } from "@/components/editor/onboarding";
+import { GuidedTour } from "@/components/editor/guided-tour";
 import { MigrationDialog } from "@/project/components/migration-dialog";
 import { usePanelStore } from "@/editor/panel-store";
 import { usePasteMedia } from "@/media/use-paste-media";
@@ -48,7 +48,7 @@ export default function Editor() {
 					<div className="min-h-0 min-w-0 flex-1">
 						<EditorLayout />
 					</div>
-					<Onboarding />
+					<GuidedTour />
 					<MigrationDialog />
 				</div>
 			</EditorProvider>
@@ -162,6 +162,7 @@ function EditorLayout() {
 						minSize={15}
 						maxSize={40}
 						className="min-w-0"
+						data-tour="assets"
 					>
 						<AssetsPanel />
 					</ResizablePanel>
@@ -172,6 +173,7 @@ function EditorLayout() {
 						defaultSize={panels.preview}
 						minSize={30}
 						className="min-h-0 min-w-0 flex-1"
+						data-tour="preview"
 					>
 						<PreviewPanel
 							overlayControls={overlayControls}
@@ -200,6 +202,7 @@ function EditorLayout() {
 				minSize={15}
 				maxSize={70}
 				className="min-h-0 px-3 pb-3"
+				data-tour="timeline"
 			>
 				<Timeline />
 			</ResizablePanel>
