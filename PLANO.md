@@ -35,6 +35,9 @@ Ordem sugerida: cada etapa vira uma versão publicada (ferramenta 24).
 - [ ] Ideia: modelos de legenda com emoji automático
 
 ## Etapa 3 — Corte de live (o diferencial)
+Decisões do BOSS (08/11/2026): o formato 9:16 (Dividido ou Seguir rosto) é perguntado a cada vez que os cortes são criados; a live NÃO é copiada para dentro do programa (aviso de "mídia offline" com "Localizar arquivo" se ela sumir); cortes sugeridos de até 60 s, exportados em Vídeos\THEBOSS CUT\<nome do projeto>.
+Antes de liberar: testar com uma gravação real do OBS do BOSS.
+- [ ] Base: exportar, legendar e separar áudio de live longa sem estourar a memória (ler só o trecho usado)
 - [ ] Importar live longa e mostrar mapa da live (picos de fala, gritos, risadas, silêncio)
 - [ ] Cortar silêncios automaticamente (com ajuste de intensidade)
 - [ ] Sugerir os melhores momentos e montar vários cortes de uma vez
