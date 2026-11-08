@@ -2,7 +2,13 @@ import type { EditorCore } from "@/core";
 import { TICKS_PER_SECOND } from "@/wasm";
 import { clampRetimeRate, shouldMaintainPitch } from "@/retime/rate";
 import type { AudioClipSource } from "@/media/audio";
-import { createAudioContext, collectAudioClips } from "@/media/audio";
+import {
+	createAudioContext,
+	collectAudioClips,
+	decodeAudioRange,
+	type DecodedAudioRange,
+} from "@/media/audio";
+import { computeSourceRange, rebaseTrimStart } from "@/media/audio-range";
 import {
 	buildAudioGainAutomation,
 	hasAnimatedVolume,
@@ -18,8 +24,19 @@ import {
 	AudioBufferSink,
 	BlobSource,
 	Input,
+	type InputAudioTrack,
 	type WrappedAudioBuffer,
 } from "mediabunny";
+
+/**
+ * Clipe com velocidade/tom mantido: até esta duração (na linha do tempo) o
+ * buffer preparado é do clipe inteiro, guardado em cache como antes. Acima
+ * disso é preparado em janelas a partir do ponto de play, para a memória não
+ * crescer com o tamanho do clipe (uma live de horas eram GBs por clipe).
+ */
+const PREPARED_WHOLE_CLIP_MAX_SECONDS = 60;
+/** tamanho de cada janela preparada (no máximo 2 na memória por clipe) */
+const PREPARED_WINDOW_SECONDS = 30;
 
 export class AudioManager {
 	private audioContext: AudioContext | null = null;
@@ -32,6 +49,8 @@ export class AudioManager {
 	private clips: AudioClipSource[] = [];
 	private sinks = new Map<string, AudioBufferSink>();
 	private inputs = new Map<string, Input>();
+	/** faixa de áudio aberta por fonte, usada pelo fluxo E pelo buffer preparado */
+	private audioTracks = new Map<string, Promise<InputAudioTrack | null>>();
 	private activeClipIds = new Set<string>();
 	private clipIterators = new Map<
 		string,
@@ -39,7 +58,6 @@ export class AudioManager {
 	>();
 	private queuedSources = new Set<AudioBufferSourceNode>();
 	private preparedClipBuffers = new Map<string, Promise<AudioBuffer | null>>();
-	private decodedBuffers = new Map<string, Promise<AudioBuffer | null>>();
 	private playbackSessionId = 0;
 	private lastIsPlaying = false;
 	private lastVolume = 1;
@@ -65,7 +83,6 @@ export class AudioManager {
 		this.unsubscribers = [];
 		this.disposeSinks();
 		this.preparedClipBuffers.clear();
-		this.decodedBuffers.clear();
 		if (this.audioContext) {
 			void this.audioContext.close();
 			this.audioContext = null;
@@ -111,7 +128,6 @@ export class AudioManager {
 	private handleTimelineChange = (): void => {
 		this.disposeSinks();
 		this.preparedClipBuffers.clear();
-		this.decodedBuffers.clear();
 
 		if (!this.editor.playback.getIsPlaying()) return;
 
@@ -268,6 +284,12 @@ export class AudioManager {
 		const iterator = sink.buffers(sourceStartTime);
 		this.clipIterators.set(clip.id, iterator);
 		let consecutiveDroppedBufferCount = 0;
+		// volume animado também toca em fluxo: a curva é aplicada pedaço a
+		// pedaço no ganho, sem decodificar o clipe inteiro antes
+		const animatedVolume = hasAnimatedVolume({ element: clip.timelineElement });
+		const playbackRate = clip.retime
+			? clampRetimeRate({ rate: clip.retime.rate })
+			: 1;
 
 		for await (const { buffer, timestamp } of iterator) {
 			if (!this.editor.playback.getIsPlaying()) return;
@@ -284,7 +306,7 @@ export class AudioManager {
 			const node = audioContext.createBufferSource();
 			node.buffer = buffer;
 			if (clip.retime) {
-				node.playbackRate.value = clampRetimeRate({ rate: clip.retime.rate });
+				node.playbackRate.value = playbackRate;
 			}
 			const clipGain = audioContext.createGain();
 			clipGain.gain.value = clip.volume;
@@ -295,15 +317,40 @@ export class AudioManager {
 				this.playbackStartContextTime +
 				this.playbackLatencyCompensationSeconds +
 				(timelineTime - this.playbackStartTime);
+			const bufferLocalStart = timelineTime - clip.startTime;
+			const bufferLocalEnd = Math.min(
+				clip.duration,
+				bufferLocalStart + buffer.duration / playbackRate,
+			);
 
 			if (startTimestamp >= audioContext.currentTime) {
 				node.start(startTimestamp);
 				consecutiveDroppedBufferCount = 0;
+				if (animatedVolume) {
+					this.scheduleClipGainAutomation({
+						audioContext,
+						clip,
+						clipGain,
+						startTimestamp,
+						startLocalTime: bufferLocalStart,
+						endLocalTime: bufferLocalEnd,
+					});
+				}
 			} else {
 				const offset = audioContext.currentTime - startTimestamp;
 				if (offset < buffer.duration) {
 					node.start(audioContext.currentTime, offset);
 					consecutiveDroppedBufferCount = 0;
+					if (animatedVolume) {
+						this.scheduleClipGainAutomation({
+							audioContext,
+							clip,
+							clipGain,
+							startTimestamp: audioContext.currentTime,
+							startLocalTime: Math.min(bufferLocalEnd, bufferLocalStart + offset),
+							endLocalTime: bufferLocalEnd,
+						});
+					}
 				} else {
 					consecutiveDroppedBufferCount += 1;
 					if (consecutiveDroppedBufferCount >= 5) {
@@ -361,19 +408,108 @@ export class AudioManager {
 		const audioContext = this.ensureAudioContext();
 		if (!audioContext) return;
 
-		const buffer = await this.getPreparedClipBuffer({ clip });
-		if (!buffer || !this.editor.playback.getIsPlaying()) return;
-		if (sessionId !== this.playbackSessionId) return;
+		if (clip.duration > PREPARED_WHOLE_CLIP_MAX_SECONDS) {
+			await this.schedulePreparedClipWindows({ clip, startTime, sessionId });
+			return;
+		}
 
-		const clipStart = clip.startTime;
-		const clipEnd = clip.startTime + clip.duration;
-		const playbackTimeAfterReady = this.getPlaybackTime();
-		const effectiveStartTime = Math.max(
-			startTime,
-			clipStart,
-			playbackTimeAfterReady,
+		const buffer = await this.getPreparedClipBuffer({ clip });
+		if (!buffer || !this.isSessionActive({ sessionId })) return;
+
+		this.startPreparedBuffer({
+			audioContext,
+			clip,
+			buffer,
+			bufferLocalStart: 0,
+			bufferLocalEnd: clip.duration,
+			fromTimelineTime: startTime,
+		});
+	}
+
+	/**
+	 * Clipe longo com velocidade/tom mantido: prepara janelas de
+	 * `PREPARED_WINDOW_SECONDS` a partir do ponto de play. A próxima janela só
+	 * começa a ser preparada quando a atual começa a tocar, então ficam no
+	 * máximo 2 por clipe na memória (nada vai para o cache).
+	 */
+	private async schedulePreparedClipWindows({
+		clip,
+		startTime,
+		sessionId,
+	}: {
+		clip: AudioClipSource;
+		startTime: number;
+		sessionId: number;
+	}): Promise<void> {
+		const audioContext = this.ensureAudioContext();
+		if (!audioContext) return;
+
+		let localStart = Math.max(
+			0,
+			Math.max(startTime, this.getPlaybackTime()) - clip.startTime,
 		);
-		if (effectiveStartTime >= clipEnd) {
+		if (localStart >= clip.duration) return;
+
+		let localEnd = Math.min(clip.duration, localStart + PREPARED_WINDOW_SECONDS);
+		let pending = this.renderClipWindow({ clip, localStart, localEnd });
+
+		while (true) {
+			const buffer = await pending;
+			if (!this.isSessionActive({ sessionId })) return;
+
+			if (buffer) {
+				this.startPreparedBuffer({
+					audioContext,
+					clip,
+					buffer,
+					bufferLocalStart: localStart,
+					bufferLocalEnd: localEnd,
+					fromTimelineTime: clip.startTime + localStart,
+				});
+			}
+			if (localEnd >= clip.duration) return;
+
+			// espera esta janela começar a tocar antes de preparar a próxima
+			await this.waitUntilCaughtUp({
+				timelineTime: clip.startTime + localEnd,
+				targetAhead: localEnd - localStart,
+			});
+			if (!this.isSessionActive({ sessionId })) return;
+
+			localStart = localEnd;
+			localEnd = Math.min(clip.duration, localStart + PREPARED_WINDOW_SECONDS);
+			pending = this.renderClipWindow({ clip, localStart, localEnd });
+		}
+	}
+
+	/**
+	 * Toca um buffer preparado que cobre `[bufferLocalStart, bufferLocalEnd)`
+	 * do clipe (tempo local da linha do tempo), a partir de `fromTimelineTime`
+	 * ou de onde a reprodução já estiver, se estiver atrasado.
+	 */
+	private startPreparedBuffer({
+		audioContext,
+		clip,
+		buffer,
+		bufferLocalStart,
+		bufferLocalEnd,
+		fromTimelineTime,
+	}: {
+		audioContext: AudioContext;
+		clip: AudioClipSource;
+		buffer: AudioBuffer;
+		bufferLocalStart: number;
+		bufferLocalEnd: number;
+		fromTimelineTime: number;
+	}): void {
+		const bufferTimelineStart = clip.startTime + bufferLocalStart;
+		const bufferTimelineEnd = clip.startTime + bufferLocalEnd;
+		const effectiveStartTime = Math.max(
+			fromTimelineTime,
+			bufferTimelineStart,
+			this.getPlaybackTime(),
+		);
+		if (effectiveStartTime >= bufferTimelineEnd) {
 			return;
 		}
 
@@ -387,17 +523,17 @@ export class AudioManager {
 			this.playbackStartContextTime +
 			this.playbackLatencyCompensationSeconds +
 			(effectiveStartTime - this.playbackStartTime);
-		const clipOffset = effectiveStartTime - clipStart;
+		const bufferOffset = effectiveStartTime - bufferTimelineStart;
 		let actualStartTimestamp = startTimestamp;
-		let actualClipOffset = clipOffset;
+		let actualBufferOffset = bufferOffset;
 
 		if (startTimestamp >= audioContext.currentTime) {
-			node.start(startTimestamp, clipOffset);
+			node.start(startTimestamp, bufferOffset);
 		} else {
 			const lateOffset = audioContext.currentTime - startTimestamp;
 			actualStartTimestamp = audioContext.currentTime;
-			actualClipOffset = clipOffset + lateOffset;
-			node.start(actualStartTimestamp, actualClipOffset);
+			actualBufferOffset = bufferOffset + lateOffset;
+			node.start(actualStartTimestamp, actualBufferOffset);
 		}
 
 		this.scheduleClipGainAutomation({
@@ -405,7 +541,8 @@ export class AudioManager {
 			clip,
 			clipGain,
 			startTimestamp: actualStartTimestamp,
-			startLocalTime: actualClipOffset,
+			startLocalTime: bufferLocalStart + actualBufferOffset,
+			endLocalTime: bufferLocalEnd,
 		});
 
 		this.queuedSources.add(node);
@@ -414,6 +551,13 @@ export class AudioManager {
 			clipGain.disconnect();
 			this.queuedSources.delete(node);
 		});
+	}
+
+	private isSessionActive({ sessionId }: { sessionId: number }): boolean {
+		return (
+			this.editor.playback.getIsPlaying() &&
+			sessionId === this.playbackSessionId
+		);
 	}
 
 	private waitUntilCaughtUp({
@@ -452,6 +596,7 @@ export class AudioManager {
 		}
 		this.inputs.clear();
 		this.sinks.clear();
+		this.audioTracks.clear();
 	}
 
 	private shouldUsePreparedClipBuffer({
@@ -459,9 +604,11 @@ export class AudioManager {
 	}: {
 		clip: AudioClipSource;
 	}): boolean {
+		// Volume animado sozinho NÃO precisa de buffer preparado: toca em fluxo
+		// (runClipIterator) com a curva aplicada no ganho. Preparar decodificava
+		// o clipe inteiro (uma live de horas eram GBs).
 		return (
 			this.hasCurveRetime({ clip }) ||
-			hasAnimatedVolume({ element: clip.timelineElement }) ||
 			shouldMaintainPitch({
 				rate: clip.retime?.rate ?? 1,
 				maintainPitch: clip.retime?.maintainPitch,
@@ -480,12 +627,15 @@ export class AudioManager {
 		clipGain,
 		startTimestamp,
 		startLocalTime,
+		endLocalTime = clip.duration,
 	}: {
 		audioContext: AudioContext;
 		clip: AudioClipSource;
 		clipGain: GainNode;
 		startTimestamp: number;
 		startLocalTime: number;
+		/** até onde agendar a curva (padrão: fim do clipe) */
+		endLocalTime?: number;
 	}): void {
 		clipGain.gain.cancelScheduledValues(startTimestamp);
 		clipGain.gain.setValueAtTime(clip.volume, startTimestamp);
@@ -497,7 +647,7 @@ export class AudioManager {
 		const points = buildAudioGainAutomation({
 			element: clip.timelineElement,
 			fromLocalTime: startLocalTime,
-			toLocalTime: clip.duration,
+			toLocalTime: Math.min(clip.duration, endLocalTime),
 		});
 
 		if (points.length === 0) {
@@ -544,129 +694,97 @@ export class AudioManager {
 			return existing;
 		}
 
-		const promise = (async () => {
-			const audioContext = this.ensureAudioContext();
-			if (!audioContext) {
-				return null;
-			}
-
-			const decodedBuffer = await this.getDecodedBuffer({ clip });
-			if (!decodedBuffer) {
-				return null;
-			}
-
-			return await renderRetimedBuffer({
-				audioContext,
-				sourceBuffer: decodedBuffer,
-				trimStart: clip.trimStart,
-				clipDuration: clip.duration,
-				retime: clip.retime,
-				maintainPitch: clip.retime?.maintainPitch === true,
-			});
-		})();
+		const promise = this.renderClipWindow({
+			clip,
+			localStart: 0,
+			localEnd: clip.duration,
+		});
 
 		this.preparedClipBuffers.set(cacheKey, promise);
 		return promise;
 	}
 
-	private async getDecodedBuffer({
+	/**
+	 * Buffer com velocidade/tom mantido de `[localStart, localEnd)` do clipe
+	 * (tempo local da linha do tempo). A velocidade é constante, então o
+	 * trecho da fonte é `trimStart + localStart × velocidade`.
+	 */
+	private async renderClipWindow({
 		clip,
+		localStart,
+		localEnd,
 	}: {
 		clip: AudioClipSource;
-	}): Promise<AudioBuffer | null> {
-		const existing = this.decodedBuffers.get(clip.sourceKey);
-		if (existing) {
-			return existing;
-		}
-
-		const promise = this.decodeClipBuffer({ clip });
-		this.decodedBuffers.set(clip.sourceKey, promise);
-		return promise;
-	}
-
-	private async decodeClipBuffer({
-		clip,
-	}: {
-		clip: AudioClipSource;
+		localStart: number;
+		localEnd: number;
 	}): Promise<AudioBuffer | null> {
 		const audioContext = this.ensureAudioContext();
 		if (!audioContext) {
 			return null;
 		}
 
-		const input = new Input({
-			source: new BlobSource(clip.file),
-			formats: ALL_FORMATS,
+		const windowDuration = Math.max(0, localEnd - localStart);
+		const windowTrimStart =
+			clip.trimStart +
+			getSourceTimeAtClipTime({ clipTime: localStart, retime: clip.retime });
+
+		const decoded = await this.decodeClipRange({
+			clip,
+			trimStart: windowTrimStart,
+			duration: windowDuration,
 		});
-
-		try {
-			const audioTrack = await input.getPrimaryAudioTrack();
-			if (!audioTrack) {
-				return null;
-			}
-
-			const sink = new AudioBufferSink(audioTrack);
-			const chunks: AudioBuffer[] = [];
-			let totalSamples = 0;
-
-			for await (const { buffer } of sink.buffers(0)) {
-				chunks.push(buffer);
-				totalSamples += buffer.length;
-			}
-
-			if (chunks.length === 0) {
-				return null;
-			}
-
-			const targetSampleRate = audioContext.sampleRate;
-			const nativeSampleRate = chunks[0].sampleRate;
-			const numChannels = Math.min(2, chunks[0].numberOfChannels);
-			const nativeChannels = Array.from(
-				{ length: numChannels },
-				() => new Float32Array(totalSamples),
-			);
-
-			let offset = 0;
-			for (const chunk of chunks) {
-				for (let channel = 0; channel < numChannels; channel++) {
-					nativeChannels[channel].set(
-						chunk.getChannelData(Math.min(channel, chunk.numberOfChannels - 1)),
-						offset,
-					);
-				}
-				offset += chunk.length;
-			}
-
-			const outputSamples = Math.ceil(
-				totalSamples * (targetSampleRate / nativeSampleRate),
-			);
-			const offlineContext = new OfflineAudioContext(
-				numChannels,
-				outputSamples,
-				targetSampleRate,
-			);
-			const nativeBuffer = audioContext.createBuffer(
-				numChannels,
-				totalSamples,
-				nativeSampleRate,
-			);
-
-			for (let channel = 0; channel < numChannels; channel++) {
-				nativeBuffer.copyToChannel(nativeChannels[channel], channel);
-			}
-
-			const sourceNode = offlineContext.createBufferSource();
-			sourceNode.buffer = nativeBuffer;
-			sourceNode.connect(offlineContext.destination);
-			sourceNode.start(0);
-
-			return await offlineContext.startRendering();
-		} catch (error) {
-			console.warn("Failed to decode clip audio:", error);
+		if (!decoded) {
 			return null;
-		} finally {
-			input.dispose();
 		}
+
+		// SINCRONIA: o buffer começa em `decoded.startTime` na fonte
+		return await renderRetimedBuffer({
+			audioContext,
+			sourceBuffer: decoded.buffer,
+			trimStart: rebaseTrimStart({
+				trimStart: windowTrimStart,
+				bufferStart: decoded.startTime,
+			}),
+			clipDuration: windowDuration,
+			retime: clip.retime,
+			maintainPitch: clip.retime?.maintainPitch === true,
+		});
+	}
+
+	/**
+	 * Áudio só do trecho da fonte pedido (com folga). Não decodifica a mídia
+	 * inteira: com uma live de horas isso eram GBs por arquivo. Reaproveita a
+	 * faixa já aberta desta fonte (mesma do fluxo), sem reabrir o arquivo.
+	 */
+	private async decodeClipRange({
+		clip,
+		trimStart,
+		duration,
+	}: {
+		clip: AudioClipSource;
+		trimStart: number;
+		duration: number;
+	}): Promise<DecodedAudioRange | null> {
+		const audioContext = this.ensureAudioContext();
+		if (!audioContext) {
+			return null;
+		}
+
+		const audioTrack = await this.getAudioTrack({ clip });
+		if (!audioTrack) {
+			return null;
+		}
+
+		return await decodeAudioRange({
+			file: clip.file,
+			range: computeSourceRange({
+				trimStart,
+				duration,
+				retime: clip.retime,
+			}),
+			audioContext,
+			audioTrack,
+		});
 	}
 
 	private async getAudioSink({
@@ -677,24 +795,39 @@ export class AudioManager {
 		const existingSink = this.sinks.get(clip.sourceKey);
 		if (existingSink) return existingSink;
 
-		try {
-			const input = new Input({
-				source: new BlobSource(clip.file),
-				formats: ALL_FORMATS,
-			});
-			const audioTrack = await input.getPrimaryAudioTrack();
-			if (!audioTrack) {
-				input.dispose();
-				return null;
-			}
+		const audioTrack = await this.getAudioTrack({ clip });
+		if (!audioTrack) return null;
 
-			const sink = new AudioBufferSink(audioTrack);
-			this.inputs.set(clip.sourceKey, input);
-			this.sinks.set(clip.sourceKey, sink);
-			return sink;
-		} catch (error) {
+		const raceSink = this.sinks.get(clip.sourceKey);
+		if (raceSink) return raceSink;
+		const sink = new AudioBufferSink(audioTrack);
+		this.sinks.set(clip.sourceKey, sink);
+		return sink;
+	}
+
+	/**
+	 * Um `Input` por fonte, compartilhado pelo fluxo e pelos buffers preparados
+	 * (vários clipes da mesma live não reabrem o arquivo nem remontam o índice).
+	 * Descartado em `disposeSinks`.
+	 */
+	private getAudioTrack({
+		clip,
+	}: {
+		clip: AudioClipSource;
+	}): Promise<InputAudioTrack | null> {
+		const existing = this.audioTracks.get(clip.sourceKey);
+		if (existing) return existing;
+
+		const input = new Input({
+			source: new BlobSource(clip.file),
+			formats: ALL_FORMATS,
+		});
+		this.inputs.set(clip.sourceKey, input);
+		const promise = input.getPrimaryAudioTrack().catch((error) => {
 			console.warn("Failed to initialize audio sink:", error);
 			return null;
-		}
+		});
+		this.audioTracks.set(clip.sourceKey, promise);
+		return promise;
 	}
 }

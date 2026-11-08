@@ -8,7 +8,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useReducer, useRef, useState } from "react";
-import { extractTimelineAudio } from "@/media/mediabunny";
+import { extractTimelineAudioSamples } from "@/media/mediabunny";
 import { useEditor } from "@/editor/use-editor";
 import { TRANSCRIPTION_DIAGNOSTICS_SCOPE } from "@/transcription/diagnostics";
 import { DEFAULT_TRANSCRIPTION_SAMPLE_RATE } from "@/transcription/audio";
@@ -18,7 +18,6 @@ import type {
 	TranscriptionProgress,
 } from "@/transcription/types";
 import { transcriptionService } from "@/services/transcription/service";
-import { decodeAudioToFloat32 } from "@/media/audio";
 import {
 	buildCaptionChunks,
 	buildCaptionChunksFromWords,
@@ -164,17 +163,16 @@ export function Captions() {
 	const handleGenerateTranscript = async () => {
 		dispatch({ type: "start", step: t("media.subtitles.steps.extractingAudio") });
 		try {
-			const audioBlob = await extractTimelineAudio({
+			// só os trechos que estão na linha do tempo, já em mono 16 kHz
+			// (sem WAV intermediário); o array é transferido para o Worker
+			const samples = await extractTimelineAudioSamples({
 				tracks: editor.scenes.getActiveScene().tracks,
 				mediaAssets: editor.media.getAssets(),
 				totalDuration: editor.timeline.getTotalDuration(),
+				sampleRate: DEFAULT_TRANSCRIPTION_SAMPLE_RATE,
 			});
 
 			dispatch({ type: "update_step", step: t("media.subtitles.steps.preparingAudio") });
-			const { samples } = await decodeAudioToFloat32({
-				audioBlob,
-				sampleRate: DEFAULT_TRANSCRIPTION_SAMPLE_RATE,
-			});
 
 			const result = await transcriptionService.transcribe({
 				audioData: samples,

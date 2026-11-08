@@ -19,8 +19,22 @@ import { canElementHaveAudio, hasMediaId } from "@/timeline/element-utils";
 import { canTrackHaveAudio } from "@/timeline";
 import { mediaSupportsAudio } from "@/media/media-utils";
 import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
-import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from "mediabunny";
+import {
+	Input,
+	ALL_FORMATS,
+	BlobSource,
+	AudioSampleSink,
+	type InputAudioTrack,
+} from "mediabunny";
 import { TICKS_PER_SECOND } from "@/wasm";
+import {
+	computeSourceRange,
+	getRangeFrameCount,
+	placeSampleInRange,
+	rebaseTrimStart,
+	type SourceRange,
+} from "@/media/audio-range";
+import { canDecodeWholeAudio } from "@/media/large-media";
 import {
 	computeRmsBuckets,
 	type SampleBucket,
@@ -31,9 +45,15 @@ const EXPORT_SAMPLE_RATE = 44100;
 
 export interface CollectedAudioElement {
 	timelineElement: AudioCapableElement;
+	/**
+	 * Só o trecho da fonte que o elemento usa (com folga), não a mídia inteira.
+	 * A amostra 0 de `buffer` = `bufferStartTime` segundos da fonte.
+	 */
 	buffer: AudioBuffer;
+	bufferStartTime: number;
 	startTime: number;
 	duration: number;
+	/** segundos da FONTE (não do buffer); use `rebaseTrimStart` para o buffer */
 	trimStart: number;
 	trimEnd: number;
 	volume: number;
@@ -59,6 +79,11 @@ export interface DecodedAudio {
 	sampleRate: number;
 }
 
+/**
+ * ATENÇÃO (memória): carrega e decodifica o blob INTEIRO. Use só com áudio
+ * curto/pequeno (ver `canDecodeWholeAudio`). Para a legenda da linha do tempo use
+ * `extractTimelineAudioSamples` (media/mediabunny.ts), que não passa por WAV.
+ */
 export async function decodeAudioToFloat32({
 	audioBlob,
 	sampleRate,
@@ -67,8 +92,14 @@ export async function decodeAudioToFloat32({
 	sampleRate?: number;
 }): Promise<DecodedAudio> {
 	const audioContext = createAudioContext({ sampleRate });
-	const arrayBuffer = await audioBlob.arrayBuffer();
-	const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+	let audioBuffer: AudioBuffer;
+	try {
+		const arrayBuffer = await audioBlob.arrayBuffer();
+		audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+	} finally {
+		// o AudioBuffer continua válido depois do close
+		void audioContext.close();
+	}
 
 	// mix down to mono
 	const numChannels = audioBuffer.numberOfChannels;
@@ -140,97 +171,125 @@ export async function collectAudioElements({
 }: {
 	tracks: SceneTracks;
 	mediaAssets: MediaAsset[];
-	audioContext: AudioContext;
+	audioContext: BaseAudioContext;
 }): Promise<CollectedAudioElement[]> {
+	const audioElements: CollectedAudioElement[] = [];
+	for await (const element of iterateAudioElements({
+		tracks,
+		mediaAssets,
+		audioContext,
+	})) {
+		audioElements.push(element);
+	}
+	return audioElements;
+}
+
+/**
+ * Decodifica o áudio de cada elemento UM DE CADA VEZ (nunca em paralelo) e só
+ * o trecho da fonte que o elemento usa. Quem consome pode mixar e soltar cada
+ * buffer antes de pedir o próximo, mantendo só um no pico de memória.
+ *
+ * Elementos mudos são pulados ANTES de decodificar (não somam nada na mistura,
+ * e decodificar a live inteira só para jogar fora custava GBs). Por isso
+ * `muted` dos itens gerados é sempre `false`.
+ *
+ * `trackPool`: um `Input` por arquivo durante a passada (vários cortes da
+ * mesma live não reabrem nem remontam o índice do arquivo de horas).
+ */
+async function* iterateAudioElements({
+	tracks,
+	mediaAssets,
+	audioContext,
+	trackPool,
+}: {
+	tracks: SceneTracks;
+	mediaAssets: MediaAsset[];
+	audioContext: BaseAudioContext;
+	trackPool?: AudioTrackPool;
+}): AsyncGenerator<CollectedAudioElement, void, unknown> {
 	const candidates = collectAudibleCandidates({ tracks, mediaAssets });
 	const mediaMap = new Map<string, MediaAsset>(
 		mediaAssets.map((media) => [media.id, media]),
 	);
-	const pendingElements: Array<Promise<CollectedAudioElement | null>> = [];
 
 	for (const { element, mediaAsset } of candidates) {
+		// GUARDA DE MEMÓRIA: elemento mudo não é decodificado
+		if (isElementMuted({ element })) continue;
+
+		const trimStart = element.trimStart / TICKS_PER_SECOND;
+		const duration = element.duration / TICKS_PER_SECOND;
+		const range = computeSourceRange({
+			trimStart,
+			duration,
+			retime: element.retime,
+		});
+
+		let decoded: DecodedAudioRange | null = null;
 		if (element.type === "audio") {
-			pendingElements.push(
-				resolveAudioBufferForElement({
-					element,
-					mediaMap,
-					audioContext,
-				}).then((audioBuffer) => {
-					if (!audioBuffer) return null;
-					return {
-						timelineElement: element,
-						buffer: audioBuffer,
-						startTime: element.startTime / TICKS_PER_SECOND,
-						duration: element.duration / TICKS_PER_SECOND,
-						trimStart: element.trimStart / TICKS_PER_SECOND,
-						trimEnd: element.trimEnd / TICKS_PER_SECOND,
-						volume: resolveEffectiveAudioGain({
-							element,
-							trackMuted: false,
-							localTime: 0,
-						}),
-						muted: isElementMuted({ element }),
-						retime: element.retime,
-					};
-				}),
-			);
-			continue;
-		}
-
-		if (element.type === "video") {
+			decoded = await resolveAudioBufferForElement({
+				element,
+				mediaMap,
+				audioContext,
+				range,
+				trackPool,
+			});
+		} else if (element.type === "video") {
 			if (!mediaAsset || !mediaSupportsAudio({ media: mediaAsset })) continue;
-
-			pendingElements.push(
-				resolveAudioBufferForAsset({
-					asset: mediaAsset,
-					audioContext,
-				}).then((audioBuffer) => {
-					if (!audioBuffer) return null;
-					return {
-						timelineElement: element,
-						buffer: audioBuffer,
-						startTime: element.startTime / TICKS_PER_SECOND,
-						duration: element.duration / TICKS_PER_SECOND,
-						trimStart: element.trimStart / TICKS_PER_SECOND,
-						trimEnd: element.trimEnd / TICKS_PER_SECOND,
-						volume: resolveEffectiveAudioGain({
-							element,
-							trackMuted: false,
-							localTime: 0,
-						}),
-						muted: isElementMuted({ element }),
-						retime: element.retime,
-					};
-				}),
-			);
+			decoded = await resolveAudioBufferForAsset({
+				asset: mediaAsset,
+				audioContext,
+				range,
+				trackPool,
+			});
 		}
-	}
+		if (!decoded) continue;
 
-	const resolvedElements = await Promise.all(pendingElements);
-	const audioElements: CollectedAudioElement[] = [];
-	for (const element of resolvedElements) {
-		if (element) audioElements.push(element);
+		yield {
+			timelineElement: element,
+			buffer: decoded.buffer,
+			bufferStartTime: decoded.startTime,
+			startTime: element.startTime / TICKS_PER_SECOND,
+			duration,
+			trimStart,
+			trimEnd: element.trimEnd / TICKS_PER_SECOND,
+			volume: resolveEffectiveAudioGain({
+				element,
+				trackMuted: false,
+				localTime: 0,
+			}),
+			muted: false,
+			retime: element.retime,
+		};
 	}
-	return audioElements;
 }
 
 async function resolveAudioBufferForElement({
 	element,
 	mediaMap,
 	audioContext,
+	range,
+	trackPool,
 }: {
 	element: AudioElement;
 	mediaMap: Map<string, MediaAsset>;
-	audioContext: AudioContext;
-}): Promise<AudioBuffer | null> {
+	audioContext: BaseAudioContext;
+	range: SourceRange;
+	trackPool?: AudioTrackPool;
+}): Promise<DecodedAudioRange | null> {
 	try {
 		if (element.sourceType === "upload") {
 			const asset = mediaMap.get(element.mediaId);
 			if (!asset) return null;
-			return await resolveAudioBufferForAsset({ asset, audioContext });
+			return await resolveAudioBufferForAsset({
+				asset,
+				audioContext,
+				range,
+				trackPool,
+			});
 		}
 
-		if (element.buffer) return element.buffer;
+		// áudio da biblioteca: arquivo curto, vem inteiro (buffer começa em 0)
+		if (element.buffer) return { buffer: element.buffer, startTime: 0 };
 
 		const response = await fetch(element.sourceUrl);
 		if (!response.ok) {
@@ -238,103 +297,235 @@ async function resolveAudioBufferForElement({
 		}
 
 		const arrayBuffer = await response.arrayBuffer();
-		return await audioContext.decodeAudioData(arrayBuffer.slice(0));
+		return {
+			buffer: await audioContext.decodeAudioData(arrayBuffer.slice(0)),
+			startTime: 0,
+		};
 	} catch (error) {
 		console.warn("Failed to decode audio:", error);
 		return null;
 	}
 }
 
+/**
+ * Áudio de uma mídia importada, só no intervalo `range` da fonte.
+ *
+ * - Áudio puro CURTO (ver `canDecodeWholeAudio`: decide pela duração, não só
+ *   pelo tamanho do arquivo): decodifica inteiro como sempre fez
+ *   (`decodeAudioData`, buffer começa em 0) — mesmo resultado de antes.
+ * - Vídeo, ou áudio longo (ex.: m4a/mp3 de horas, pequeno em disco mas GBs
+ *   decodificado): lê por fatias e decodifica só `range` (memória
+ *   proporcional ao trecho, não à live inteira).
+ */
 async function resolveAudioBufferForAsset({
 	asset,
 	audioContext,
+	range,
+	trackPool,
 }: {
 	asset: MediaAsset;
-	audioContext: AudioContext;
-}): Promise<AudioBuffer | null> {
-	if (asset.type === "audio") {
+	audioContext: BaseAudioContext;
+	range: SourceRange;
+	trackPool?: AudioTrackPool;
+}): Promise<DecodedAudioRange | null> {
+	// GUARDA DE MEMÓRIA: arrayBuffer() + decodeAudioData do arquivo inteiro só
+	// para áudio curto (pela duração estimada já decodificada).
+	if (
+		asset.type === "audio" &&
+		canDecodeWholeAudio({ durationSeconds: asset.duration, file: asset.file })
+	) {
 		try {
 			const arrayBuffer = await asset.file.arrayBuffer();
-			return await audioContext.decodeAudioData(arrayBuffer.slice(0));
+			return {
+				buffer: await audioContext.decodeAudioData(arrayBuffer),
+				startTime: 0,
+			};
 		} catch (error) {
 			console.warn("Failed to decode audio asset:", error);
 			return null;
 		}
 	}
 
-	const input = new Input({
-		source: new BlobSource(asset.file),
-		formats: ALL_FORMATS,
+	return await decodeAudioRange({
+		file: asset.file,
+		range,
+		audioContext,
+		audioTrack: trackPool ? await trackPool.getTrack(asset.file) : undefined,
 	});
+}
+
+/**
+ * Um `Input` (e a faixa de áudio dele) por arquivo, reaproveitado durante uma
+ * passada inteira (exportação, legenda). Abrir o arquivo de uma live de horas
+ * monta o índice do contêiner (tabelas do MP4, cues do MKV); com vários cortes
+ * da mesma live isso era refeito a cada corte. Chame `dispose()` no fim.
+ */
+export interface AudioTrackPool {
+	getTrack(file: File): Promise<InputAudioTrack | null>;
+	dispose(): void;
+}
+
+export function createAudioTrackPool(): AudioTrackPool {
+	const entries = new Map<
+		File,
+		{ input: Input; track: Promise<InputAudioTrack | null> }
+	>();
+	return {
+		getTrack(file) {
+			let entry = entries.get(file);
+			if (!entry) {
+				const input = new Input({
+					source: new BlobSource(file),
+					formats: ALL_FORMATS,
+				});
+				const track = input.getPrimaryAudioTrack().catch((error) => {
+					console.warn("Failed to open audio track:", error);
+					return null;
+				});
+				entry = { input, track };
+				entries.set(file, entry);
+			}
+			return entry.track;
+		},
+		dispose() {
+			for (const { input } of entries.values()) input.dispose();
+			entries.clear();
+		},
+	};
+}
+
+export interface DecodedAudioRange {
+	/** áudio na taxa do `audioContext`; amostra 0 = `startTime` da fonte */
+	buffer: AudioBuffer;
+	/** em segundos da fonte */
+	startTime: number;
+}
+
+/**
+ * Decodifica só `[range.start, range.end)` do áudio de um arquivo, lendo por
+ * fatias (`BlobSource`) e escrevendo cada pedaço direto no lugar certo do
+ * buffer (pelo timestamp, o mesmo relógio da prévia), sem guardar lista de
+ * pedaços nem cópia do arquivo. Depois reamostra para a taxa do
+ * `audioContext` com o mesmo reamostrador de antes (`OfflineAudioContext`),
+ * só quando a taxa é diferente.
+ *
+ * ATENÇÃO (memória): o custo é proporcional ao tamanho de `range`. Não chame
+ * com o intervalo da mídia inteira de uma live longa.
+ *
+ * `audioTrack`: faixa já aberta deste mesmo `file` (de um `AudioTrackPool` ou
+ * do `AudioManager`), para não reabrir o arquivo. Quem passou é o dono dela e
+ * descarta; sem ela, abre e descarta um `Input` só para esta chamada.
+ */
+export async function decodeAudioRange({
+	file,
+	range,
+	audioContext,
+	maxChannels = MAX_AUDIO_CHANNELS,
+	audioTrack: providedTrack,
+}: {
+	file: File;
+	range: SourceRange;
+	audioContext: BaseAudioContext;
+	maxChannels?: number;
+	audioTrack?: InputAudioTrack | null;
+}): Promise<DecodedAudioRange | null> {
+	const input = providedTrack
+		? null
+		: new Input({
+				source: new BlobSource(file),
+				formats: ALL_FORMATS,
+			});
 
 	try {
-		const audioTrack = await input.getPrimaryAudioTrack();
+		const audioTrack =
+			providedTrack ?? (input ? await input.getPrimaryAudioTrack() : null);
 		if (!audioTrack) return null;
 
-		const sink = new AudioBufferSink(audioTrack);
-		const targetSampleRate = audioContext.sampleRate;
+		const sink = new AudioSampleSink(audioTrack);
+		let nativeBuffer: AudioBuffer | null = null;
+		let channelData: Float32Array[] = [];
+		let expectedDestFrame: number | undefined;
 
-		const chunks: AudioBuffer[] = [];
-		let totalSamples = 0;
+		for await (const sample of sink.samples(range.start, range.end)) {
+			try {
+				if (!nativeBuffer) {
+					const numChannels = Math.max(
+						1,
+						Math.min(maxChannels, sample.numberOfChannels),
+					);
+					const created = audioContext.createBuffer(
+						numChannels,
+						getRangeFrameCount({ range, sampleRate: sample.sampleRate }),
+						sample.sampleRate,
+					);
+					nativeBuffer = created;
+					channelData = Array.from({ length: numChannels }, (_, channel) =>
+						created.getChannelData(channel),
+					);
+				}
+				// troca de taxa no meio do arquivo: raro; ignora o pedaço
+				if (sample.sampleRate !== nativeBuffer.sampleRate) continue;
 
-		for await (const { buffer } of sink.buffers(0)) {
-			chunks.push(buffer);
-			totalSamples += buffer.length;
-		}
+				const placement = placeSampleInRange({
+					sampleTimestamp: sample.timestamp,
+					sampleFrames: sample.numberOfFrames,
+					sampleRate: nativeBuffer.sampleRate,
+					rangeStart: range.start,
+					bufferLength: nativeBuffer.length,
+					expectedDestFrame,
+				});
+				if (!placement) continue;
 
-		if (chunks.length === 0) return null;
-
-		const nativeSampleRate = chunks[0].sampleRate;
-		const numChannels = Math.min(
-			MAX_AUDIO_CHANNELS,
-			chunks[0].numberOfChannels,
-		);
-
-		const nativeChannels = Array.from(
-			{ length: numChannels },
-			() => new Float32Array(totalSamples),
-		);
-		let offset = 0;
-		for (const chunk of chunks) {
-			for (let channel = 0; channel < numChannels; channel++) {
-				const sourceData = chunk.getChannelData(
-					Math.min(channel, chunk.numberOfChannels - 1),
-				);
-				nativeChannels[channel].set(sourceData, offset);
+				const { srcFrameOffset, destFrameOffset, frameCount } = placement;
+				for (let channel = 0; channel < channelData.length; channel++) {
+					sample.copyTo(
+						channelData[channel].subarray(
+							destFrameOffset,
+							destFrameOffset + frameCount,
+						),
+						{
+							planeIndex: Math.min(channel, sample.numberOfChannels - 1),
+							format: "f32-planar",
+							frameOffset: srcFrameOffset,
+							frameCount,
+						},
+					);
+				}
+				expectedDestFrame = destFrameOffset + frameCount;
+			} finally {
+				sample.close();
 			}
-			offset += chunk.length;
 		}
 
-		// use OfflineAudioContext for high-quality resampling to target rate
-		const outputSamples = Math.ceil(
-			totalSamples * (targetSampleRate / nativeSampleRate),
-		);
+		if (!nativeBuffer) return null;
+
+		const targetSampleRate = audioContext.sampleRate;
+		if (nativeBuffer.sampleRate === targetSampleRate) {
+			return { buffer: nativeBuffer, startTime: range.start };
+		}
+
+		// reamostragem de qualidade para a taxa de saída (como antes)
 		const offlineContext = new OfflineAudioContext(
-			numChannels,
-			outputSamples,
+			nativeBuffer.numberOfChannels,
+			Math.ceil(
+				nativeBuffer.length * (targetSampleRate / nativeBuffer.sampleRate),
+			),
 			targetSampleRate,
 		);
-
-		const nativeBuffer = audioContext.createBuffer(
-			numChannels,
-			totalSamples,
-			nativeSampleRate,
-		);
-		for (let ch = 0; ch < numChannels; ch++) {
-			nativeBuffer.copyToChannel(nativeChannels[ch], ch);
-		}
-
 		const sourceNode = offlineContext.createBufferSource();
 		sourceNode.buffer = nativeBuffer;
 		sourceNode.connect(offlineContext.destination);
 		sourceNode.start(0);
 
-		return await offlineContext.startRendering();
+		return {
+			buffer: await offlineContext.startRendering(),
+			startTime: range.start,
+		};
 	} catch (error) {
 		console.warn("Failed to decode asset audio:", error);
 		return null;
 	} finally {
-		input.dispose();
+		input?.dispose();
 	}
 }
 
@@ -422,10 +613,11 @@ async function fetchLibraryAudioClip({
 			id: element.id,
 			sourceKey: element.id,
 			file,
-			startTime: element.startTime,
-			duration: element.duration,
-			trimStart: element.trimStart,
-			trimEnd: element.trimEnd,
+			// em segundos, como `collectMediaAudioClip` (antes ia em ticks)
+			startTime: element.startTime / TICKS_PER_SECOND,
+			duration: element.duration / TICKS_PER_SECOND,
+			trimStart: element.trimStart / TICKS_PER_SECOND,
+			trimEnd: element.trimEnd / TICKS_PER_SECOND,
 			volume,
 			muted,
 			retime: element.retime,
@@ -633,29 +825,70 @@ export async function createTimelineAudioBuffer({
 	mediaAssets: MediaAsset[];
 	duration: number;
 	sampleRate?: number;
-	audioContext?: AudioContext;
+	audioContext?: BaseAudioContext;
 }): Promise<AudioBuffer | null> {
-	const context = audioContext ?? createAudioContext({ sampleRate });
+	// Sem contexto de fora: um OfflineAudioContext basta (só cria buffers e
+	// decodifica). Não abre thread de áudio nem dispositivo e não precisa de
+	// close() — antes, um AudioContext real ficava vivo a cada exportação/legenda.
+	const context =
+		audioContext ??
+		new OfflineAudioContext({ numberOfChannels: 2, length: 1, sampleRate });
+	const trackPool = createAudioTrackPool();
+	try {
+		return await mixTimelineAudio({
+			tracks,
+			mediaAssets,
+			duration,
+			sampleRate,
+			context,
+			trackPool,
+		});
+	} finally {
+		trackPool.dispose();
+	}
+}
 
-	const audioElements = await collectAudioElements({
-		tracks,
-		mediaAssets,
-		audioContext: context,
-	});
-
-	if (audioElements.length === 0) return null;
-
+async function mixTimelineAudio({
+	tracks,
+	mediaAssets,
+	duration,
+	sampleRate,
+	context,
+	trackPool,
+}: {
+	tracks: SceneTracks;
+	mediaAssets: MediaAsset[];
+	duration: number;
+	sampleRate: number;
+	context: BaseAudioContext;
+	trackPool: AudioTrackPool;
+}): Promise<AudioBuffer | null> {
 	const outputChannels = 2;
 	const durationSeconds = duration / TICKS_PER_SECOND;
 	const outputLength = Math.ceil(durationSeconds * sampleRate);
-	const outputBuffer = context.createBuffer(
-		outputChannels,
-		outputLength,
-		sampleRate,
-	);
+	let outputBuffer: AudioBuffer | null = null;
 
-	for (const element of audioElements) {
-		if (element.muted) continue;
+	// Um elemento por vez: decodifica só o trecho dele, mixa e solta o buffer
+	// antes de decodificar o próximo (pico = saída + 1 trecho).
+	for await (const element of iterateAudioElements({
+		tracks,
+		mediaAssets,
+		audioContext: context,
+		trackPool,
+	})) {
+		outputBuffer ??= context.createBuffer(
+			outputChannels,
+			outputLength,
+			sampleRate,
+		);
+
+		// SINCRONIA: o buffer começa em `bufferStartTime` na fonte, então o
+		// ponto da fonte que cai em `startTime` da linha do tempo é
+		// `trimStart - bufferStartTime` dentro do buffer.
+		const bufferTrimStart = rebaseTrimStart({
+			trimStart: element.trimStart,
+			bufferStart: element.bufferStartTime,
+		});
 
 		const renderedBuffer = shouldMaintainPitch({
 			rate: element.retime?.rate ?? 1,
@@ -664,7 +897,7 @@ export async function createTimelineAudioBuffer({
 			? await renderRetimedBuffer({
 					audioContext: context,
 					sourceBuffer: element.buffer,
-					trimStart: element.trimStart,
+					trimStart: bufferTrimStart,
 					clipDuration: element.duration,
 					retime: element.retime,
 					maintainPitch: true,
@@ -674,12 +907,23 @@ export async function createTimelineAudioBuffer({
 		mixAudioChannels({
 			element,
 			buffer: renderedBuffer ?? element.buffer,
-			trimStart: renderedBuffer ? 0 : element.trimStart,
+			trimStart: renderedBuffer ? 0 : bufferTrimStart,
 			retime: renderedBuffer ? undefined : element.retime,
 			outputBuffer,
 			outputLength,
 			sampleRate,
 		});
+	}
+
+	if (!outputBuffer) {
+		// Só havia elementos mudos (pulados sem decodificar): devolve silêncio,
+		// como antes, em vez de "sem áudio".
+		const hasMutedCandidate = collectAudibleCandidates({
+			tracks,
+			mediaAssets,
+		}).some(({ element }) => isElementMuted({ element }));
+		if (!hasMutedCandidate) return null;
+		return context.createBuffer(outputChannels, outputLength, sampleRate);
 	}
 
 	return await applyAudioMasteringToBuffer({ audioBuffer: outputBuffer });

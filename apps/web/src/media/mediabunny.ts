@@ -130,6 +130,70 @@ export const extractTimelineAudio = async ({
 	return createWavBlob({ samples: interleavedSamples });
 };
 
+/**
+ * Áudio da linha do tempo já pronto para a transcrição: mono, na taxa pedida
+ * (16 kHz para o Whisper).
+ *
+ * Usa o mesmo `createTimelineAudioBuffer` da exportação (decodifica só os
+ * trechos que estão na linha do tempo, um elemento por vez) e converte direto
+ * para mono 16 kHz, sem montar o WAV 16-bit e sem decodificá-lo de novo
+ * (eram duas cópias extras do áudio inteiro). O `Float32Array` devolvido é só
+ * de quem chamou e pode ser transferido para o Worker sem cópia.
+ */
+export async function extractTimelineAudioSamples({
+	tracks,
+	mediaAssets,
+	totalDuration,
+	sampleRate,
+}: {
+	tracks: SceneTracks;
+	mediaAssets: MediaAsset[];
+	totalDuration: number;
+	sampleRate: number;
+}): Promise<Float32Array> {
+	if (totalDuration === 0) {
+		return new Float32Array(
+			Math.ceil(sampleRate * EMPTY_TIMELINE_SILENT_DURATION_SECONDS),
+		);
+	}
+
+	const timelineBuffer = await createTimelineAudioBuffer({
+		tracks,
+		mediaAssets,
+		duration: totalDuration,
+		sampleRate: SAMPLE_RATE,
+	});
+
+	if (!timelineBuffer) {
+		const silentDurationSeconds = Math.max(
+			MIN_SILENT_DURATION_SECONDS,
+			totalDuration / TICKS_PER_SECOND,
+		);
+		return new Float32Array(Math.ceil(silentDurationSeconds * sampleRate));
+	}
+
+	// mono (média dos canais, como antes) + reamostragem, numa passada só
+	const offlineContext = new OfflineAudioContext(
+		1,
+		Math.max(
+			1,
+			Math.ceil(timelineBuffer.length * (sampleRate / timelineBuffer.sampleRate)),
+		),
+		sampleRate,
+	);
+	const sourceNode = offlineContext.createBufferSource();
+	sourceNode.buffer = timelineBuffer;
+	sourceNode.connect(offlineContext.destination);
+	sourceNode.start(0);
+	const monoBuffer = await offlineContext.startRendering();
+
+	// cópia para um ArrayBuffer próprio (o do AudioBuffer não pode ser
+	// transferido com segurança para o Worker)
+	const samples = new Float32Array(monoBuffer.length);
+	monoBuffer.copyFromChannel(samples, 0);
+	return samples;
+}
+
 function interleaveAudioBuffer({
 	audioBuffer,
 }: {

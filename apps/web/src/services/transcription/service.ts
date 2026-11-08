@@ -24,6 +24,7 @@ class TranscriptionService {
 		modelId = DEFAULT_TRANSCRIPTION_MODEL,
 		onProgress,
 	}: {
+		/** é TRANSFERIDO para o Worker: não use depois de chamar */
 		audioData: Float32Array;
 		language?: TranscriptionLanguage;
 		modelId?: TranscriptionModelId;
@@ -73,11 +74,22 @@ class TranscriptionService {
 
 			this.worker.addEventListener("message", handleMessage);
 
-			this.worker.postMessage({
-				type: "transcribe",
-				audio: audioData,
-				language,
-			} satisfies WorkerMessage);
+			// TRANSFERE o áudio para o Worker em vez de copiar (numa live longa a
+			// cópia seria quase 1 GB a mais). Depois disto `audioData` fica vazio
+			// para quem chamou. Só transfere quando o array ocupa o ArrayBuffer
+			// inteiro (senão levaria junto dados que não são dele).
+			const ownsWholeBuffer =
+				audioData.buffer instanceof ArrayBuffer &&
+				audioData.byteOffset === 0 &&
+				audioData.byteLength === audioData.buffer.byteLength;
+			this.worker.postMessage(
+				{
+					type: "transcribe",
+					audio: audioData,
+					language,
+				} satisfies WorkerMessage,
+				ownsWholeBuffer ? [audioData.buffer as ArrayBuffer] : [],
+			);
 		});
 	}
 

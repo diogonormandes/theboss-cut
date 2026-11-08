@@ -1032,6 +1032,7 @@ function AudioElementContent({
 					<AudioWaveform
 						sourceKey={sourceKey}
 						sourceFile={sourceFile}
+						sourceDurationSec={mediaAsset?.duration}
 						audioBuffer={audioBuffer}
 						audioUrl={audioUrl}
 						gainSamples={gainSamples}
