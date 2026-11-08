@@ -1,0 +1,81 @@
+# THEBOSS CUT · monta o instalador para Windows e publica na página de versões (Releases).
+# Roda sozinho quando chega uma etiqueta de versão (ex.: v1.0.0) ou pelo botão "Run workflow" na aba Actions.
+name: Instalador Windows
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      versao:
+        description: "Versão (ex.: 1.0.0)"
+        required: true
+        default: "1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  instalador:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Versão
+        id: v
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then V="${{ github.event.inputs.versao }}"; else V="${GITHUB_REF_NAME#v}"; fi
+          echo "versao=$V" >> "$GITHUB_OUTPUT"
+
+      - name: Instalar o Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.18
+
+      - name: Instalar o Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar as peças do editor
+        run: bun install
+
+      - name: Montar o editor
+        working-directory: apps/web
+        env:
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: bun run build
+
+      - name: Juntar o editor dentro do programa
+        shell: bash
+        run: |
+          set -e
+          SA=apps/web/.next/standalone
+          test -d "$SA" || { echo "não achei o standalone"; exit 1; }
+          if [ -f "$SA/apps/web/server.js" ]; then WEB="$SA/apps/web"; else WEB="$SA"; fi
+          mkdir -p "$WEB/.next"
+          cp -r apps/web/.next/static "$WEB/.next/static"
+          cp -r apps/web/public "$WEB/public"
+          rm -rf desktop/app
+          cp -r "$SA" desktop/app
+          ls desktop/app
+
+      - name: Montar o instalador
+        working-directory: desktop
+        shell: bash
+        run: |
+          npm version "${{ steps.v.outputs.versao }}" --no-git-tag-version --allow-same-version
+          npm install --no-audit --no-fund
+          npx electron-builder --win --publish never
+
+      - name: Publicar na página de versões
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.versao }}
+          name: THEBOSS CUT ${{ steps.v.outputs.versao }}
+          make_latest: true
+          files: desktop/dist/THEBOSS-CUT-Instalador.exe
