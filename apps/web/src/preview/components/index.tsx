@@ -25,13 +25,12 @@ import {
 } from "./preview-viewport";
 
 function usePreviewSize() {
-	const canvasSize = useEditor(
-		(e) => e.project.getActive()?.settings.canvasSize,
-	);
+	// formato da cena aberta (um corte 9:16 tem formato próprio)
+	const canvasSize = useEditor((e) => e.project.getActiveCanvasSize());
 
 	return {
-		width: canvasSize?.width,
-		height: canvasSize?.height,
+		width: canvasSize.width,
+		height: canvasSize.height,
 	};
 }
 

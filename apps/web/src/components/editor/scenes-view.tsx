@@ -28,8 +28,9 @@ import { t } from "@/i18n";
 
 export function ScenesView({ children }: { children: React.ReactNode }) {
 	const editor = useEditor();
-	const scenes = editor.scenes.getScenes();
-	const currentScene = editor.scenes.getActiveScene();
+	// acompanha as mudanças (antes a lista não atualizava quando cenas eram criadas, ex.: "Criar N cortes")
+	const scenes = useEditor((e) => e.scenes.getScenes());
+	const currentScene = useEditor((e) => e.scenes.getActiveScene());
 	const [isSelectMode, setIsSelectMode] = useState(false);
 	const [selectedScenes, setSelectedScenes] = useState<Set<string>>(new Set());
 

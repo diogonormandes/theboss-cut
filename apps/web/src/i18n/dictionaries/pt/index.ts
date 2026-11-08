@@ -14,6 +14,10 @@ import update from "./update";
 import tips from "./tips";
 import tour from "./tour";
 import liveMap from "./liveMap";
+import silenceCut from "./silenceCut";
+import moments from "./moments";
+import framing from "./framing";
+import exportQueue from "./exportQueue";
 
 export const pt = {
 	common,
@@ -32,4 +36,8 @@ export const pt = {
 	tips,
 	tour,
 	liveMap,
+	silenceCut,
+	moments,
+	framing,
+	exportQueue,
 };

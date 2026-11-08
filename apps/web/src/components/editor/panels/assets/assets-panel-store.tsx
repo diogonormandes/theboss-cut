@@ -13,11 +13,13 @@ import {
 	Settings01Icon,
 	SlidersHorizontalIcon,
 	ColorsIcon,
+	ScissorIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 
 export const TAB_KEYS = [
 	"media",
+	"cuts",
 	"sounds",
 	"text",
 	"stickers",
@@ -41,6 +43,12 @@ export const tabs = {
 		icon: createHugeiconsIcon({ icon: Folder03Icon }),
 		get label() {
 			return t("panels.assets.tabs.media");
+		},
+	},
+	cuts: {
+		icon: createHugeiconsIcon({ icon: ScissorIcon }),
+		get label() {
+			return t("panels.assets.tabs.cuts");
 		},
 	},
 	sounds: {

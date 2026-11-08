@@ -176,6 +176,7 @@ function configurarPermissoes() {
 
 app.whenReady().then(() => {
   configurarPermissoes();
+  require("./arquivos").registrar({ ipcMain, app, shell, ehDoEditor });
   ligarServidor();
   criarJanela();
   atualizacao.iniciar();

@@ -83,7 +83,7 @@ export function applyWordFixesToTimeline({
 	editor: EditorCore;
 	fixes: WordFix[];
 }): number {
-	const canvasSize = editor.project.getActive().settings.canvasSize;
+	const canvasSize = editor.project.getActiveCanvasSize();
 	const updates: Array<{
 		trackId: string;
 		elementId: string;

@@ -64,7 +64,7 @@ export function TextEditOverlay({
 		[onCommit],
 	);
 
-	const canvasSize = editor.project.getActive().settings.canvasSize;
+	const canvasSize = editor.project.getActiveCanvasSize();
 
 	if (!canvasSize) return null;
 

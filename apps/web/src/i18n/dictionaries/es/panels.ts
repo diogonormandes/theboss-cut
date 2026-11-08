@@ -4,6 +4,7 @@ const panels: Dictionary["panels"] = {
 	assets: {
 		tabs: {
 			media: "Medios",
+			cuts: "Clips",
 			sounds: "Sonidos",
 			text: "Texto",
 			stickers: "Stickers",

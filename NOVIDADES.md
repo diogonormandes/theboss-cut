@@ -1,4 +1,12 @@
 Próxima versão
+• Corte de live: importe a gravação do OBS sem copiar (ela continua na pasta onde foi salva, sem ocupar espaço dobrado)
+• Mapa da live: uma faixa acima da linha do tempo mostra onde tem fala, grito, pico e silêncio. Clique e vá direto para o momento
+• Lives de horas sem travar: o THEBOSS CUT lê só o pedaço que você usa
+• Cortar silêncios: escolha a intensidade, veja no mapa o que vai sair e crie uma versão sem as partes paradas (a original fica guardada)
+• Melhores momentos: nova aba Cortes sugere os trechos mais fortes da live e monta vários cortes de até 60 s de uma vez
+• Formato vertical a cada corte: escolha "Dividido" (câmera em cima, jogo embaixo) ou "Seguir rosto"
+• Exportar em fila: mande vários cortes de uma vez; eles vão para a pasta Vídeos\THEBOSS CUT\nome do projeto
+• Se a live mudar de lugar, aparece "Mídia offline" com o botão "Localizar arquivo"
 • Legendas automáticas estilo CapCut: a palavra falada acende na hora certa (em dourado, numa caixa ou no estilo karaokê)
 • 5 modelos de legenda prontos: BOSS dourado, Neon, Clássico, Karaokê e Caixa. Dá para mudar fonte, tamanho, cores, contorno, sombra e o jeito que a legenda entra
 • Escolha a qualidade da transcrição: Rápida ou Precisa (melhor para live com barulho). Tudo é feito no seu PC

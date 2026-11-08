@@ -321,3 +321,308 @@ export function speechRanges(
 	}
 	return out;
 }
+
+// ---------------------------------------------------------------------------
+// Melhores momentos (passo 6): janelas com nota, sem sobreposição, até 60 s
+// ---------------------------------------------------------------------------
+
+/** Motivo curto de cada momento (a tela traduz pelo dicionário `moments.reason.*`). */
+export type MomentReason = "shout" | "hype" | "reaction" | "talk" | "loud";
+
+export type SuggestedMoment = {
+	/** início e fim na live (segundos) */
+	start: number;
+	end: number;
+	/** ponto mais forte do momento (segundos) */
+	peak: number;
+	/**
+	 * nota de 0 a 100: relativa ao melhor da live, mas limitada por uma
+	 * referência fixa (`strongScore`); uma live fraca não ganha tudo com 100
+	 */
+	score: number;
+	reason: MomentReason;
+	/** quantos gritos caem dentro do momento */
+	shouts: number;
+};
+
+export type MomentOptions = {
+	/** quantos momentos sugerir (5 a 20) */
+	count: number;
+	/** duração máxima de cada momento (s) */
+	maxSec: number;
+	/** duração mínima (s) */
+	minSec: number;
+	/** quanto do momento vem antes do ponto mais forte (0 a 1): o "contexto" */
+	leadRatio: number;
+	/** janela da nota (s) em volta do ponto */
+	scoreWindowSec: number;
+	/** quanto a borda pode andar para cair numa pausa (s) */
+	snapSec: number;
+	/** nota mínima da janela (absoluta) para virar momento: tira silêncio e trechos vazios */
+	minWindowScore: number;
+	/** nota da janela considerada "momento forte" (vale 100 mesmo se for o melhor de uma live fraca) */
+	strongScore: number;
+};
+
+export const DEFAULT_MOMENT_OPTIONS: MomentOptions = {
+	count: 10,
+	maxSec: 60,
+	minSec: 15,
+	leadRatio: 0.6,
+	scoreWindowSec: 12,
+	snapSec: 8,
+	minWindowScore: 0.6,
+	strongScore: 3,
+};
+
+type MomentInput = Pick<
+	LiveAnalysis,
+	"rmsDb" | "peakDb" | "flux" | "centroid" | "voice" | "frameCount" | "durationSec"
+> & { hopSec?: number; windowSec?: number };
+
+type PerSecond = {
+	secs: number;
+	excite: Float32Array;
+	variation: Float32Array;
+	speech: Float32Array;
+	loud: Float32Array;
+	shoutBonus: Float32Array;
+};
+
+/**
+ * Sugere os melhores momentos da live. Puro e rápido (lê só os números da
+ * análise, uns 300 mil quadros em 4 h; nada de áudio).
+ *
+ * Nota por segundo = empolgação (z-score do volume contra a mediana de 60 s +
+ * mudança brusca de som + pico estourando) + variação do volume + densidade
+ * de fala + bônus forte para grito. A nota da janela é a média em
+ * `scoreWindowSec` mais o melhor segundo; os máximos viram candidatos, e cada
+ * momento escolhido bloqueia o trecho dele (sem sobreposição). As bordas
+ * procuram uma pausa (silêncio) perto para começar e terminar.
+ */
+export function suggestMoments(
+	a: MomentInput,
+	{
+		silences = [],
+		shouts,
+		levels,
+		options = {},
+	}: {
+		silences?: TimeRange[];
+		shouts?: ShoutEvent[];
+		levels?: LocalLevels;
+		options?: Partial<MomentOptions>;
+	} = {},
+): SuggestedMoment[] {
+	const o = { ...DEFAULT_MOMENT_OPTIONS, ...options };
+	o.count = Math.max(1, Math.min(50, Math.round(o.count)));
+	o.maxSec = Math.max(5, o.maxSec);
+	o.minSec = Math.min(o.minSec, o.maxSec);
+	const hop = a.hopSec ?? HOP_SEC;
+	const n = a.frameCount;
+	const duration = a.durationSec;
+	if (n === 0 || duration <= 0) return [];
+	const lv = levels ?? localLevels(a);
+	const sh = shouts ?? detectShouts(a, lv);
+	const curve = excitementCurve(a, lv, { smoothSec: 0.5 });
+
+	// --- medidas por segundo ---
+	const secs = Math.max(1, Math.ceil(duration));
+	const f: PerSecond = {
+		secs,
+		excite: new Float32Array(secs),
+		variation: new Float32Array(secs),
+		speech: new Float32Array(secs),
+		loud: new Float32Array(secs),
+		shoutBonus: new Float32Array(secs),
+	};
+	for (let s = 0; s < secs; s++) {
+		const i0 = Math.round(s / hop);
+		const i1 = Math.min(n, Math.round((s + 1) / hop));
+		if (i1 <= i0) continue;
+		let sumE = 0;
+		let sum = 0;
+		let sum2 = 0;
+		let voiced = 0;
+		let above = 0;
+		for (let i = i0; i < i1; i++) {
+			sumE += curve[i];
+			const db = a.rmsDb[i] / 100;
+			sum += db;
+			sum2 += db * db;
+			const rel = db - lv.median[i];
+			if (rel > -3 && a.voice[i] >= 128) voiced++;
+			if (rel > 6) above++;
+		}
+		const m = i1 - i0;
+		f.excite[s] = sumE / m;
+		const mean = sum / m;
+		f.variation[s] = Math.sqrt(Math.max(0, sum2 / m - mean * mean));
+		f.speech[s] = voiced / m;
+		f.loud[s] = above / m;
+	}
+	for (const e of sh) {
+		const s = Math.min(secs - 1, Math.max(0, Math.floor((e.start + e.end) / 2)));
+		f.shoutBonus[s] += 3 + 3 * e.score;
+	}
+
+	const raw = new Float32Array(secs);
+	for (let s = 0; s < secs; s++) {
+		raw[s] =
+			f.excite[s] +
+			0.08 * Math.min(f.variation[s], 15) +
+			0.6 * f.speech[s] +
+			0.4 * f.loud[s] +
+			f.shoutBonus[s];
+	}
+
+	// nota da janela: média em volta + o melhor segundo (soma acumulada)
+	const half = Math.max(1, Math.round(o.scoreWindowSec / 2));
+	const prefix = new Float64Array(secs + 1);
+	for (let s = 0; s < secs; s++) prefix[s + 1] = prefix[s] + raw[s];
+	const win = new Float32Array(secs);
+	for (let s = 0; s < secs; s++) {
+		const lo = Math.max(0, s - half);
+		const hi = Math.min(secs, s + half + 1);
+		win[s] = (prefix[hi] - prefix[lo]) / (hi - lo) + 0.35 * raw[s];
+	}
+
+	// candidatos: máximos locais, do melhor para o pior (abaixo do piso absoluto, nada)
+	const cands: number[] = [];
+	for (let s = 0; s < secs; s++) {
+		const v = win[s];
+		if (v < o.minWindowScore) continue;
+		if ((s === 0 || v >= win[s - 1]) && (s === secs - 1 || v > win[s + 1])) cands.push(s);
+	}
+	cands.sort((x, y) => win[y] - win[x]);
+	// curva plana (platô) quase não tem máximo local: se faltarem, completa com
+	// os melhores segundos que sobraram (a regra de não sobrepor continua valendo)
+	function* candidates(): Generator<number> {
+		yield* cands;
+		const rest: number[] = [];
+		for (let s = 0; s < secs; s++) if (win[s] >= o.minWindowScore) rest.push(s);
+		rest.sort((x, y) => win[y] - win[x]);
+		yield* rest;
+	}
+
+	const lead = o.maxSec * o.leadRatio * 0.75;
+	const tail = o.maxSec * (1 - o.leadRatio) * 0.75;
+	const chosen: SuggestedMoment[] = [];
+	const taken: TimeRange[] = [];
+	const best = Math.max(cands.length > 0 ? win[cands[0]] : 1, o.strongScore);
+	const minLen = Math.min(o.minSec, duration);
+	const clampToTaken = (s: number, e: number, peak: number): TimeRange => {
+		for (const [ts, te] of taken) {
+			if (te <= peak && te > s) s = te;
+			if (ts >= peak && ts < e) e = ts;
+		}
+		return [s, e];
+	};
+	for (const s of candidates()) {
+		if (chosen.length >= o.count) break;
+		const peak = Math.min(duration, s + 0.5);
+		// o ponto forte e um pouco em volta precisam estar livres
+		if (taken.some(([ts, te]) => peak - 3 < te && ts < peak + 3)) continue;
+		let start = snapToPause(silences, Math.max(0, peak - lead), "start", o.snapSec, peak - 2);
+		let end = snapToPause(silences, Math.min(duration, peak + tail), "end", o.snapSec, peak + 2);
+		let clamped: TimeRange = clampToTaken(start, end, peak);
+		// encostou num momento já escolhido: procura uma pausa dentro do espaço livre
+		if (clamped[0] !== start) clamped[0] = snapToPause(silences, clamped[0], "start", o.snapSec, peak - 2, clamped[0]);
+		if (clamped[1] !== end) clamped[1] = snapToPause(silences, clamped[1], "end", o.snapSec, peak + 2, clamped[1]);
+		[start, end] = clamped;
+		if (end - start > o.maxSec) {
+			const over = end - start - o.maxSec;
+			const cutStart = Math.min(over, Math.max(0, peak - start - 5));
+			start += cutStart;
+			end -= over - cutStart;
+		}
+		if (end - start < minLen) {
+			const need = minLen - (end - start);
+			let s0 = Math.max(0, start - need * o.leadRatio);
+			let e0 = Math.min(duration, end + need * (1 - o.leadRatio));
+			// encostou no começo/fim da live: o que faltou vai para o outro lado
+			if (e0 - s0 < minLen) {
+				if (s0 <= 0) e0 = Math.min(duration, s0 + minLen);
+				else s0 = Math.max(0, e0 - minLen);
+			}
+			clamped = clampToTaken(s0, e0, peak);
+			[start, end] = clamped;
+			// espaço livre curto demais (entre dois momentos já escolhidos): pula
+			if (end - start < minLen - 1e-6) continue;
+		}
+		chosen.push({
+			start,
+			end,
+			peak,
+			score: Math.max(1, Math.min(100, Math.round((100 * win[s]) / best))),
+			reason: reasonFor(s, half, f),
+			shouts: sh.filter((e) => e.start < end && e.end > start).length,
+		});
+		taken.push([start, end]);
+	}
+	return chosen;
+}
+
+/**
+ * Move a borda para uma pausa próxima: o começo vai para o fim da pausa (logo
+ * antes da fala), o fim vai para o começo dela. Não passa de `limit`.
+ * `silences` em ordem de tempo.
+ */
+export function snapToPause(
+	silences: TimeRange[],
+	t: number,
+	side: "start" | "end",
+	maxMove: number,
+	limit: number,
+	/** opcional: a borda não pode ir para antes (começo) / depois (fim) deste ponto */
+	bound?: number,
+): number {
+	let bestT = t;
+	let bestD = Number.POSITIVE_INFINITY;
+	let lo = 0;
+	let hi = silences.length;
+	while (lo < hi) {
+		const mid = (lo + hi) >> 1;
+		if (silences[mid][1] < t - maxMove) lo = mid + 1;
+		else hi = mid;
+	}
+	for (let k = lo; k < silences.length && silences[k][0] <= t + maxMove; k++) {
+		const [s, e] = silences[k];
+		const cand = side === "start" ? Math.max(s, e - 0.25) : Math.min(e, s + 0.25);
+		if (side === "start" ? cand > limit : cand < limit) continue;
+		if (bound !== undefined && (side === "start" ? cand < bound : cand > bound)) continue;
+		const d = Math.abs(cand - t);
+		if (d <= maxMove && d < bestD) {
+			bestD = d;
+			bestT = cand;
+		}
+	}
+	return bestT;
+}
+
+function reasonFor(s: number, half: number, f: PerSecond): MomentReason {
+	const lo = Math.max(0, s - half);
+	const hi = Math.min(f.secs, s + half + 1);
+	let shout = 0;
+	let ex = 0;
+	let va = 0;
+	let sp = 0;
+	let ld = 0;
+	for (let k = lo; k < hi; k++) {
+		shout += f.shoutBonus[k];
+		ex += f.excite[k];
+		va += f.variation[k];
+		sp += f.speech[k];
+		ld += f.loud[k];
+	}
+	const m = hi - lo;
+	ex /= m;
+	va /= m;
+	sp /= m;
+	ld /= m;
+	if (shout > 0) return "shout";
+	if (ld > 0.5 && sp < 0.3) return "loud";
+	if (ex > 1.6 && va > 6) return "reaction";
+	if (ex > 1.2) return "hype";
+	return "talk";
+}

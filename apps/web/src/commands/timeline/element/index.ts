@@ -5,6 +5,7 @@ export { SplitElementsCommand } from "./split-elements";
 export { UpdateElementsCommand } from "./update-elements";
 export { ToggleSourceAudioSeparationCommand } from "./toggle-source-audio-separation";
 export { MoveElementCommand } from "./move-elements";
+export { KeepRangesCommand, KeepRangesInNewSceneCommand, applyKeepRanges, buildKeptPieces, type KeepRange } from "./keep-ranges";
 
 export * from "./keyframes";
 export * from "./effects";

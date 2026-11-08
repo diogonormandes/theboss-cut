@@ -35,7 +35,7 @@ export function usePreviewInteraction({
 			getTracks: () => editor.scenes.getActiveScene().tracks,
 			getCurrentTime: () => editor.playback.getCurrentTime(),
 			getMediaAssets: () => editor.media.getAssets(),
-			getCanvasSize: () => editor.project.getActive().settings.canvasSize,
+			getCanvasSize: () => editor.project.getActiveCanvasSize(),
 		},
 		selection: {
 			getSelected: () => editor.selection.getSelectedElements(),

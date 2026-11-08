@@ -182,7 +182,7 @@ export function getCaptionElements(editor: EditorCore) {
 export function readCurrentLook(editor: EditorCore): CaptionLook | null {
 	const first = getCaptionElements(editor)[0]?.element;
 	if (!first) return null;
-	const canvasSize = editor.project.getActive().settings.canvasSize;
+	const canvasSize = editor.project.getActiveCanvasSize();
 	const isVertical = canvasSize.height > canvasSize.width;
 	const fontSize = Number(first.params.fontSize) || 6;
 	return {
@@ -211,7 +211,7 @@ export async function applyCaptionLook({
 
 	await loadFonts({ families: [look.fontFamily] }).catch(() => undefined);
 
-	const canvasSize = editor.project.getActive().settings.canvasSize;
+	const canvasSize = editor.project.getActiveCanvasSize();
 	const cueStyle = cueStyleFromLook({ look, canvasSize });
 
 	const updates = captions.map(({ trackId, element }, index) => {

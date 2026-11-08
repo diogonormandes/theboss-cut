@@ -10,6 +10,7 @@ import { AudioManager } from "./managers/audio-manager";
 import { SelectionManager } from "./managers/selection-manager";
 import { ClipboardManager } from "./managers/clipboard-manager";
 import { DiagnosticsManager } from "./managers/diagnostics-manager";
+import { ExportQueueManager } from "./managers/export-queue-manager";
 import { registerDefaultEffects } from "@/effects";
 import { registerDefaultMasks } from "@/masks";
 import { registerTranscriptionDiagnostics } from "@/transcription/diagnostics";
@@ -28,6 +29,7 @@ export class EditorCore {
 	public readonly selection: SelectionManager;
 	public readonly clipboard: ClipboardManager;
 	public readonly diagnostics: DiagnosticsManager;
+	public readonly exportQueue: ExportQueueManager;
 
 	private constructor() {
 		registerDefaultEffects();
@@ -44,6 +46,12 @@ export class EditorCore {
 		this.selection = new SelectionManager(this);
 		this.clipboard = new ClipboardManager(this);
 		this.diagnostics = new DiagnosticsManager(this);
+		this.exportQueue = new ExportQueueManager(this);
+		if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
+			void import("./managers/export-queue-dev").then((dev) =>
+				dev.installExportQueueDevHook(this),
+			);
+		}
 		registerTranscriptionDiagnostics({ diagnostics: this.diagnostics });
 		this.playback.bindTimelineScope();
 		// Tira faixas vazias da cena em que o comando mexeu (no refazer, pode

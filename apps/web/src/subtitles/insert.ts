@@ -20,7 +20,7 @@ export function insertCaptionChunksAsTextTrack({
 
 	const addTrackCommand = new AddTrackCommand({ type: "text", index: 0 });
 	const trackId = addTrackCommand.getTrackId();
-	const canvasSize = editor.project.getActive().settings.canvasSize;
+	const canvasSize = editor.project.getActiveCanvasSize();
 	const insertCommands = captions.map(
 		(caption, index) =>
 			new InsertElementCommand({

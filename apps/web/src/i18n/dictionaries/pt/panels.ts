@@ -3,6 +3,7 @@ const panels = {
 	assets: {
 		tabs: {
 			media: "Mídias",
+			cuts: "Cortes",
 			sounds: "Sons",
 			text: "Texto",
 			stickers: "Adesivos",

@@ -182,7 +182,7 @@ export function Captions() {
 			});
 
 			dispatch({ type: "update_step", step: t("media.subtitles.steps.generating") });
-			const canvasSize = editor.project.getActive().settings.canvasSize;
+			const canvasSize = editor.project.getActiveCanvasSize();
 			// as legendas nascem com o modelo BOSS dourado, na posição segura do vertical
 			const look = CAPTION_TEMPLATES[DEFAULT_CAPTION_TEMPLATE];
 			await loadFonts({ families: [look.fontFamily] }).catch(() => undefined);

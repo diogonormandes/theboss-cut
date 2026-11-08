@@ -14,6 +14,7 @@ import type { RetimeConfig, TimelineTrack, TScene } from "@/timeline/types";
 import { pruneOrphanLiveAnalyses } from "@/services/live-analysis/service";
 import { mediaTimeFromSeconds, mediaTimeToSeconds } from "@/wasm";
 import { buildColumns, drawLiveMap, readMapColors } from "./draw";
+import { SilencePreviewLayer } from "./silence-preview";
 import { type LiveMapEntry, type LiveMapSource, useLiveMapStore } from "./store";
 
 /** Vídeo a partir do qual o mapa aparece (segundos). */
@@ -29,7 +30,7 @@ export function formatClock(sec: number): string {
 	return `${h > 0 ? `${h}:` : ""}${mm}:${String(r).padStart(2, "0")}`;
 }
 
-function formatShort(sec: number): string {
+export function formatShort(sec: number): string {
 	if (sec < 60) return `${Math.max(1, Math.round(sec))} s`;
 	if (sec < 3600) return `${Math.round(sec / 60)} min`;
 	const h = Math.floor(sec / 3600);
@@ -98,7 +99,7 @@ function sourceToTimeline(segments: Segment[], src: number): number | null {
 	return next ? next.startSec : null;
 }
 
-function pickLiveAsset(assets: MediaAsset[], scene: TScene | null): MediaAsset | null {
+export function pickLiveAsset(assets: MediaAsset[], scene: TScene | null): MediaAsset | null {
 	const longVideos = assets.filter(
 		(a) => a.type === "video" && a.file && (a.duration ?? 0) >= LIVE_MAP_MIN_DURATION_SEC,
 	);
@@ -200,7 +201,7 @@ function LiveMapForAsset({ asset, scene }: { asset: MediaAsset; scene: TScene | 
 
 			<div className="relative min-w-0 flex-1">
 				{status === "done" && entry?.analysis && entry.summary ? (
-					<MapCanvas entry={entry} segments={segments} />
+					<MapCanvas assetId={asset.id} entry={entry} segments={segments} />
 				) : status === "running" ? (
 					<ProgressView entry={entry} onCancel={() => cancel(asset.id)} />
 				) : status === "error" ? (
@@ -346,7 +347,11 @@ function ProgressView({ entry, onCancel }: { entry: LiveMapEntry | undefined; on
 
 type Hover = { x: number; time: number; label: string } | null;
 
-function MapCanvas({ entry, segments }: { entry: LiveMapEntry; segments: Segment[] }) {
+function MapCanvas({
+	assetId,
+	entry,
+	segments,
+}: { assetId: string; entry: LiveMapEntry; segments: Segment[] }) {
 	const editor = useEditor();
 	const wrapRef = useRef<HTMLDivElement>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -483,6 +488,7 @@ function MapCanvas({ entry, segments }: { entry: LiveMapEntry; segments: Segment
 			}}
 		>
 			<canvas ref={canvasRef} className="absolute inset-0 size-full" aria-hidden />
+			<SilencePreviewLayer assetId={assetId} durationSec={duration} width={size.w} height={size.h} dpr={size.dpr} />
 			<div
 				ref={needleRef}
 				className="pointer-events-none absolute top-0 bottom-0 left-0 w-px"

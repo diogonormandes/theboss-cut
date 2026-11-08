@@ -23,4 +23,25 @@ contextBridge.exposeInMainWorld("theBossCut", {
       return "";
     }
   },
+  // Cortes gravados direto em Vídeos\THEBOSS CUT\<projeto> (o programa confere
+  // que tudo fica dentro dessa pasta e nunca sobrescreve um arquivo).
+  arquivos: {
+    pastaPadraoCortes(nomeProjeto) {
+      return ipcRenderer.invoke("arquivos-pasta-cortes", String(nomeProjeto ?? ""));
+    },
+    // devolve { id, caminho }
+    abrir(nomeArquivo, pasta) {
+      return ipcRenderer.invoke("arquivos-abrir", String(nomeArquivo ?? ""), pasta ? String(pasta) : "");
+    },
+    escrever(id, posicao, bytes) {
+      return ipcRenderer.invoke("arquivos-escrever", id, posicao, bytes);
+    },
+    // descartar = true apaga o arquivo pela metade (cancelado ou com erro)
+    fechar(id, descartar) {
+      return ipcRenderer.invoke("arquivos-fechar", id, descartar === true);
+    },
+    mostrarNaPasta(caminho) {
+      return ipcRenderer.invoke("arquivos-mostrar", String(caminho ?? ""));
+    },
+  },
 });

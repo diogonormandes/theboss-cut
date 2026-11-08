@@ -404,6 +404,17 @@ html[data-tema="sombras"] body { background: radial-gradient(120% 80% at 80% -10
 .tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-settings { animation: tbi-gira .9s cubic-bezier(.3,.7,.3,1); }
 @keyframes tbi-gira { 0% { transform: none; } 70% { transform: rotate(70deg); } 100% { transform: rotate(60deg); } }
 
+/* Cortes (F): as lâminas da tesoura fecham e a estrelinha brilha */
+.tbi-ic-cuts .tbi-blade { transform-box: view-box; transform-origin: 12px 12px; }
+.tbi-ic-cuts .tbi-spark { opacity: .35; }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-cuts .tbi-spark { fill: var(--tbi-ouro); }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-cuts .tbi-blade-a { animation: tbi-snip-a .75s cubic-bezier(.3,.8,.3,1); }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-cuts .tbi-blade-b { animation: tbi-snip-b .75s cubic-bezier(.3,.8,.3,1); }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-cuts .tbi-spark { animation: tbi-spark .75s ease-out both; }
+@keyframes tbi-snip-a { 0%, 100% { transform: none; } 40% { transform: rotate(-17deg); } 60% { transform: rotate(-14deg); } }
+@keyframes tbi-snip-b { 0%, 100% { transform: none; } 40% { transform: rotate(17deg); } 60% { transform: rotate(14deg); } }
+@keyframes tbi-spark { 0%, 30% { opacity: .35; transform: scale(.6) rotate(0); } 50% { opacity: 1; transform: scale(1.45) rotate(45deg); } 100% { opacity: 1; transform: scale(1) rotate(90deg); } }
+
 @media (prefers-reduced-motion: reduce) {
   .tbi-btn, .tbi-btn *, .tbi-btn *::before, .tbi-btn *::after { animation: none !important; transition: none !important; }
   .tbi-btn .tbi-pill, .tbi-btn .tbi-svg { transform: none !important; }

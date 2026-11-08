@@ -7,6 +7,15 @@ import type { TimelineTrack } from "@/timeline";
 import type { TimelineElement as TimelineElementType } from "@/timeline";
 import { TIMELINE_LAYERS } from "./layers";
 import type { ElementDragView } from "@/timeline";
+import { useMemo, useRef } from "react";
+import { useEditor } from "@/editor/use-editor";
+import { findTrackInSceneTracks } from "@/timeline";
+import {
+	filterVisibleElements,
+	getPageTimeRange,
+	getPinnedSelectedIds,
+	useScrollPage,
+} from "./use-visible-elements";
 
 interface TimelineTrackContentProps {
 	track: TimelineTrack;
@@ -46,10 +55,66 @@ export function TimelineTrackContent({
 	shouldIgnoreClick,
 	targetElementId = null,
 }: TimelineTrackContentProps) {
-	const { isElementSelected } = useElementSelection();
+	const { isElementSelected, selectedElements } = useElementSelection();
+
+	// Virtualização: só desenha os pedaços que cruzam a tela (+ folga).
+	const rootRef = useRef<HTMLDivElement>(null);
+	const { ready, page, viewportWidth } = useScrollPage({
+		anchorRef: rootRef,
+		zoomLevel,
+	});
+	const previewTracks = useEditor((e) => e.timeline.getPreviewTracks());
+	const previewTrack = useMemo(
+		() =>
+			previewTracks
+				? findTrackInSceneTracks({ tracks: previewTracks, trackId: track.id })
+				: null,
+		[previewTracks, track.id],
+	);
+	const visibleElements = useMemo(() => {
+		// Antes da primeira medida (feita antes da pintura) não monta nada:
+		// evita montar a faixa inteira só para desmontar no render seguinte.
+		if (!ready) return [] as readonly TimelineElementType[];
+		const range = getPageTimeRange({ page, viewportWidth, zoomLevel });
+		const trackElements: readonly TimelineElementType[] = track.elements;
+		if (!range) return trackElements;
+		// Selecionados fora da tela só ficam desenhados quando são poucos.
+		const alwaysIncludeIds = new Set<string>(
+			getPinnedSelectedIds({ selectedElements, trackId: track.id }),
+		);
+		if (dragView.kind === "dragging") {
+			for (const id of dragView.memberTimeOffsets.keys()) alwaysIncludeIds.add(id);
+			alwaysIncludeIds.add(dragView.anchorElementId);
+		}
+		if (targetElementId) alwaysIncludeIds.add(targetElementId);
+		// Em prévia (redimensionar, sliders), a posição mostrada é a da prévia.
+		if (previewTrack && previewTrack !== track) {
+			for (const element of filterVisibleElements({
+				elements: previewTrack.elements as readonly TimelineElementType[],
+				range,
+			})) {
+				alwaysIncludeIds.add(element.id);
+			}
+		}
+		return filterVisibleElements({
+			elements: trackElements,
+			range,
+			alwaysIncludeIds,
+		});
+	}, [
+		track,
+		ready,
+		page,
+		viewportWidth,
+		zoomLevel,
+		selectedElements,
+		dragView,
+		targetElementId,
+		previewTrack,
+	]);
 
 	return (
-		<div className="relative size-full">
+		<div ref={rootRef} className="relative size-full">
 			<button
 				type="button"
 				className="absolute inset-0 m-0 size-full appearance-none border-0 bg-transparent p-0"
@@ -81,7 +146,7 @@ export function TimelineTrackContent({
 				{track.elements.length === 0 ? (
 					<div className="text-muted-foreground border-muted/30 pointer-events-none flex size-full items-center justify-center rounded-sm border-2 border-dashed text-xs" />
 				) : (
-					track.elements.map((element) => {
+					visibleElements.map((element) => {
 						const isSelected = isElementSelected({
 							trackId: track.id,
 							elementId: element.id,

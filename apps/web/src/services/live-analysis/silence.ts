@@ -200,3 +200,22 @@ export function totalSeconds(ranges: TimeRange[]): number {
 	for (const [s, e] of ranges) t += e - s;
 	return t;
 }
+
+/**
+ * Limita trechos ordenados a [start, end] e descarta os que ficaram menores
+ * que `minSec` (ex.: o pedaço de fala cortado na borda do clipe).
+ */
+export function clipRanges(
+	ranges: TimeRange[],
+	start: number,
+	end: number,
+	minSec = 0,
+): TimeRange[] {
+	const out: TimeRange[] = [];
+	for (const [s, e] of ranges) {
+		const a = Math.max(s, start);
+		const b = Math.min(e, end);
+		if (b - a >= minSec && b > a) out.push([a, b]);
+	}
+	return out;
+}

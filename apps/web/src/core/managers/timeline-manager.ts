@@ -771,7 +771,7 @@ export class TimelineManager {
 
 	private applyPreviewOverlay(tracks: SceneTracks): SceneTracks {
 		if (this.previewOverlay.size === 0) return tracks;
-		const canvasSize = this.editor.project.getActiveOrNull()?.settings.canvasSize;
+		const canvasSize = (this.editor.project.getActiveOrNull() ? this.editor.project.getActiveCanvasSize() : undefined);
 		const rewrapCaption = canvasSize
 			? (content: string, params: Record<string, unknown>) =>
 					rewrapCaptionContent({ content, params, canvasSize })

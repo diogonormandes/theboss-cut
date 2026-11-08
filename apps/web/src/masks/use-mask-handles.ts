@@ -111,7 +111,7 @@ export function useMaskHandles({
 	const currentTime = useEditor((e) => e.playback.getCurrentTime());
 	const mediaAssets = useEditor((e) => e.media.getAssets());
 	const canvasSize = useEditor(
-		(e) => e.project.getActive().settings.canvasSize,
+		(e) => e.project.getActiveCanvasSize(),
 	);
 	const selectedElements = useEditor((e) => e.selection.getSelectedElements());
 	const selectedMaskPointSelection = useEditor((e) =>

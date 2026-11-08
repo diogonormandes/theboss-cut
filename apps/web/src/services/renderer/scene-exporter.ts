@@ -5,6 +5,8 @@ import {
 	Mp4OutputFormat,
 	WebMOutputFormat,
 	BufferTarget,
+	StreamTarget,
+	type StreamTargetChunk,
 	CanvasSource,
 	AudioBufferSource,
 	QUALITY_LOW,
@@ -28,7 +30,30 @@ type ExportParams = {
 	quality: ExportQuality;
 	shouldIncludeAudio?: boolean;
 	audioBuffer?: AudioBuffer;
+	/** Grava direto num arquivo (ex.: pela ponte do programa do Windows) em vez da memória. */
+	fileSink?: ExportFileSink;
 };
+
+/**
+ * Destino em arquivo: recebe os pedaços com a posição (o MP4 volta para
+ * reescrever o começo no fim) e fecha ao terminar.
+ */
+export interface ExportFileSink {
+	write(position: number, data: Uint8Array): Promise<void>;
+}
+
+/** Pedaços de até 4 MB por escrita: poucas idas ao disco sem segurar o vídeo todo. */
+const FILE_SINK_CHUNK_SIZE = 4 * 1024 * 1024;
+
+function createSinkTarget(sink: ExportFileSink): StreamTarget {
+	const writable = new WritableStream<StreamTargetChunk>({
+		write: (chunk) => sink.write(chunk.position, chunk.data),
+	});
+	return new StreamTarget(writable, {
+		chunked: true,
+		chunkSize: FILE_SINK_CHUNK_SIZE,
+	});
+}
 
 const qualityMap = {
 	low: QUALITY_LOW,
@@ -50,6 +75,7 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 	private quality: ExportQuality;
 	private shouldIncludeAudio: boolean;
 	private audioBuffer?: AudioBuffer;
+	private fileSink?: ExportFileSink;
 
 	private isCancelled = false;
 
@@ -61,6 +87,7 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 		quality,
 		shouldIncludeAudio,
 		audioBuffer,
+		fileSink,
 	}: ExportParams) {
 		super();
 		this.renderer = new CanvasRenderer({
@@ -73,12 +100,17 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 		this.quality = quality;
 		this.shouldIncludeAudio = shouldIncludeAudio ?? false;
 		this.audioBuffer = audioBuffer;
+		this.fileSink = fileSink;
 	}
 
 	cancel(): void {
 		this.isCancelled = true;
 	}
 
+	/**
+	 * Desenha e codifica. Com `fileSink`, grava no arquivo e devolve um
+	 * `ArrayBuffer` vazio quando dá certo (nada do vídeo fica na memória).
+	 */
 	async export({
 		rootNode,
 	}: {
@@ -96,7 +128,9 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 
 		const output = new Output({
 			format: outputFormat,
-			target: new BufferTarget(),
+			target: this.fileSink
+				? createSinkTarget(this.fileSink)
+				: new BufferTarget(),
 		});
 
 		const videoSource = new CanvasSource(this.renderer.getOutputCanvas(), {
@@ -159,7 +193,13 @@ export class SceneExporter extends EventEmitter<SceneExporterEvents> {
 		await output.finalize();
 		this.emit("progress", 1);
 
-		const buffer = output.target.buffer;
+		if (this.fileSink) {
+			const empty = new ArrayBuffer(0);
+			this.emit("complete", empty);
+			return empty;
+		}
+
+		const buffer = (output.target as BufferTarget).buffer;
 		if (!buffer) {
 			this.emit("error", new Error("Failed to export video"));
 			return null;

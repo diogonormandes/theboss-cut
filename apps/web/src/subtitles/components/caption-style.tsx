@@ -148,7 +148,7 @@ export function CaptionStyleSection() {
 			style: { ...currentLook.style, ...patch, templateId: undefined },
 		});
 
-	const canvasSize = editor.project.getActive().settings.canvasSize;
+	const canvasSize = editor.project.getActiveCanvasSize();
 	const isVertical = canvasSize.height > canvasSize.width;
 	const fontSize = isVertical
 		? currentLook.fontSizeVertical

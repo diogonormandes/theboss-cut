@@ -225,8 +225,31 @@ function IconAjustes({ gradId }: IconProps) {
 	);
 }
 
+/* Cortes (F): tesoura com estrelinha; as lâminas fecham e a estrela brilha */
+function IconCortes({ gradId }: IconProps) {
+	return (
+		<IconSvg gradId={gradId} estilo="f" size={24} className="tbi-ic-cuts">
+			<g className="tbi-blade tbi-blade-a">
+				<circle cx="6" cy="6" r="2.8" />
+				<path d="M8.1 8.1 20 20" />
+			</g>
+			<g className="tbi-blade tbi-blade-b">
+				<circle cx="6" cy="18" r="2.8" />
+				<path d="M8.1 15.9 20 4" />
+			</g>
+			<path
+				className="tbi-spark"
+				d="M20.6 9.4l.62 1.48 1.48.62-1.48.62-.62 1.48-.62-1.48-1.48-.62 1.48-.62z"
+				fill="currentColor"
+				stroke="none"
+			/>
+		</IconSvg>
+	);
+}
+
 const ICONES: Record<Tab, (p: IconProps) => ReactNode> = {
 	media: IconMidias,
+	cuts: IconCortes,
 	sounds: IconSons,
 	text: IconTexto,
 	stickers: IconAdesivos,

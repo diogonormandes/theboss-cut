@@ -42,13 +42,19 @@ Antes de liberar: testar com uma gravação real do OBS do BOSS.
 - [x] Mapa da live: faixa acima da linha do tempo com fala, gritos, picos e silêncio; clicar leva ao ponto; fica guardado (teste: live de 4 h analisada em ~80 s, 73 MB de memória, 90 de 90 gritos achados)
 - [ ] Risadas no mapa (classificador de áudio só nos melhores trechos — fase 2)
 - [x] Base dos vários cortes: desfazer (Ctrl+Z) sempre na cena certa; criar várias cenas a partir de trechos num passo só
-- [ ] Cortar silêncios automaticamente (com ajuste de intensidade)
-- [ ] Sugerir os melhores momentos e montar vários cortes de uma vez
-- [ ] Enquadramento automático 9:16 seguindo o rosto
-- [ ] Exportar vários cortes em fila
+- [x] Cortar silêncios automaticamente (com ajuste de intensidade e prévia no mapa; o resultado vai para uma cena nova "Sem silêncios", a original fica intacta)
+- [x] Sugerir os melhores momentos e montar vários cortes de uma vez (aba "Cortes"; cada corte vira uma cena de até 60 s)
+- [x] Enquadramento automático 9:16: "Dividido" (câmera em cima, jogo embaixo) ou "Seguir rosto" — perguntado a cada vez
+  - [ ] Testar o detector de rosto com uma gravação real do OBS (na live de teste o rosto é desenhado e ele quase não acha)
+- [x] Exportar vários cortes em fila (salva em Vídeos\THEBOSS CUT\<projeto>)
+  - [ ] Testar a fila no programa do Windows (no navegador foi testada; no programa ainda não)
 
 - [ ] Arrumar 5 testes automáticos antigos que já vinham quebrados do projeto original (máscaras, posicionamento, atalhos)
 - [ ] Testar no programa do Windows: permissão para reabrir a live sem copiar depois de fechar o programa
+- [x] Linha do tempo leve com lives longas: só desenha os pedaços que aparecem na tela (de ~8000 para ~600 itens)
+- [x] A prévia e as alças usam o formato da cena (o corte 9:16 aparece em pé mesmo num projeto 16:9)
+- [x] A lista de cenas atualiza na hora quando cortes novos são criados
+- [ ] Aviso interno do React: botão dentro de botão na fileira de marcadores (não aparece para o usuário)
 
 ## Etapa 4 — Efeitos, transições e modelos
 - [ ] Pacote de efeitos (zoom, tremida, flash, brilho, desfoque, câmera lenta suave)

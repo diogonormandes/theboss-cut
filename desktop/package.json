@@ -19,7 +19,7 @@
     "productName": "THEBOSS CUT",
     "copyright": "THEBOSSVERSE",
     "directories": { "output": "dist" },
-    "files": ["main.js", "atualizacao.js", "preload.js", "carregando.html", "icone.png", "emblema.webm"],
+    "files": ["main.js", "atualizacao.js", "arquivos.js", "preload.js", "carregando.html", "icone.png", "emblema.webm"],
     "extraResources": [{ "from": "app", "to": "app" }],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],

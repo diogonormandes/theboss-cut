@@ -3,7 +3,12 @@ import type { EditorCore } from "@/core";
 import type { RootNode } from "@/services/renderer/nodes/root-node";
 import type { ExportOptions, ExportResult } from "@/export";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
-import { SceneExporter } from "@/services/renderer/scene-exporter";
+import {
+	SceneExporter,
+	type ExportFileSink,
+} from "@/services/renderer/scene-exporter";
+import { getSceneSettings } from "@/project/scene-settings";
+import { calculateTotalDuration } from "@/timeline";
 import { buildScene } from "@/services/renderer/scene-builder";
 import { createTimelineAudioBuffer } from "@/media/audio";
 import { formatTimecode } from "opencut-wasm";
@@ -94,7 +99,9 @@ export class RendererManager {
 				return { success: false, error: t("actions.snapshot.projectEmpty") };
 			}
 
-			const { canvasSize, fps } = activeProject.settings;
+			const { fps } = activeProject.settings;
+			// o formato da cena aberta (um corte 9:16 tem formato próprio)
+			const canvasSize = this.editor.project.getActiveCanvasSize();
 			const renderTime = Math.min(
 				this.editor.playback.getCurrentTime(),
 				this.editor.timeline.getLastFrameTime(),
@@ -140,25 +147,44 @@ export class RendererManager {
 		}
 	}
 
+	/**
+	 * Exporta uma cena. Sem `sceneId`, a cena aberta (botão Exportar). Com
+	 * `sceneId`, as faixas, a duração e o formato daquela cena, sem trocar a
+	 * cena aberta. Com `fileSink`, grava direto no arquivo e o `buffer` do
+	 * resultado vem vazio.
+	 */
 	async exportProject({
 		options,
+		sceneId,
+		fileSink,
 		onProgress,
 		onCancel,
 	}: {
 		options: ExportOptions;
+		sceneId?: string;
+		fileSink?: ExportFileSink;
 		onProgress?: ({ progress }: { progress: number }) => void;
 		onCancel?: () => boolean;
 	}): Promise<ExportResult> {
 		const { format, quality, fps, includeAudio } = options;
 
 		try {
-			const tracks = this.editor.scenes.getActiveScene().tracks;
-			const mediaAssets = this.editor.media.getAssets();
 			const activeProject = this.editor.project.getActive();
 
 			if (!activeProject) {
 				return { success: false, error: t("actions.export.noProject") };
 			}
+
+			const targetScene = sceneId
+				? this.editor.scenes.getSceneById(sceneId)
+				: null;
+			if (sceneId && !targetScene) {
+				return { success: false, error: t("actions.export.failed") };
+			}
+			const tracks = targetScene
+				? targetScene.tracks
+				: this.editor.scenes.getActiveScene().tracks;
+			const mediaAssets = this.editor.media.getAssets();
 
 			// Mídia offline em uso: o vídeo sairia preto e sem som. Para antes.
 			const offlineInUse = findOfflineMediaInUse({
@@ -174,13 +200,18 @@ export class RendererManager {
 				};
 			}
 
-			const duration = this.editor.timeline.getTotalDuration();
+			const duration = targetScene
+				? calculateTotalDuration({ tracks })
+				: this.editor.timeline.getTotalDuration();
 			if (duration === 0) {
 				return { success: false, error: t("actions.export.projectEmpty") };
 			}
 
 			const exportFps = fps ?? activeProject.settings.fps;
-			const canvasSize = activeProject.settings.canvasSize;
+			const canvasSize = targetScene
+				? getSceneSettings({ scene: targetScene, project: activeProject })
+						.canvasSize
+				: activeProject.settings.canvasSize;
 
 			let audioBuffer: AudioBuffer | null = null;
 			if (includeAudio) {
@@ -208,6 +239,7 @@ export class RendererManager {
 				quality,
 				shouldIncludeAudio: !!includeAudio,
 				audioBuffer: audioBuffer || undefined,
+				fileSink,
 			});
 
 			exporter.on("progress", (progress) => {

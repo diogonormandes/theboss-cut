@@ -618,6 +618,18 @@ export class ProjectManager {
 		return this.active;
 	}
 
+	/**
+	 * Formato (tamanho do quadro) da cena aberta: o do corte, quando ele tem formato
+	 * próprio (ex.: corte 9:16), senão o do projeto. Use na prévia, nas alças e em tudo
+	 * que desenha ou posiciona coisas no quadro.
+	 */
+	getActiveCanvasSize(): TCanvasSize {
+		const scene = this.editor.scenes.getActiveSceneOrNull();
+		const own = scene?.canvasSize;
+		if (own && own.width > 0 && own.height > 0) return own;
+		return this.getActive().settings.canvasSize;
+	}
+
 	getTimelineViewState(): TTimelineViewState {
 		return this.active?.timelineViewState ?? DEFAULTS.timeline.viewState;
 	}

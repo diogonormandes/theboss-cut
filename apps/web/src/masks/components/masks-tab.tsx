@@ -142,7 +142,7 @@ export function MasksTab({ element, trackId }: MasksTabProps) {
 	const currentTime = useEditor((e) => e.playback.getCurrentTime());
 	const mediaAssets = useEditor((e) => e.media.getAssets());
 	const canvasSize = useEditor(
-		(e) => e.project.getActive().settings.canvasSize,
+		(e) => e.project.getActiveCanvasSize(),
 	);
 	const masks = element.masks ?? [];
 	const renderMasks = renderElement.masks ?? masks;
