@@ -44,7 +44,7 @@ Antes de liberar: testar com uma gravação real do OBS do BOSS.
 - [x] Teste com live real (replay do TikTok, 71 min, já em pé): mapa em ~20 s com 91 MB; corte de 44 s exportado em 6,4 s com som e imagem sincronizados; cortar silêncios só tirou trechos baixos (nenhum acima de −43 dB)
 - [x] Live já em pé: não oferece Dividido/Seguir rosto (usa a imagem inteira, com aviso); live deitada em corte quadrado continua podendo escolher
 - [x] Momento que já virou corte mostra "Corte criado" e não é criado de novo; numeração dos cortes continua (sem nomes repetidos); o arquivo exportado leva o nome do corte (sem "Corte 01 - Corte 05")
-- [ ] Separar "som de presente/alerta" de "grito": na live real os 4 sons mais altos eram efeitos de presente (Cocô de pombo, LEVEL UP, Ataque de fofura), e todos os momentos viraram "Grito forte". Ideia: perceber a troca da tela inteira (animação do presente) e chamar de "Presente" — perguntar ao BOSS se esses momentos são bons cortes
+- [ ] (Opcional) Nome próprio para os alertas automáticos da live: na live real os 4 sons mais altos eram alertas (presente, subir de nível, MVP), e todos os momentos viraram "Grito forte". Decisão do BOSS (08/11/2026): esses momentos SERVEM como cortes e podem continuar na lista como estão. Se um dia quiser, dá para chamá-los de "Alerta da live" percebendo a troca da tela inteira
 - [x] Base dos vários cortes: desfazer (Ctrl+Z) sempre na cena certa; criar várias cenas a partir de trechos num passo só
 - [x] Cortar silêncios automaticamente (com ajuste de intensidade e prévia no mapa; o resultado vai para uma cena nova "Sem silêncios", a original fica intacta)
 - [x] Sugerir os melhores momentos e montar vários cortes de uma vez (aba "Cortes"; cada corte vira uma cena de até 60 s)
