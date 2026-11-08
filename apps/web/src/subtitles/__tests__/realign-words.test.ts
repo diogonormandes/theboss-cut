@@ -49,3 +49,21 @@ describe("realignCaptionWords", () => {
 		expect(result[3].end).toBeCloseTo(1.0);
 	});
 });
+
+import { applyWordFixes } from "../word-fix-text";
+
+describe("applyWordFixes", () => {
+	const fixes = [
+		{ from: "Bosch", to: "BOSS" },
+		{ from: "Tabu Escote", to: "THEBOSS CUT" },
+	];
+	test("troca palavra inteira e mantém a pontuação", () => {
+		expect(applyWordFixes("live do Bosch.", fixes)).toBe("live do BOSS.");
+	});
+	test("troca várias palavras, mesmo com quebra de linha", () => {
+		expect(applyWordFixes("as do\nTabu Escote.", fixes)).toBe("as do\nTHEBOSS CUT.");
+	});
+	test("não troca pedaço de outra palavra", () => {
+		expect(applyWordFixes("Boschini", fixes)).toBe("Boschini");
+	});
+});

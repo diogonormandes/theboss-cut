@@ -56,6 +56,8 @@ import {
 	cueStyleFromLook,
 } from "@/subtitles/caption-templates";
 import { CaptionStyleSection } from "@/subtitles/components/caption-style";
+import { WordFixesSection } from "@/subtitles/components/word-fixes-section";
+import { applyWordFixesToCues, loadWordFixes } from "@/subtitles/word-fixes";
 
 const DIAGNOSTIC_BUTTON_VARIANT: Record<
 	DiagnosticSeverity,
@@ -195,11 +197,15 @@ export function Captions() {
 							maxWords: getWordsPerCaption(canvasSize),
 						})
 					: buildCaptionChunks({ segments: result.segments });
-			const captionChunks = rawChunks.map((chunk) => ({
-				...chunk,
-				style: cueStyle,
-				captionStyle: { ...look.style },
-			}));
+			// o dicionário de correções da pessoa ("Bosch" → "BOSS") entra sozinho
+			const captionChunks = applyWordFixesToCues(
+				rawChunks.map((chunk) => ({
+					...chunk,
+					style: cueStyle,
+					captionStyle: { ...look.style },
+				})),
+				loadWordFixes(),
+			);
 
 			if (!insertCaptions({ captions: captionChunks })) {
 				dispatch({
@@ -458,6 +464,7 @@ export function Captions() {
 							</ul>
 						</div>
 					)}
+					<WordFixesSection />
 					<CaptionStyleSection />
 				</SectionContent>
 			</Section>
