@@ -45,9 +45,17 @@ export function getLocaleTag(): string {
  * Usado pelo provedor de idioma para alinhar o idioma com o que o servidor leu do cookie.
  * Não salva nada: para o usuário trocar de idioma, use `changeLocale`.
  */
-export function syncLocale(locale: Locale): void {
+export function syncLocale(
+	locale: Locale,
+	{ notify = true }: { notify?: boolean } = {},
+): void {
 	if (locale === currentLocale) return;
 	currentLocale = locale;
+	if (notify) for (const listener of listeners) listener();
+}
+
+/** Avisa as telas que o idioma mudou (fora do desenho da tela, para o React não reclamar). */
+export function notifyLocaleListeners(): void {
 	for (const listener of listeners) listener();
 }
 
