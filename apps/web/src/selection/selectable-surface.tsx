@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SelectionBox } from "@/selection/selection-box";
 import { SelectionContext } from "@/selection/context";
@@ -25,7 +26,7 @@ export function SelectableSurface({
 	orderedIds,
 	children,
 	className,
-	ariaLabel = "Selectable items",
+	ariaLabel = t("actions.selection.selectableItems"),
 	revealId = null,
 	onRevealComplete,
 	onSelectionChange,

@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import type { MaskableElement } from "@/timeline";
 import type { Mask, MaskType, TextMask } from "@/masks/types";
 import type { NumberParamDefinition, SelectParamDefinition } from "@/params";
@@ -254,7 +255,7 @@ export function MasksTab({ element, trackId }: MasksTabProps) {
 	return (
 		<div className="flex flex-col h-full">
 			<div className="border-b px-3.5 h-11 shrink-0 flex items-center justify-between gap-2">
-				<SectionTitle>Máscaras</SectionTitle>
+				<SectionTitle>{t("effects.masks.title")}</SectionTitle>
 				<DropdownMenu
 					open={hasMask ? false : isDropdownOpen}
 					onOpenChange={handleDropdownOpenChange}
@@ -267,20 +268,19 @@ export function MasksTab({ element, trackId }: MasksTabProps) {
 										variant="ghost"
 										size="icon"
 										disabled
-										aria-label="Adicionar máscara"
+										aria-label={t("effects.masks.add")}
 									>
 										<HugeiconsIcon icon={PlusSignIcon} className="size-3.5!" />
 									</Button>
 								</span>
 							</TooltipTrigger>
 							<TooltipContent className="max-w-56 text-balance">
-								Only one mask is supported right now. If you need more,
-								duplicate the clip and apply a different mask to each copy.
+								{t("effects.masks.onlyOne")}
 							</TooltipContent>
 						</Tooltip>
 					) : (
 						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" aria-label="Adicionar máscara">
+							<Button variant="ghost" size="icon" aria-label={t("effects.masks.add")}>
 								<HugeiconsIcon icon={PlusSignIcon} className="size-3.5!" />
 							</Button>
 						</DropdownMenuTrigger>
@@ -340,7 +340,7 @@ function MaskItem({
 						<Button
 							variant="ghost"
 							size="icon"
-							aria-label={`Toggle ${definition.name} mask inversion`}
+							aria-label={t("effects.masks.invert", { name: definition.name })}
 							onClick={() =>
 								editor.timeline.toggleMaskInverted({
 									trackId,
@@ -356,7 +356,7 @@ function MaskItem({
 						<Button
 							variant="ghost"
 							size="icon"
-							aria-label={`Remove ${definition.name} mask`}
+							aria-label={t("effects.masks.remove", { name: definition.name })}
 							onClick={() =>
 								editor.timeline.removeMask({
 									trackId,
@@ -432,7 +432,7 @@ function MaskParamsFields({
 			{definition.features.hasPosition &&
 				"centerX" in mask.params &&
 				"centerY" in mask.params && (
-					<SectionField label="Posição">
+					<SectionField label={t("effects.masks.fields.position")}>
 						<div className="flex items-center gap-2">
 							<MaskNumberField
 								className="flex-1"
@@ -469,7 +469,7 @@ function MaskParamsFields({
 			{definition.features.sizeMode === "width-height" &&
 				"width" in mask.params &&
 				"height" in mask.params && (
-					<SectionField label="Tamanho">
+					<SectionField label={t("effects.masks.fields.size")}>
 						<div className="flex items-center gap-2">
 							<MaskNumberField
 								className="flex-1"
@@ -505,7 +505,7 @@ function MaskParamsFields({
 
 			{definition.features.sizeMode === "height-only" &&
 				"height" in mask.params && (
-					<SectionField label="Altura">
+					<SectionField label={t("effects.masks.fields.height")}>
 						<MaskNumberField
 							icon="H"
 							param={getNumberParamDefinition({
@@ -524,7 +524,7 @@ function MaskParamsFields({
 
 			{definition.features.sizeMode === "width-only" &&
 				"width" in mask.params && (
-					<SectionField label="Largura">
+					<SectionField label={t("effects.masks.fields.width")}>
 						<MaskNumberField
 							icon="W"
 							param={getNumberParamDefinition({
@@ -542,7 +542,7 @@ function MaskParamsFields({
 				)}
 
 			{definition.features.sizeMode === "uniform" && "scale" in mask.params && (
-				<SectionField label="Escala">
+				<SectionField label={t("effects.masks.fields.scale")}>
 					<MaskNumberField
 						icon={
 							isTextMask(mask) ? <HugeiconsIcon icon={ArrowExpandIcon} /> : "S"
@@ -562,7 +562,7 @@ function MaskParamsFields({
 			)}
 
 			{definition.features.hasRotation && "rotation" in mask.params && (
-				<SectionField label="Rotação">
+				<SectionField label={t("effects.masks.fields.rotation")}>
 					<MaskNumberField
 						icon={<HugeiconsIcon icon={RotateClockwiseIcon} />}
 						param={getNumberParamDefinition({
@@ -579,7 +579,7 @@ function MaskParamsFields({
 				</SectionField>
 			)}
 
-			<SectionField label="Suavizar borda">
+			<SectionField label={t("effects.masks.fields.feather")}>
 				<MaskNumberField
 					icon={<HugeiconsIcon icon={FeatherIcon} />}
 					param={featherParam}
@@ -592,7 +592,7 @@ function MaskParamsFields({
 				/>
 			</SectionField>
 
-			<SectionField label="Contorno">
+			<SectionField label={t("effects.masks.fields.stroke")}>
 				<div className="flex flex-col gap-2">
 					<div className="flex items-center gap-2">
 						<MaskNumberField
@@ -644,7 +644,7 @@ function MaskParamsFields({
 
 const LETTER_SPACING_PARAM: NumberParamDefinition = {
 	key: "letterSpacing",
-	label: "Espaço entre letras",
+	get label() { return t("effects.masks.params.letterSpacing"); },
 	type: "number",
 	default: 0,
 	min: -100,
@@ -654,7 +654,7 @@ const LETTER_SPACING_PARAM: NumberParamDefinition = {
 
 const LINE_HEIGHT_PARAM: NumberParamDefinition = {
 	key: "lineHeight",
-	label: "Altura da linha",
+	get label() { return t("effects.masks.params.lineHeight"); },
 	type: "number",
 	default: 1.2,
 	min: 0.1,
@@ -685,7 +685,7 @@ function TextMaskFields({
 
 	return (
 		<>
-			<SectionField label="Conteúdo">
+			<SectionField label={t("effects.masks.fields.content")}>
 				<Textarea
 					value={content.displayValue}
 					className="min-h-20"
@@ -694,7 +694,7 @@ function TextMaskFields({
 					onBlur={content.onBlur}
 				/>
 			</SectionField>
-			<SectionField label="Fonte">
+			<SectionField label={t("effects.masks.fields.font")}>
 				<FontPicker
 					defaultValue={mask.params.fontFamily}
 					onValueChange={(value) => {
@@ -703,7 +703,7 @@ function TextMaskFields({
 					}}
 				/>
 			</SectionField>
-			<SectionField label="Tamanho">
+			<SectionField label={t("effects.masks.fields.size")}>
 				<MaskNumberField
 					icon={<HugeiconsIcon icon={TextFontIcon} />}
 					param={fontSizeParam}
@@ -712,7 +712,7 @@ function TextMaskFields({
 					onCommit={onCommit}
 				/>
 			</SectionField>
-			<SectionField label="Espaçamento">
+			<SectionField label={t("effects.masks.fields.spacing")}>
 				<div className="flex items-start gap-2">
 					<MaskNumberField
 						className="w-1/2"
@@ -839,13 +839,15 @@ function EmptyView({ onAddMask }: EmptyViewProps) {
 		<div className="flex flex-col h-full items-center justify-center gap-4 text-center">
 			<OcShapesIcon className="size-10 text-muted-foreground" strokeWidth={1} />
 			<div className="flex flex-col gap-2">
-				<h3 className="font-medium text-foreground">Nenhuma máscara</h3>
+				<h3 className="font-medium text-foreground">
+					{t("effects.masks.emptyTitle")}
+				</h3>
 				<p className="text-muted-foreground text-sm text-balance max-w-40">
-					Adicione uma máscara para esconder ou mostrar partes desta camada.
+					{t("effects.masks.emptyDescription")}
 				</p>
 			</div>
 			<Button variant="default" size="sm" onClick={onAddMask}>
-				Adicionar máscara
+				{t("effects.masks.add")}
 			</Button>
 		</div>
 	);

@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { useState } from "react";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -126,10 +127,10 @@ export function GraphEditorPopover({
 				<Tabs variant="underline" defaultValue="presets" className="flex flex-col gap-2">
 					<TabsList className="px-3">
 						<TabsTrigger value="presets" className="text-xs">
-							Modelos
+							{t("timeline.graphEditor.presets")}
 						</TabsTrigger>
 						<TabsTrigger value="saved" className="text-xs">
-							Salvos
+							{t("timeline.graphEditor.saved")}
 						</TabsTrigger>
 					</TabsList>
 					<TabsContent value="presets" className="px-3 pb-0">
@@ -178,7 +179,9 @@ export function GraphEditorPopover({
 										className="size-3.5 opacity-40"
 									/>
 								</div>
-								<span className="text-[10px] leading-tight">Salvar</span>
+								<span className="text-[10px] leading-tight">
+									{t("common.save")}
+								</span>
 							</button>
 						</div>
 					</TabsContent>
@@ -321,7 +324,7 @@ function CurveThumb({ value }: { value: NormalizedCubicBezier }) {
 			height={THUMB_HEIGHT}
 			viewBox={`0 0 ${THUMB_WIDTH} ${THUMB_HEIGHT}`}
 		>
-			<title>Prévia da curva</title>
+			<title>{t("timeline.graphEditor.previewTitle")}</title>
 			<path
 				d={`M${points.join("L")}`}
 				fill="none"

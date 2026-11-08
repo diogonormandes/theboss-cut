@@ -7,12 +7,73 @@ import type {
 } from "../types";
 import { REGIONS, REGION_GROUPS } from "./countries-data";
 import type { CountryRecord, RegionId } from "./countries-data";
+import { getLocaleTag, t, type TKey } from "@/i18n";
 
 const FLAGS_PROVIDER_ID = "flags";
 const DEFAULT_SEARCH_LIMIT = 100;
 const DEFAULT_FLAGS_BASE_URL = "/flags";
 
 let countriesPromise: Promise<CountryRecord[]> | null = null;
+
+const REGION_LABEL_KEYS: Record<RegionId, TKey> = {
+	"Western Europe": "media.stickers.regions.westernEurope",
+	"Eastern Europe": "media.stickers.regions.easternEurope",
+	"Northern Europe": "media.stickers.regions.northernEurope",
+	"Southern Europe": "media.stickers.regions.southernEurope",
+	"South Asia": "media.stickers.regions.southAsia",
+	"Southeast Asia": "media.stickers.regions.southeastAsia",
+	"East Asia": "media.stickers.regions.eastAsia",
+	"Central Asia": "media.stickers.regions.centralAsia",
+	"Middle East": "media.stickers.regions.middleEast",
+	"North Africa": "media.stickers.regions.northAfrica",
+	"Sub-Saharan Africa": "media.stickers.regions.subSaharanAfrica",
+	"North America": "media.stickers.regions.northAmerica",
+	"South America": "media.stickers.regions.southAmerica",
+	"Central America": "media.stickers.regions.centralAmerica",
+	Caribbean: "media.stickers.regions.caribbean",
+	Oceania: "media.stickers.regions.oceania",
+	Antarctica: "media.stickers.regions.antarctica",
+	"Atlantic Ocean": "media.stickers.regions.atlanticOcean",
+	"North Atlantic": "media.stickers.regions.northAtlantic",
+};
+
+const REGION_GROUP_LABEL_KEYS: Record<string, TKey> = {
+	europe: "media.stickers.regionGroups.europe",
+	asia: "media.stickers.regionGroups.asia",
+	africa: "media.stickers.regionGroups.africa",
+	america: "media.stickers.regionGroups.america",
+};
+
+// Partes do Reino Unido que não têm nome pronto no navegador.
+const SUBDIVISION_NAME_KEYS: Record<string, TKey> = {
+	"GB-ENG": "media.stickers.countries.england",
+	"GB-NIR": "media.stickers.countries.northernIreland",
+	"GB-SCT": "media.stickers.countries.scotland",
+	"GB-WLS": "media.stickers.countries.wales",
+};
+
+let regionNames: Intl.DisplayNames | null = null;
+let regionNamesLocale: string | null = null;
+
+/** Nome do país no idioma do programa (usa o nome em inglês se não achar). */
+function getCountryDisplayName({ country }: { country: CountryRecord }): string {
+	const code = country.code.toUpperCase();
+	const subdivisionKey = SUBDIVISION_NAME_KEYS[code];
+	if (subdivisionKey) {
+		return t(subdivisionKey);
+	}
+
+	try {
+		const localeTag = getLocaleTag();
+		if (!regionNames || regionNamesLocale !== localeTag) {
+			regionNames = new Intl.DisplayNames([localeTag], { type: "region" });
+			regionNamesLocale = localeTag;
+		}
+		return regionNames.of(code) ?? country.name;
+	} catch {
+		return country.name;
+	}
+}
 
 function getFlagsBaseUrl(): string {
 	return DEFAULT_FLAGS_BASE_URL.replace(/\/$/, "");
@@ -46,7 +107,7 @@ function toStickerItem({ country }: { country: CountryRecord }): StickerItem {
 			providerValue: normalizedCode,
 		}),
 		provider: FLAGS_PROVIDER_ID,
-		name: country.name,
+		name: getCountryDisplayName({ country }),
 		previewUrl: buildFlagUrl({ code: normalizedCode }),
 		metadata: {
 			code: normalizedCode,
@@ -89,6 +150,10 @@ export function resolveQueryToRegions({
 
 export function getRegionLabel({ query }: { query: string }): string {
 	if (REGION_GROUPS[query]) {
+		const groupKey = REGION_GROUP_LABEL_KEYS[query];
+		if (groupKey) {
+			return t(groupKey);
+		}
 		return query
 			.split(" ")
 			.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -96,7 +161,8 @@ export function getRegionLabel({ query }: { query: string }): string {
 	}
 
 	const matched = findMatchingRegions({ query });
-	return matched[0]?.id ?? query;
+	const regionId = matched[0]?.id;
+	return regionId ? t(REGION_LABEL_KEYS[regionId]) : query;
 }
 
 function filterCountriesByQuery({
@@ -118,8 +184,13 @@ function filterCountriesByQuery({
 
 	return countries.filter((country) => {
 		const normalizedName = country.name.toLowerCase();
+		const normalizedDisplayName = getCountryDisplayName({ country }).toLowerCase();
 		const normalizedCode = country.code.toLowerCase();
-		return normalizedName.includes(query) || normalizedCode.includes(query);
+		return (
+			normalizedName.includes(query) ||
+			normalizedDisplayName.includes(query) ||
+			normalizedCode.includes(query)
+		);
 	});
 }
 

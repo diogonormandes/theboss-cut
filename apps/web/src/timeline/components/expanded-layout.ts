@@ -1,3 +1,4 @@
+import { t, type TKey } from "@/i18n";
 import type {
 	AnimationPath,
 	ElementAnimations,
@@ -23,25 +24,26 @@ const PROPERTY_GROUPS: PropertyGroupDefinition[] = [
 	{ matchesPath: (path) => path.startsWith("effects.") },
 ];
 
-const PROPERTY_LABELS: Partial<Record<string, string>> = {
-	"transform.positionX": "Position X",
-	"transform.positionY": "Position Y",
-	"transform.scaleX": "Scale X",
-	"transform.scaleY": "Scale Y",
-	"transform.rotate": "Rotation",
-	opacity: "Opacity",
-	volume: "Volume",
-	color: "Color",
-	"background.color": "BG Color",
-	"background.paddingX": "BG Pad X",
-	"background.paddingY": "BG Pad Y",
-	"background.offsetX": "BG Offset X",
-	"background.offsetY": "BG Offset Y",
-	"background.cornerRadius": "Corner Radius",
+const PROPERTY_LABEL_KEYS: Partial<Record<string, TKey>> = {
+	"transform.positionX": "timeline.properties.positionX",
+	"transform.positionY": "timeline.properties.positionY",
+	"transform.scaleX": "timeline.properties.scaleX",
+	"transform.scaleY": "timeline.properties.scaleY",
+	"transform.rotate": "timeline.properties.rotation",
+	opacity: "timeline.properties.opacity",
+	volume: "timeline.properties.volume",
+	color: "timeline.properties.color",
+	"background.color": "timeline.properties.backgroundColor",
+	"background.paddingX": "timeline.properties.backgroundPaddingX",
+	"background.paddingY": "timeline.properties.backgroundPaddingY",
+	"background.offsetX": "timeline.properties.backgroundOffsetX",
+	"background.offsetY": "timeline.properties.backgroundOffsetY",
+	"background.cornerRadius": "timeline.properties.cornerRadius",
 };
 
 export function getPropertyLabel(path: AnimationPath): string {
-	if (PROPERTY_LABELS[path]) return PROPERTY_LABELS[path];
+	const labelKey = PROPERTY_LABEL_KEYS[path];
+	if (labelKey) return t(labelKey);
 	if (path.startsWith("params.")) return path.slice("params.".length);
 	if (path.startsWith("effects.")) {
 		const parts = path.split(".");

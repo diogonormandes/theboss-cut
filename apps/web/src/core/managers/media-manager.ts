@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type { EditorCore } from "@/core";
 import { toast } from "sonner";
 import type { MediaAsset } from "@/media/types";
@@ -41,8 +42,8 @@ export class MediaManager {
 			this.notify();
 
 			if (storageService.isQuotaExceededError({ error })) {
-				toast.error("Pouco espaço para guardar", {
-					description: error instanceof Error ? error.message : undefined,
+				toast.error(t("actions.storage.lowSpace"), {
+					description: t("actions.storage.lowSpaceHint"),
 				});
 			}
 

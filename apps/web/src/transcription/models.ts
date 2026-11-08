@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type {
 	TranscriptionModel,
 	TranscriptionModelId,
@@ -8,25 +9,33 @@ export const TRANSCRIPTION_MODELS: TranscriptionModel[] = [
 		id: "whisper-tiny",
 		name: "Tiny",
 		huggingFaceId: "onnx-community/whisper-tiny",
-		description: "Mais rápida, menos precisa",
+		get description() {
+			return t("media.transcription.models.tiny");
+		},
 	},
 	{
 		id: "whisper-small",
 		name: "Small",
 		huggingFaceId: "onnx-community/whisper-small",
-		description: "Bom equilíbrio entre rapidez e precisão",
+		get description() {
+			return t("media.transcription.models.small");
+		},
 	},
 	{
 		id: "whisper-medium",
 		name: "Medium",
 		huggingFaceId: "onnx-community/whisper-medium",
-		description: "Mais precisa, mais lenta",
+		get description() {
+			return t("media.transcription.models.medium");
+		},
 	},
 	{
 		id: "whisper-large-v3-turbo",
 		name: "Large v3 Turbo",
 		huggingFaceId: "onnx-community/whisper-large-v3-turbo",
-		description: "Mais precisa; precisa de WebGPU para ficar rápida",
+		get description() {
+			return t("media.transcription.models.largeTurbo");
+		},
 	},
 ];
 

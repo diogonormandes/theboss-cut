@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { useEffect, useRef, useCallback } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
@@ -13,7 +14,7 @@ export function EffectsView() {
 	const effects = effectsRegistry.getAll();
 
 	return (
-		<PanelView title="Efeitos">
+		<PanelView title={t("effects.effectsPanel.title")}>
 			<EffectsGrid effects={effects} />
 		</PanelView>
 	);

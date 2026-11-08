@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import {
 	ContextMenuCheckboxItem,
 	ContextMenuContent,
@@ -32,8 +33,8 @@ export function PreviewContextMenu({
 		const result = await editor.renderer.copySnapshot();
 
 		if (!result.success) {
-			toast.error("Não deu para copiar a captura", {
-				description: result.error ?? "Tente de novo",
+			toast.error(t("preview.contextMenu.copySnapshotFailed"), {
+				description: result.error ?? t("common.tryAgain"),
 			});
 			return;
 		}
@@ -43,8 +44,8 @@ export function PreviewContextMenu({
 		const result = await editor.renderer.saveSnapshot();
 
 		if (!result.success) {
-			toast.error("Não deu para salvar a captura", {
-				description: result.error ?? "Tente de novo",
+			toast.error(t("preview.contextMenu.saveSnapshotFailed"), {
+				description: result.error ?? t("common.tryAgain"),
 			});
 			return;
 		}
@@ -53,17 +54,17 @@ export function PreviewContextMenu({
 	return (
 		<ContextMenuContent className="w-56" container={container}>
 			<ContextMenuItem onClick={viewport.fitToScreen} inset>
-				Caber na tela
+				{t("preview.contextMenu.fitToScreen")}
 			</ContextMenuItem>
 			<ContextMenuSeparator />
 			<ContextMenuItem onClick={onToggleFullscreen} inset>
-				Tela cheia
+				{t("preview.contextMenu.fullscreen")}
 			</ContextMenuItem>
 			<ContextMenuItem onClick={handleSaveSnapshot} inset>
-				Salvar captura
+				{t("preview.contextMenu.saveSnapshot")}
 			</ContextMenuItem>
 			<ContextMenuItem onClick={handleCopySnapshot} inset>
-				Copiar captura
+				{t("preview.contextMenu.copySnapshot")}
 			</ContextMenuItem>
 			{overlayControls.length > 0 ? <ContextMenuSeparator /> : null}
 			{overlayControls.map((overlayControl) => (

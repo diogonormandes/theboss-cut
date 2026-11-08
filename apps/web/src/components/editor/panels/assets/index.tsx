@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { Separator } from "@/components/ui/separator";
 import { type Tab, useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
 import { TabBar } from "./tabbar";
@@ -22,13 +23,13 @@ export function AssetsPanel() {
 		effects: <EffectsView />,
 		transitions: (
 			<div className="text-muted-foreground p-4">
-				Transições em breve...
+				{t("panels.assets.comingSoon.transitions")}
 			</div>
 		),
 		captions: <Captions />,
 		adjustment: (
 			<div className="text-muted-foreground p-4">
-				Ajustes em breve...
+				{t("panels.assets.comingSoon.adjustment")}
 			</div>
 		),
 		settings: <SettingsView />,

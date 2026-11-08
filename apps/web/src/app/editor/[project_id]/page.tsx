@@ -33,6 +33,7 @@ import {
 	bookmarkNotesPreviewOverlay,
 	getBookmarkPreviewOverlaySource,
 } from "@/timeline/bookmarks/index";
+import { t } from "@/i18n";
 
 export default function Editor() {
 	const params = useParams();
@@ -62,13 +63,13 @@ function DegradedRendererBanner() {
 
 	return (
 		<div className="bg-accent border-b h-9 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-			<span>Para a melhor experiência, use o THEBOSS CUT atualizado.</span>
+			<span>{t("editor.degradedBanner")}</span>
 			<Button
 				variant="text"
 				size="icon"
 				className="p-0 w-auto [&_svg]:size-3.5"
 				onClick={() => setDismissed(true)}
-				aria-label="Fechar"
+				aria-label={t("common.close")}
 			>
 				<HugeiconsIcon icon={Cancel01Icon} />
 			</Button>

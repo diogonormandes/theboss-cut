@@ -1,0 +1,82 @@
+// Textos dos painéis do editor (mídias, ajustes do projeto e propriedades).
+const panels = {
+	assets: {
+		tabs: {
+			media: "Mídias",
+			sounds: "Sons",
+			text: "Texto",
+			stickers: "Adesivos",
+			effects: "Efeitos",
+			transitions: "Transições",
+			captions: "Legendas",
+			adjustment: "Ajuste",
+			settings: "Ajustes",
+		},
+		comingSoon: {
+			transitions: "Transições em breve...",
+			adjustment: "Ajustes em breve...",
+		},
+		dropZone: {
+			processing: "Preparando seus arquivos ({progress}%)",
+			hint: "Arraste e solte vídeos, fotos e áudios aqui",
+		},
+		addToTimeline: "Adicione à linha do tempo ou arraste para posicionar",
+	},
+	media: {
+		title: "Mídias",
+		noProject: "Nenhum projeto aberto. Abra ou crie um projeto para importar arquivos.",
+		import: "Importar",
+		exportClips: "Exportar trechos",
+		deleteMany: "Apagar {count} itens",
+		video: "Vídeo",
+		audio: "Áudio",
+		unknown: "Desconhecido",
+		listView: "Mostrar em lista",
+		gridView: "Mostrar em grade",
+		sortTooltip: "Ordenar por {key} ({order})",
+		ascending: "crescente",
+		descending: "decrescente",
+		sort: {
+			name: "Nome",
+			type: "Tipo",
+			duration: "Duração",
+			size: "Tamanho do arquivo",
+		},
+	},
+	settings: {
+		projectInfo: "Informações do projeto",
+		background: "Fundo",
+		name: "Nome",
+		fps: "Quadros por segundo",
+		fpsPlaceholder: "Escolha os quadros por segundo",
+		aspectRatio: "Proporção",
+		custom: "Personalizado",
+		canvasWidth: "Largura da tela",
+		canvasHeight: "Altura da tela",
+	},
+	background: {
+		blur: "Desfoque",
+		selectBlur: "Escolher desfoque {name}",
+		selectBackground: "Escolher fundo {value}",
+		customColor: "Escolher uma cor de fundo",
+		colors: "Cores",
+	},
+	properties: {
+		emptyTitle: "Ainda está vazio",
+		emptyHint: "Clique num item da linha do tempo para editar",
+		multipleSelected: "{count} itens selecionados",
+		toggleKeyframe: "Ligar ou desligar o quadro-chave de {name}",
+		tabs: {
+			transform: "Transformar",
+			blending: "Mistura",
+			audio: "Áudio",
+			speed: "Velocidade",
+			masks: "Máscaras",
+			effects: "Efeitos",
+			text: "Texto",
+			graphic: "Gráfico",
+		},
+	},
+};
+
+export default panels;

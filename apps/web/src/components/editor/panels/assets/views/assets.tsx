@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
@@ -80,7 +81,7 @@ export function MediaView() {
 	const processFiles = async ({ files }: { files: File[] }) => {
 		if (!files || files.length === 0) return;
 		if (!activeProject) {
-			toast.error("Nenhum projeto aberto");
+			toast.error(t("panels.media.noProject"));
 			return;
 		}
 
@@ -192,7 +193,7 @@ export function MediaView() {
 			<input {...fileInputProps} />
 
 			<PanelView
-				title="Mídias"
+				title={t("panels.media.title")}
 				actions={
 					<MediaActions
 						mediaViewMode={mediaViewMode}
@@ -217,7 +218,7 @@ export function MediaView() {
 					/>
 				) : (
 					<SelectableSurface
-						ariaLabel="Assets"
+						ariaLabel={t("panels.media.title")}
 						orderedIds={orderedMediaIds}
 						revealId={highlightMediaId}
 						onRevealComplete={clearHighlight}
@@ -318,13 +319,15 @@ function MediaItemWithContextMenu({
 	const { isSelected, selectedIds } = useSelection();
 	const idsToDelete = isSelected(item.id) ? selectedIds : [item.id];
 	const deleteLabel =
-		idsToDelete.length > 1 ? `Delete ${idsToDelete.length} items` : "Delete";
+		idsToDelete.length > 1
+			? t("panels.media.deleteMany", { count: idsToDelete.length })
+			: t("common.delete");
 
 	return (
 		<ContextMenu>
 			<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
 			<ContextMenuContent>
-				<ContextMenuItem>Exportar trechos</ContextMenuItem>
+				<ContextMenuItem>{t("panels.media.exportClips")}</ContextMenuItem>
 				<ContextMenuItem
 					variant="destructive"
 					onClick={(event: React.MouseEvent<HTMLDivElement>) =>
@@ -482,7 +485,7 @@ function MediaPreview({
 		return (
 			<MediaTypePlaceholder
 				icon={Video01Icon}
-				label="Vídeo"
+				label={t("panels.media.video")}
 				duration={item.duration}
 				variant="muted"
 			/>
@@ -493,7 +496,7 @@ function MediaPreview({
 		return (
 			<MediaTypePlaceholder
 				icon={MusicNote03Icon}
-				label="Áudio"
+				label={t("panels.media.audio")}
 				duration={item.duration}
 				variant="bordered"
 			/>
@@ -501,7 +504,7 @@ function MediaPreview({
 	}
 
 	return (
-		<MediaTypePlaceholder icon={Image02Icon} label="Desconhecido" variant="muted" />
+		<MediaTypePlaceholder icon={Image02Icon} label={t("panels.media.unknown")} variant="muted" />
 	);
 }
 
@@ -546,8 +549,8 @@ function MediaActions({
 					<TooltipContent>
 						<p>
 							{mediaViewMode === "grid"
-								? "Switch to list view"
-								: "Switch to grid view"}
+								? t("panels.media.listView")
+								: t("panels.media.gridView")}
 						</p>
 					</TooltipContent>
 				</Tooltip>
@@ -567,28 +570,28 @@ function MediaActions({
 						</TooltipTrigger>
 						<DropdownMenuContent align="end">
 							<SortMenuItem
-								label="Nome"
+								label={t("panels.media.sort.name")}
 								sortKey="name"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
 							<SortMenuItem
-								label="Tipo"
+								label={t("panels.media.sort.type")}
 								sortKey="type"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
 							<SortMenuItem
-								label="Duração"
+								label={t("panels.media.sort.duration")}
 								sortKey="duration"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
 							<SortMenuItem
-								label="Tamanho do arquivo"
+								label={t("panels.media.sort.size")}
 								sortKey="size"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
@@ -598,8 +601,13 @@ function MediaActions({
 					</DropdownMenu>
 					<TooltipContent>
 						<p>
-							Sort by {sortBy} (
-							{sortOrder === "asc" ? "ascending" : "descending"})
+							{t("panels.media.sortTooltip", {
+								key: t(`panels.media.sort.${sortBy}`).toLowerCase(),
+								order:
+									sortOrder === "asc"
+										? t("panels.media.ascending")
+										: t("panels.media.descending"),
+							})}
 						</p>
 					</TooltipContent>
 				</Tooltip>
@@ -612,7 +620,7 @@ function MediaActions({
 				className="items-center justify-center gap-1.5"
 			>
 				<HugeiconsIcon icon={CloudUploadIcon} />
-				Importar
+				{t("panels.media.import")}
 			</Button>
 		</div>
 	);

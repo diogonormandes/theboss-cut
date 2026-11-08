@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import {
 	Section,
@@ -67,7 +68,7 @@ const BlurPreview = memo(
 				)}
 				onClick={onSelect}
 				type="button"
-				aria-label={`Select ${blur.label} blur`}
+				aria-label={t("panels.background.selectBlur", { name: blur.label })}
 			>
 				<canvas
 					ref={canvasRef}
@@ -122,7 +123,7 @@ const BackgroundPreviews = memo(
 						}
 						onClick={() => onSelect(bg)}
 						type="button"
-						aria-label={`Select background ${bg}`}
+						aria-label={t("panels.background.selectBackground", { value: bg })}
 					/>
 				)),
 			[
@@ -158,7 +159,7 @@ function CustomColorPreview({
 						isSelected && "border-primary border-2",
 					)}
 					type="button"
-					aria-label="Escolher uma cor de fundo"
+					aria-label={t("panels.background.customColor")}
 				>
 					<span
 						className="absolute inset-0"
@@ -180,7 +181,7 @@ function CustomColorPreview({
 }
 
 const COLOR_SECTIONS = [
-	{ id: "colors", title: "Cores", backgrounds: colors, useBackgroundColor: true, showCustomPicker: true },
+	{ id: "colors", get title() { return t("panels.background.colors"); }, backgrounds: colors, useBackgroundColor: true, showCustomPicker: true },
 	{ id: "pattern-craft", title: "Pattern craft", backgrounds: patternCraftGradients, showCustomPicker: false },
 	{ id: "syntax-ui", title: "Syntax UI", backgrounds: syntaxUIGradients, showCustomPicker: false },
 ] as const;
@@ -263,7 +264,7 @@ export function BackgroundContent() {
 				showTopBorder={false}
 			>
 				<SectionHeader>
-					<SectionTitle>Desfoque</SectionTitle>
+					<SectionTitle>{t("panels.background.blur")}</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<div className="flex flex-wrap gap-2">{blurPreviews}</div>

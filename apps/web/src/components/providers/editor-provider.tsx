@@ -14,6 +14,7 @@ import {
 	initializeGpuRenderer,
 	isGpuAvailable,
 } from "@/services/renderer/gpu-renderer";
+import { t } from "@/i18n";
 
 interface EditorProviderProps {
 	projectId: string;
@@ -57,11 +58,11 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 				if (isNotFound) {
 					try {
 						const newProjectId = await editor.project.createNewProject({
-							name: "Untitled Project",
+							name: t("projects.newProject.defaultName"),
 						});
 						router.replace(`/editor/${newProjectId}`);
 					} catch (_createErr) {
-						setError("Failed to create project");
+						setError(t("editor.loader.createFailed"));
 						setIsLoading(false);
 					}
 				} else {
@@ -72,7 +73,9 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 						setError(wasmPanic);
 					} else {
 						setError(
-							err instanceof Error ? err.message : "Failed to load project",
+							err instanceof Error
+								? err.message
+								: t("editor.loader.loadFailed"),
 						);
 					}
 					setIsLoading(false);
@@ -91,7 +94,15 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 		return (
 			<div className="bg-background flex h-screen w-screen items-center justify-center">
 				<div className="flex flex-col items-center gap-4">
-					<p className="text-destructive text-sm">{error}</p>
+					<p className="text-destructive text-sm">
+						{error === t("editor.loader.createFailed")
+							? error
+							: t("editor.loader.loadFailed")}
+					</p>
+					{error !== t("editor.loader.loadFailed") &&
+						error !== t("editor.loader.createFailed") && (
+							<p className="text-muted-foreground text-xs">{error}</p>
+						)}
 				</div>
 			</div>
 		);
@@ -102,7 +113,7 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 			<div className="bg-background flex h-screen w-screen items-center justify-center">
 				<div className="flex flex-col items-center gap-4">
 					<Loader2 className="text-muted-foreground size-8 animate-spin" />
-					<p className="text-muted-foreground text-sm">Abrindo o projeto...</p>
+					<p className="text-muted-foreground text-sm">{t("editor.loader.opening")}</p>
 				</div>
 			</div>
 		);
@@ -113,7 +124,7 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 			<div className="bg-background flex h-screen w-screen items-center justify-center">
 				<div className="flex flex-col items-center gap-4">
 					<Loader2 className="text-muted-foreground size-8 animate-spin" />
-					<p className="text-muted-foreground text-sm">Saindo do projeto...</p>
+					<p className="text-muted-foreground text-sm">{t("editor.loader.closing")}</p>
 				</div>
 			</div>
 		);

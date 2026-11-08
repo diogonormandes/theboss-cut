@@ -66,6 +66,10 @@ import { DeleteProjectDialog } from "@/project/components/delete-project-dialog"
 import { ProjectInfoDialog } from "@/project/components/project-info-dialog";
 import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
 import { cn } from "@/utils/ui";
+import { LanguageButton } from "@/i18n/components/language-picker";
+import { ThemeButton } from "@/theme/components/theme-picker";
+import { Emblem, Wordmark } from "@/components/brand/emblem";
+import { t } from "@/i18n";
 const formatProjectDuration = ({
 	duration,
 }: {
@@ -81,8 +85,20 @@ const formatProjectDuration = ({
 };
 
 const VIEW_MODE_OPTIONS = [
-	{ mode: "grid" as const, icon: GridViewIcon, label: "Ver em grade" },
-	{ mode: "list" as const, icon: LeftToRightListDashIcon, label: "Ver em lista" },
+	{
+		mode: "grid" as const,
+		icon: GridViewIcon,
+		get label() {
+			return t("projects.view.grid");
+		},
+	},
+	{
+		mode: "list" as const,
+		icon: LeftToRightListDashIcon,
+		get label() {
+			return t("projects.view.list");
+		},
+	},
 ];
 
 export default function ProjectsPage() {
@@ -146,16 +162,16 @@ function ProjectsHeader() {
 						<BreadcrumbList>
 							<BreadcrumbItem>
 								<BreadcrumbLink asChild>
-									<Link href="/projects" className="flex items-center gap-2 text-sm sm:text-base font-semibold tracking-wide">
-										<img src="/logos/thebosscut/logo.png" alt="" className="size-6" />
-										THEBOSS <span className="text-primary">CUT</span>
+									<Link href="/projects" className="flex items-center gap-2 text-lg sm:text-[1.35rem]">
+										<Emblem size={34} />
+										<Wordmark />
 									</Link>
 								</BreadcrumbLink>
 							</BreadcrumbItem>
 							<BreadcrumbSeparator />
 							<BreadcrumbItem>
 								<BreadcrumbPage className="text-sm sm:text-base font-medium">
-									Todos os projetos
+									{t("projects.allProjects")}
 								</BreadcrumbPage>
 							</BreadcrumbItem>
 						</BreadcrumbList>
@@ -183,6 +199,8 @@ function ProjectsHeader() {
 
 				<div className="flex items-center gap-3 md:gap-4">
 					<SearchBar className="hidden md:block" />
+					<ThemeButton />
+					<LanguageButton />
 					<NewProjectButton />
 				</div>
 			</div>
@@ -191,12 +209,16 @@ function ProjectsHeader() {
 	);
 }
 
-const SORT_LABELS: Record<TProjectSortKey, string> = {
-	createdAt: "Criado",
-	updatedAt: "Alterado",
-	name: "Nome",
-	duration: "Duração",
-};
+const SORT_KEYS: TProjectSortKey[] = [
+	"createdAt",
+	"updatedAt",
+	"name",
+	"duration",
+];
+
+function getSortLabel(sortKey: TProjectSortKey): string {
+	return t(`projects.sort.${sortKey}`);
+}
 
 function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 	const {
@@ -242,7 +264,7 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 						}
 					/>
 					<span className="text-muted-foreground hidden md:block">
-						Selecionar tudo
+						{t("projects.selectAll")}
 					</span>
 				</Label>
 
@@ -250,7 +272,7 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 
 				<SortDropdown>
 					<Button variant="text" className="text-muted-foreground pl-2">
-						{SORT_LABELS[sortKey]}
+						{getSortLabel(sortKey)}
 					</Button>
 				</SortDropdown>
 				<Button
@@ -268,7 +290,11 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 							});
 						}
 					}}
-					aria-label={`Ordem ${sortOrder === "asc" ? "crescente" : "decrescente"}`}
+					aria-label={
+						sortOrder === "asc"
+							? t("projects.sort.ascending")
+							: t("projects.sort.descending")
+					}
 				>
 					<HugeiconsIcon
 						icon={ArrowDown02Icon}
@@ -330,7 +356,7 @@ function SearchBar({
 						aria-hidden="true"
 					/>
 					<Input
-						placeholder="Buscar..."
+						placeholder={t("projects.searchPlaceholder")}
 						value={searchQuery}
 						onChange={(event) => setSearchQuery({ query: event.target.value })}
 						size="lg"
@@ -345,13 +371,17 @@ function SearchBar({
 const PROJECT_ACTIONS = [
 	{
 		id: "duplicate",
-		label: "Duplicar",
+		get label() {
+			return t("common.duplicate");
+		},
 		icon: Copy01Icon,
 		variant: "outline" as const,
 	},
 	{
 		id: "delete",
-		label: "Apagar",
+		get label() {
+			return t("common.delete");
+		},
 		icon: Delete02Icon,
 		variant: "destructive-foreground" as const,
 	},
@@ -474,30 +504,15 @@ function SortDropdown({ children }: { children: React.ReactNode }) {
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-48" align="center">
-				<DropdownMenuCheckboxItem
-					checked={sortKey === "createdAt"}
-					onCheckedChange={() => setSortKey({ sortKey: "createdAt" })}
-				>
-					Criado
-				</DropdownMenuCheckboxItem>
-				<DropdownMenuCheckboxItem
-					checked={sortKey === "updatedAt"}
-					onCheckedChange={() => setSortKey({ sortKey: "updatedAt" })}
-				>
-					Alterado
-				</DropdownMenuCheckboxItem>
-				<DropdownMenuCheckboxItem
-					checked={sortKey === "name"}
-					onCheckedChange={() => setSortKey({ sortKey: "name" })}
-				>
-					Nome
-				</DropdownMenuCheckboxItem>
-				<DropdownMenuCheckboxItem
-					checked={sortKey === "duration"}
-					onCheckedChange={() => setSortKey({ sortKey: "duration" })}
-				>
-					Duração
-				</DropdownMenuCheckboxItem>
+				{SORT_KEYS.map((key) => (
+					<DropdownMenuCheckboxItem
+						key={key}
+						checked={sortKey === key}
+						onCheckedChange={() => setSortKey({ sortKey: key })}
+					>
+						{getSortLabel(key)}
+					</DropdownMenuCheckboxItem>
+				))}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
@@ -509,7 +524,7 @@ function NewProjectButton() {
 
 	const handleCreateProject = async () => {
 		const projectId = await editor.project.createNewProject({
-			name: "Novo projeto",
+			name: t("projects.newProject.defaultName"),
 		});
 		router.push(`/editor/${projectId}`);
 	};
@@ -517,11 +532,15 @@ function NewProjectButton() {
 	return (
 		<Button
 			size="lg"
-			className="flex px-5 md:px-6"
+			className="btn-boss flex px-5 md:px-6"
 			onClick={handleCreateProject}
 		>
-			<span className="text-sm font-medium hidden md:block">Novo projeto</span>
-			<span className="text-sm font-medium block md:hidden">Novo</span>
+			<span className="text-sm font-medium hidden md:block">
+				{t("projects.newProject.button")}
+			</span>
+			<span className="text-sm font-medium block md:hidden">
+				{t("projects.newProject.buttonShort")}
+			</span>
 		</Button>
 	);
 }
@@ -583,7 +602,7 @@ function ProjectItem({
 					{project.thumbnail ? (
 						<Image
 							src={project.thumbnail}
-							alt="Capa do projeto"
+							alt={t("projects.card.thumbnailAlt")}
 							fill
 							className="object-cover"
 						/>
@@ -607,7 +626,11 @@ function ProjectItem({
 				</h3>
 				<div className="text-muted-foreground flex items-center gap-1.5 text-sm">
 					<HugeiconsIcon icon={Calendar04Icon} className="size-4" />
-					<span>Created {formatDate({ date: project.createdAt })}</span>
+					<span>
+						{t("projects.card.createdOn", {
+							date: formatDate({ date: project.createdAt }),
+						})}
+					</span>
 				</div>
 			</CardContent>
 		</Card>
@@ -619,7 +642,7 @@ function ProjectItem({
 				{project.thumbnail ? (
 					<Image
 						src={project.thumbnail}
-						alt="Capa do projeto"
+						alt={t("projects.card.thumbnailAlt")}
 						fill
 						className="object-cover"
 					/>
@@ -776,19 +799,19 @@ function ProjectContextMenuContent({
 				icon={<HugeiconsIcon icon={Edit03Icon} />}
 				onClick={onRenameClick}
 			>
-				Renomear
+				{t("common.rename")}
 			</ContextMenuItem>
 			<ContextMenuItem
 				icon={<HugeiconsIcon icon={Copy01Icon} />}
 				onClick={onDuplicateClick}
 			>
-				Duplicar
+				{t("common.duplicate")}
 			</ContextMenuItem>
 			<ContextMenuItem
 				icon={<HugeiconsIcon icon={InformationCircleIcon} />}
 				onClick={onInfoClick}
 			>
-				Informações
+				{t("projects.menu.info")}
 			</ContextMenuItem>
 			<ContextMenuSeparator />
 			<ContextMenuItem
@@ -796,7 +819,7 @@ function ProjectContextMenuContent({
 				icon={<HugeiconsIcon icon={Delete02Icon} />}
 				onClick={onDeleteClick}
 			>
-				Apagar
+				{t("common.delete")}
 			</ContextMenuItem>
 		</ContextMenuContent>
 	);
@@ -873,7 +896,7 @@ function ProjectMenu({
 							: "!bg-transparent !shadow-none"
 					}
 					size="icon"
-					aria-label="Menu do projeto"
+					aria-label={t("projects.menu.label")}
 					onClick={(event) =>
 						handleMenuClick({
 							event: event as unknown as MouseEvent<HTMLButtonElement>,
@@ -896,19 +919,19 @@ function ProjectMenu({
 			<DropdownMenuContent className="w-48" align="end">
 				<DropdownMenuItem onClick={handleRename}>
 					<HugeiconsIcon icon={Edit03Icon} />
-					Renomear
+					{t("common.rename")}
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleDuplicate}>
 					<HugeiconsIcon icon={Copy01Icon} />
-					Duplicar
+					{t("common.duplicate")}
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleInfoClick}>
 					<HugeiconsIcon icon={InformationCircleIcon} />
-					Informações
+					{t("projects.menu.info")}
 				</DropdownMenuItem>
 				<DropdownMenuItem variant="destructive" onClick={handleDeleteClick}>
 					<HugeiconsIcon icon={Delete02Icon} />
-					Apagar
+					{t("common.delete")}
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
@@ -955,13 +978,13 @@ function EmptyState() {
 	const handleCreateProject = async () => {
 		try {
 			const projectId = await editor.project.createNewProject({
-				name: "Novo projeto",
+				name: t("projects.newProject.defaultName"),
 			});
 			router.push(`/editor/${projectId}`);
 		} catch (error) {
-			toast.error("Não deu para criar o projeto", {
+			toast.error(t("projects.newProject.createFailed"), {
 				description:
-					error instanceof Error ? error.message : "Tente de novo",
+					t("common.tryAgain"),
 			});
 		}
 	};
@@ -975,9 +998,11 @@ function EmptyState() {
 						className="text-muted-foreground size-16 bg-accent/35 border rounded-md p-4"
 					/>
 					<div className="flex flex-col items-center gap-3">
-						<h3 className="text-lg font-medium">Nada encontrado</h3>
+						<h3 className="text-lg font-medium">
+							{t("projects.empty.noResultsTitle")}
+						</h3>
 						<p className="text-muted-foreground max-w-md">
-							Your search for "{searchQuery}" did not return any results.
+							{t("projects.empty.noResultsText", { query: searchQuery })}
 						</p>
 					</div>
 				</div>
@@ -986,7 +1011,7 @@ function EmptyState() {
 					variant="outline"
 					size="lg"
 				>
-					Limpar busca
+					{t("projects.empty.clearSearch")}
 				</Button>
 			</div>
 		);
@@ -1001,15 +1026,16 @@ function EmptyState() {
 						className="text-muted-foreground size-8"
 					/>
 				</div>
-				<h3 className="text-lg font-medium">Nenhum projeto ainda</h3>
+				<h3 className="text-lg font-medium">
+					{t("projects.empty.noProjectsTitle")}
+				</h3>
 				<p className="text-muted-foreground max-w-md">
-					Start creating your first project. Import media, edit, and export your
-					videos. All privately.
+					{t("projects.empty.noProjectsText")}
 				</p>
 			</div>
 			<Button size="lg" className="gap-2" onClick={handleCreateProject}>
 				<HugeiconsIcon icon={PlusSignIcon} />
-				Crie o seu primeiro projeto
+				{t("projects.empty.createFirst")}
 			</Button>
 		</div>
 	);

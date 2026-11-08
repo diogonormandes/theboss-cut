@@ -1,0 +1,207 @@
+import type { Dictionary } from "../../types";
+
+const media: Dictionary["media"] = {
+	upload: {
+		uploadingOne: "Importing file…",
+		uploadingMany: "Importing files…",
+		uploadedNamed: "{name} was imported",
+		uploadedOne: "1 file was imported",
+		uploadedMany: "{count} files were imported",
+		uploadedNone: "No files were imported",
+		failedOne: "Couldn't import the file. Please try again.",
+		failedMany: "Couldn't import the files. Please try again.",
+		unsupportedType:
+			"THEBOSS CUT can't open this type of file: {name}. Use a video, image or audio file.",
+		noSpace: "Not enough space to save {name}",
+		noSpaceSize:
+			"The file is {size}. Delete projects or files you no longer use to free up space.",
+		noSpaceSizeAvailable:
+			"The file is {size}, but only {available} is free. Delete projects or files you no longer use to free up space.",
+		cantPreview: "Can't show a preview of {name}",
+		unknownCodec: "This video format",
+		codecHint:
+			"{codec} can't be played here, so this video may not show correctly in the preview. Convert it to MP4 (H.264) and import it again.",
+		processFailed: "Couldn't open {name}",
+		processFailedDescription:
+			"The file may be damaged or in a different format. Try converting it to MP4 and import it again.",
+		failed: "Couldn't import {name}. Please try again.",
+	},
+	storage: {
+		quotaExceeded:
+			"There isn't enough space to save a {size} file. Delete projects or files you no longer use and try again.",
+		persistDialog: {
+			title: "Don't lose your projects",
+			warning:
+				"When your computer runs low on space, projects can be deleted automatically.",
+			question: "Let THEBOSS CUT protect your projects?",
+			notNow: "Not now",
+			allow: "Allow",
+		},
+	},
+	sounds: {
+		tabs: {
+			soundEffects: "Sound effects",
+			saved: "Saved",
+		},
+		searchPlaceholder: "Search sound effects",
+		filter: "Filter sounds",
+		commercialOnly: "Only sounds cleared for commercial use",
+		commercialOnlyOn: "Showing only sounds cleared for commercial use",
+		commercialOnlyOff: "Showing all sounds, with any license",
+		loading: "Loading sounds…",
+		searching: "Searching…",
+		loadingMore: "Loading more sounds…",
+		notFound: "No sounds found",
+		noneAvailable: "No sounds available",
+		loadingSaved: "Loading saved sounds…",
+		emptySavedTitle: "No saved sounds",
+		emptySavedHint: "Click the heart on a sound to keep it here",
+		savedCountOne: "1 saved sound",
+		savedCountMany: "{count} saved sounds",
+		clearAll: "Clear all",
+		clearDialog: {
+			title: "Delete all saved sounds?",
+			description:
+				"All {count} saved sounds will be removed from your list. This can't be undone.",
+			confirm: "Delete all sounds",
+		},
+		addToTimeline: "Add to timeline",
+		save: "Save sound",
+		unsave: "Remove from saved",
+		errors: {
+			searchFailed: "Couldn't search for sounds. Check your internet connection and try again.",
+			loadSaved:
+				"Couldn't load your saved sounds. Close and reopen THEBOSS CUT.",
+			save: "Couldn't save the sound. Please try again.",
+			remove: "Couldn't remove the sound. Please try again.",
+			clear: "Couldn't delete the saved sounds. Please try again.",
+		},
+		toast: {
+			saveFailed: "Couldn't save the sound",
+			removeFailed: "Couldn't remove the sound",
+			clearFailed: "Couldn't delete the saved sounds",
+			unavailable: "Sound unavailable",
+			addFailed:
+				"Couldn't add the sound. Check your internet connection and try again.",
+		},
+	},
+	stickers: {
+		searchPlaceholder: "Search…",
+		categoriesLabel: "Sticker categories",
+		categories: {
+			all: "All",
+			flags: "Flags",
+			shapes: "Shapes",
+		},
+		recent: "Recently used",
+		clear: "Clear",
+		seeAll: "See all",
+		results: "{count} results",
+		emptyTitle: "No stickers found",
+		notFoundFor: "No stickers found for “{query}”",
+		noneAvailable: "No stickers available yet.",
+		noneInCategory: "No stickers in {category} yet.",
+		addFailed: "Couldn't add the sticker",
+		shapes: {
+			square: "Square",
+			circle: "Circle",
+			triangle: "Triangle",
+			hexagon: "Hexagon",
+			diamond: "Diamond",
+			star: "Star",
+		},
+		regionGroups: {
+			europe: "Europe",
+			asia: "Asia",
+			africa: "Africa",
+			america: "America",
+		},
+		regions: {
+			westernEurope: "Western Europe",
+			easternEurope: "Eastern Europe",
+			northernEurope: "Northern Europe",
+			southernEurope: "Southern Europe",
+			southAsia: "South Asia",
+			southeastAsia: "Southeast Asia",
+			eastAsia: "East Asia",
+			centralAsia: "Central Asia",
+			middleEast: "Middle East",
+			northAfrica: "North Africa",
+			subSaharanAfrica: "Sub-Saharan Africa",
+			northAmerica: "North America",
+			southAmerica: "South America",
+			centralAmerica: "Central America",
+			caribbean: "Caribbean",
+			oceania: "Oceania",
+			antarctica: "Antarctica",
+			atlanticOcean: "Atlantic Ocean",
+			northAtlantic: "North Atlantic",
+		},
+		countries: {
+			england: "England",
+			northernIreland: "Northern Ireland",
+			scotland: "Scotland",
+			wales: "Wales",
+		},
+	},
+	subtitles: {
+		title: "Captions",
+		import: "Import",
+		language: "Language",
+		chooseLanguage: "Choose the language",
+		autoDetect: "Detect automatically",
+		generate: "Generate captions",
+		captionName: "Caption {number}",
+		steps: {
+			extractingAudio: "Separating the audio…",
+			preparingAudio: "Preparing the audio…",
+			loadingModel: "Getting transcription ready {percent}%",
+			transcribing: "Transcribing…",
+			generating: "Creating captions…",
+			reading: "Reading the caption file…",
+			importing: "Importing captions…",
+		},
+		errors: {
+			noCaptions: "No captions were created. Check that the video has speech.",
+			noCues:
+				"We couldn't find any captions in this file. Check that it's a valid .srt or .ass file.",
+			transcribeFailed:
+				"Couldn't generate the captions. Try again or choose the video's language.",
+			importFailed:
+				"Couldn't import the captions. Use an .srt or .ass file and try again.",
+		},
+		warnings: {
+			skipped: "{imported} captions imported; {skipped} broken ones were skipped.",
+			strippedTags: "Some in-text effects were removed from {count} captions.",
+			ignoredEffects: "Animation effects were ignored in {count} captions.",
+			missingStyles:
+				"{count} captions used a style that isn't in the file and got the default style.",
+			nonDialogue: "{count} items that aren't dialogue were ignored.",
+			unsupportedStyles:
+				"Some styles in the file, like outline, shadow, rotation or size, were ignored.",
+		},
+	},
+	transcription: {
+		noAudio:
+			"No audio found. Add a video or audio clip with sound to the timeline first.",
+		languages: {
+			en: "English",
+			es: "Spanish",
+			it: "Italian",
+			fr: "French",
+			de: "German",
+			pt: "Portuguese",
+			ru: "Russian",
+			ja: "Japanese",
+			zh: "Chinese",
+		},
+		models: {
+			tiny: "Fastest, less accurate",
+			small: "Good balance of speed and accuracy",
+			medium: "More accurate, slower",
+			largeTurbo: "Most accurate; fast on newer graphics cards",
+		},
+	},
+};
+
+export default media;

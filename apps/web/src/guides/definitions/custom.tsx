@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { PlusSignIcon, RulerIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ function CustomGuideOptions() {
 		<div className="flex gap-2">
 			<Button variant="outline" size="sm" className="flex-1">
 				<HugeiconsIcon icon={PlusSignIcon} />
-				Adicionar linha guia
+				{t("effects.guides.addGuideLine")}
 			</Button>
 		</div>
 	);
@@ -16,7 +17,7 @@ function CustomGuideOptions() {
 
 export const customGuide = {
 	id: "custom",
-	label: "Personalizado",
+	get label() { return t("effects.guides.custom"); },
 	renderPreview: () => <HugeiconsIcon size={16} icon={RulerIcon} />,
 	renderTriggerIcon: () => <HugeiconsIcon icon={RulerIcon} />,
 	renderOverlay: () => null,

@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { createContext, useContext } from "react";
 import { useEditor } from "@/editor/use-editor";
 import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
@@ -343,7 +344,7 @@ export function TimelineElement({
 	const sourceAudioLabel =
 		element.type === "video"
 			? getSourceAudioActionLabel({ element })
-			: "Extract audio";
+			: t("timeline.sourceAudio.extract");
 	const isElementSourceAudioSeparated =
 		element.type === "video" && isSourceAudioSeparated({ element });
 	const hasKeyframes = elementKeyframes.length > 0;
@@ -427,7 +428,7 @@ export function TimelineElement({
 						action="split"
 						icon={<HugeiconsIcon icon={ScissorIcon} />}
 					>
-						Cortar
+						{t("timeline.element.split")}
 					</ActionMenuItem>
 					<CopyMenuItem />
 					{selectedElements.length === 1 && (
@@ -435,7 +436,7 @@ export function TimelineElement({
 							action="duplicate-selected"
 							icon={<HugeiconsIcon icon={Copy01Icon} />}
 						>
-							Duplicar
+							{t("common.duplicate")}
 						</ActionMenuItem>
 					)}
 					{canElementHaveAudio(element) && hasAudio && (
@@ -477,7 +478,9 @@ export function TimelineElement({
 								toggleElementExpanded(element.id);
 							}}
 						>
-							{isExpanded ? "Collapse keyframes" : "Expand keyframes"}
+							{isExpanded
+								? t("timeline.element.collapseKeyframes")
+								: t("timeline.element.expandKeyframes")}
 						</ContextMenuItem>
 					)}
 					{selectedElements.length === 1 && hasMediaId(element) && (
@@ -488,13 +491,13 @@ export function TimelineElement({
 									handleRevealInMedia({ event })
 								}
 							>
-								Mostrar mídia
+								{t("timeline.element.revealMedia")}
 							</ContextMenuItem>
 							<ContextMenuItem
 								icon={<HugeiconsIcon icon={Exchange01Icon} />}
 								disabled
 							>
-								Trocar mídia
+								{t("timeline.element.replaceMedia")}
 							</ContextMenuItem>
 						</>
 					)}
@@ -649,7 +652,11 @@ function ResizeHandle({
 			)}
 			onMouseDown={(event) => onResizeStart({ event, element, track, side })}
 			onClick={(event) => event.stopPropagation()}
-			aria-label={`${isLeft ? "Left" : "Right"} resize handle`}
+			aria-label={
+				isLeft
+					? t("timeline.element.resizeStart")
+					: t("timeline.element.resizeEnd")
+			}
 		></button>
 	);
 }
@@ -722,7 +729,7 @@ function KeyframeIndicators({
 						indicatorTime: indicator.time,
 					})
 				}
-				aria-label="Selecionar ponto-chave"
+				aria-label={t("timeline.element.selectKeyframe")}
 			>
 				<HugeiconsIcon
 					icon={KeyframeIcon}
@@ -875,7 +882,7 @@ function ExpandedKeyframeLanes({
 											indicatorTime: kf.time,
 										});
 									}}
-									aria-label="Selecionar ponto-chave"
+									aria-label={t("timeline.element.selectKeyframe")}
 								>
 									<HugeiconsIcon
 										icon={KeyframeIcon}
@@ -1187,7 +1194,7 @@ function CopyMenuItem() {
 			action="copy-selected"
 			icon={<HugeiconsIcon icon={Copy01Icon} />}
 		>
-			Copiar
+			{t("timeline.element.copy")}
 		</ActionMenuItem>
 	);
 }
@@ -1214,7 +1221,7 @@ function MuteMenuItem({
 
 	return (
 		<ActionMenuItem action="toggle-elements-muted-selected" icon={getIcon()}>
-			{isMuted ? "Unmute" : "Mute"}
+			{isMuted ? t("timeline.element.unmute") : t("timeline.element.mute")}
 		</ActionMenuItem>
 	);
 }
@@ -1246,7 +1253,7 @@ function VisibilityMenuItem({
 			action="toggle-elements-visibility-selected"
 			icon={getIcon()}
 		>
-			{isHidden ? "Show" : "Hide"}
+			{isHidden ? t("timeline.element.show") : t("timeline.element.hide")}
 		</ActionMenuItem>
 	);
 }
@@ -1269,8 +1276,10 @@ function DeleteMenuItem({
 			icon={<HugeiconsIcon icon={Delete02Icon} />}
 		>
 			{isMultipleSelected && isCurrentElementSelected
-				? `Delete ${selectedCount} elements`
-				: `Delete ${elementType === "text" ? "text" : "clip"}`}
+				? t("timeline.element.deleteMany", { count: selectedCount })
+				: elementType === "text"
+					? t("timeline.element.deleteText")
+					: t("timeline.element.deleteClip")}
 		</ActionMenuItem>
 	);
 }

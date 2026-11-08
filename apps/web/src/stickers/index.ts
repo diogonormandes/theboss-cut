@@ -2,6 +2,7 @@ import {
 	STICKER_CATEGORIES,
 } from "@/stickers/categories";
 import { STICKER_INTRINSIC_SIZE_FALLBACK } from "@/stickers/intrinsic-size";
+import { t } from "@/i18n";
 import type { StickerCategory } from "@/stickers/types";
 import { stickersRegistry } from "./registry";
 import { resolveStickerId } from "./resolver";
@@ -243,7 +244,7 @@ export async function browseAll({
 	if (recentItems.length > 0) {
 		sections.push({
 			id: "recent",
-			title: "Usadas há pouco",
+			title: t("media.stickers.recent"),
 			items: recentItems.slice(0, limit),
 			hasMore: recentItems.length > limit,
 			layout: "row",

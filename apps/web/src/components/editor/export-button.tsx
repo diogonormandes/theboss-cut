@@ -34,6 +34,7 @@ import {
 } from "@/components/section";
 import { useEditor } from "@/editor/use-editor";
 import { DEFAULT_EXPORT_OPTIONS } from "@/export/defaults";
+import { t } from "@/i18n";
 
 function isExportFormat(value: string): value is ExportFormat {
 	return EXPORT_FORMAT_VALUES.some((formatValue) => formatValue === value);
@@ -66,7 +67,7 @@ export function ExportButton() {
 				<button
 					type="button"
 					className={cn(
-						"flex items-center gap-1.5 rounded-md bg-[#38BDF8] px-[0.12rem] py-[0.12rem] text-white",
+						"btn-boss flex items-center gap-1.5 rounded-[0.6rem] px-4 py-1.5 font-semibold",
 						hasProject ? "cursor-pointer" : "cursor-not-allowed opacity-50",
 					)}
 					onClick={hasProject ? () => setIsExportPopoverOpen(true) : undefined}
@@ -78,13 +79,8 @@ export function ExportButton() {
 						}
 					}}
 				>
-					<div className="relative flex items-center gap-1.5 rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7] px-4 py-1 shadow-[0_1px_3px_0px_rgba(0,0,0,0.65)]">
-						<HugeiconsIcon icon={TransitionTopIcon} className="z-50 size-3.5" />
-						<span className="z-50 text-[0.875rem]">Exportar</span>
-						<div className="absolute top-0 left-0 z-10 flex size-full items-center justify-center rounded-[0.6rem] bg-linear-to-t from-white/0 to-white/50">
-							<div className="absolute top-[0.08rem] z-50 h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7]"></div>
-						</div>
-					</div>
+					<HugeiconsIcon icon={TransitionTopIcon} className="size-3.5" />
+					<span className="text-[0.875rem]">{t("editor.export.button")}</span>
 				</button>
 			</PopoverTrigger>
 			{hasProject && <ExportPopover onOpenChange={setIsExportPopoverOpen} />}
@@ -148,14 +144,16 @@ function ExportPopover({
 		<PopoverContent className="bg-background mr-4 flex w-80 flex-col p-0">
 			{exportResult && !exportResult.success ? (
 				<ExportError
-					error={exportResult.error || "Unknown error occurred"}
+					error={exportResult.error || t("editor.export.unknownError")}
 					onRetry={handleExport}
 				/>
 			) : (
 				<>
 					<div className="flex items-center justify-between p-3 border-b">
 						<h3 className="font-medium text-sm">
-							{isExporting ? "Exporting project" : "Export project"}
+							{isExporting
+								? t("editor.export.titleExporting")
+								: t("editor.export.title")}
 						</h3>
 					</div>
 
@@ -169,7 +167,7 @@ function ExportPopover({
 										showTopBorder={false}
 									>
 										<SectionHeader>
-											<SectionTitle>Formato</SectionTitle>
+											<SectionTitle>{t("editor.export.format")}</SectionTitle>
 										</SectionHeader>
 										<SectionContent>
 											<RadioGroup
@@ -183,13 +181,13 @@ function ExportPopover({
 												<div className="flex items-center space-x-2">
 													<RadioGroupItem value="mp4" id="mp4" />
 													<Label htmlFor="mp4">
-														MP4 (H.264) - abre em tudo
+														{t("editor.export.formatMp4")}
 													</Label>
 												</div>
 												<div className="flex items-center space-x-2">
 													<RadioGroupItem value="webm" id="webm" />
 													<Label htmlFor="webm">
-														WebM (VP9) - arquivo menor
+														{t("editor.export.formatWebm")}
 													</Label>
 												</div>
 											</RadioGroup>
@@ -198,7 +196,7 @@ function ExportPopover({
 
 									<Section collapsible defaultOpen={false}>
 										<SectionHeader>
-											<SectionTitle>Qualidade</SectionTitle>
+											<SectionTitle>{t("editor.export.quality")}</SectionTitle>
 										</SectionHeader>
 										<SectionContent>
 											<RadioGroup
@@ -211,20 +209,20 @@ function ExportPopover({
 											>
 												<div className="flex items-center space-x-2">
 													<RadioGroupItem value="low" id="low" />
-													<Label htmlFor="low">Baixa - arquivo menor</Label>
+													<Label htmlFor="low">{t("editor.export.qualityLow")}</Label>
 												</div>
 												<div className="flex items-center space-x-2">
 													<RadioGroupItem value="medium" id="medium" />
-													<Label htmlFor="medium">Média - equilibrada</Label>
+													<Label htmlFor="medium">{t("editor.export.qualityMedium")}</Label>
 												</div>
 												<div className="flex items-center space-x-2">
 													<RadioGroupItem value="high" id="high" />
-													<Label htmlFor="high">Alta - recomendada</Label>
+													<Label htmlFor="high">{t("editor.export.qualityHigh")}</Label>
 												</div>
 												<div className="flex items-center space-x-2">
 													<RadioGroupItem value="very_high" id="very_high" />
 													<Label htmlFor="very_high">
-														Muito alta - arquivo maior
+														{t("editor.export.qualityVeryHigh")}
 													</Label>
 												</div>
 											</RadioGroup>
@@ -233,7 +231,7 @@ function ExportPopover({
 
 									<Section collapsible defaultOpen={false}>
 										<SectionHeader>
-											<SectionTitle>Áudio</SectionTitle>
+											<SectionTitle>{t("editor.export.audio")}</SectionTitle>
 										</SectionHeader>
 										<SectionContent>
 											<div className="flex items-center space-x-2">
@@ -245,7 +243,7 @@ function ExportPopover({
 													}
 												/>
 												<Label htmlFor="include-audio">
-													Exportar com áudio
+													{t("editor.export.includeAudio")}
 												</Label>
 											</div>
 										</SectionContent>
@@ -255,7 +253,7 @@ function ExportPopover({
 								<div className="p-3 pt-0">
 									<Button onClick={handleExport} className="w-full gap-2">
 										<Download className="size-4" />
-										Exportar
+										{t("editor.export.button")}
 									</Button>
 								</div>
 							</>
@@ -278,7 +276,7 @@ function ExportPopover({
 									className="w-full rounded-md"
 									onClick={handleCancel}
 								>
-									Cancelar
+									{t("common.cancel")}
 								</Button>
 							</div>
 						)}
@@ -307,7 +305,7 @@ function ExportError({
 	return (
 		<div className="space-y-4 p-3">
 			<div className="flex flex-col gap-1.5">
-				<p className="text-destructive text-sm font-medium">Não deu para exportar</p>
+				<p className="text-destructive text-sm font-medium">{t("editor.export.failed")}</p>
 				<p className="text-muted-foreground text-xs">{error}</p>
 			</div>
 
@@ -319,7 +317,7 @@ function ExportError({
 					onClick={handleCopy}
 				>
 					{copied ? <Check className="text-constructive" /> : <Copy />}
-					Copy
+					{t("editor.export.copy")}
 				</Button>
 				<Button
 					variant="outline"
@@ -328,7 +326,7 @@ function ExportError({
 					onClick={onRetry}
 				>
 					<RotateCcw />
-					Tentar de novo
+					{t("editor.export.retry")}
 				</Button>
 			</div>
 		</div>

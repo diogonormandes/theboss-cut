@@ -1,16 +1,17 @@
+import { t } from "@/i18n";
 import type { ParamDefinition } from "@/params";
 
 export type GraphicStrokeAlign = "inside" | "center" | "outside";
 
 export const STROKE_ALIGN_PARAM: ParamDefinition<"strokeAlign"> = {
 	key: "strokeAlign",
-	label: "Posição do contorno",
+	get label() { return t("effects.graphics.params.strokeAlign"); },
 	type: "select",
 	default: "center",
 	group: "stroke",
 	options: [
-		{ value: "inside", label: "Dentro" },
-		{ value: "center", label: "Centro" },
-		{ value: "outside", label: "Fora" },
+		{ value: "inside", get label() { return t("effects.strokeAlign.inside"); } },
+		{ value: "center", get label() { return t("effects.strokeAlign.center"); } },
+		{ value: "outside", get label() { return t("effects.strokeAlign.outside"); } },
 	],
 };

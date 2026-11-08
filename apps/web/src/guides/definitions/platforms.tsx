@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { t } from "@/i18n";
 import type { GuideDefinition } from "@/guides/types";
 import { TikTokLayout } from "./tiktok-layout";
 
@@ -32,12 +33,14 @@ function platformGuide({
 	domain,
 }: {
 	id: string;
-	label: string;
+	label: string | (() => string);
 	domain: string;
 }): GuideDefinition {
 	return {
 		id,
-		label,
+		get label() {
+			return typeof label === "function" ? label() : label;
+		},
 		renderPreview: () => <PlatformGuidePreview domain={domain} />,
 		renderTriggerIcon: () => <PlatformLogo domain={domain} />,
 		renderOverlay: () => null,
@@ -60,6 +63,6 @@ export const ytShortsGuide = platformGuide({
 });
 export const spotlightGuide = platformGuide({
 	id: "spotlight",
-	label: "Holofote",
+	label: () => t("effects.guides.spotlight"),
 	domain: "snapchat.com",
 });

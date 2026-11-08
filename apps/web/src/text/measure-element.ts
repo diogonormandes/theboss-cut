@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { CORNER_RADIUS_MIN } from "@/text/background";
 import { DEFAULTS } from "@/timeline/defaults";
 import type { TextElement } from "@/timeline";
@@ -138,7 +139,7 @@ export function buildTextLayoutParamsFromElement({
 		content: readStringParam({
 			params: element.params,
 			key: "content",
-			fallback: "Default text",
+			fallback: t("effects.text.defaultText"),
 		}),
 		fontSize: readNumberParam({
 			params: element.params,

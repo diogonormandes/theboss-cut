@@ -36,7 +36,7 @@ interface KeybindingsState {
 	removeKeybinding: (key: ShortcutKey) => void;
 	resetToDefaults: () => void;
 	importKeybindings: (config: KeybindingConfig) => void;
-	exportKeybindings: () => Gravar<string, TActionWithOptionalArgs>;
+	exportKeybindings: () => Record<string, TActionWithOptionalArgs>;
 	openOverlay: (overlayId: string) => void;
 	closeOverlay: (overlayId: string) => void;
 	setLoadingProject: (loading: boolean) => void;

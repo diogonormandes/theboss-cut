@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type { ParamDefinition } from "@/params";
 import { applyAlignedStroke } from "../stroke";
 import { STROKE_ALIGN_PARAM, type GraphicStrokeAlign } from "./shared";
@@ -15,54 +16,54 @@ interface StarParams {
 const STAR_PARAMS: ParamDefinition<keyof StarParams & string>[] = [
 	{
 		key: "fill",
-		label: "Preencher",
+		get label() { return t("effects.graphics.params.fill"); },
 		type: "color",
 		default: "#ffffff",
 	},
 	{
 		key: "stroke",
-		label: "Cor",
+		get label() { return t("effects.graphics.params.color"); },
 		type: "color",
 		default: "#000000",
 		group: "stroke",
 	},
 	{
 		key: "strokeWidth",
-		label: "Largura",
+		get label() { return t("effects.graphics.params.width"); },
 		type: "number",
 		default: 0,
 		min: 0,
 		max: 64,
 		step: 1,
-		shortLabel: "W",
+		get shortLabel() { return t("effects.graphics.shortLabels.width"); },
 		group: "stroke",
 	},
 	STROKE_ALIGN_PARAM,
 	{
 		key: "points",
-		label: "Pontas",
+		get label() { return t("effects.graphics.params.points"); },
 		type: "number",
 		default: 5,
 		min: 3,
 		max: 12,
 		step: 1,
-		shortLabel: "P",
+		get shortLabel() { return t("effects.graphics.shortLabels.points"); },
 	},
 	{
 		key: "depth",
-		label: "Profundidade",
+		get label() { return t("effects.graphics.params.depth"); },
 		type: "number",
 		default: 45,
 		min: 1,
 		max: 99,
 		step: 1,
-		shortLabel: "D",
+		get shortLabel() { return t("effects.graphics.shortLabels.depth"); },
 	},
 ];
 
 export const starGraphicDefinition: GraphicDefinition = {
 	id: "star",
-	name: "Star",
+	get name() { return t("effects.graphics.names.star"); },
 	keywords: ["star", "sparkle", "burst"],
 	params: STAR_PARAMS,
 	render({ ctx, params, width, height }) {

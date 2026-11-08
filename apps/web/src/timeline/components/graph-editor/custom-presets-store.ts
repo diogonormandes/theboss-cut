@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { useSyncExternalStore } from "react";
 import { generateUUID } from "@/utils/id";
 import type { NormalizedCubicBezier } from "@/animation/types";
@@ -86,7 +87,9 @@ export function savePreset({ value }: { value: NormalizedCubicBezier }): void {
 			...current,
 			{
 				id: generateUUID(),
-				label: `Custom ${current.length + 1}`,
+				label: t("timeline.graphEditor.customPreset", {
+					count: current.length + 1,
+				}),
 				value,
 				isCustom: true,
 			},

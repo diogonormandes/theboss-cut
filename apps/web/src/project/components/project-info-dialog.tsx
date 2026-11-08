@@ -10,6 +10,7 @@ import type { TProjectMetadata } from "@/project/types";
 import { formatDate } from "@/utils/date";
 import { formatTimecode, mediaTimeToSeconds } from "opencut-wasm";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n";
 
 function InfoRow({
 	label,
@@ -51,17 +52,17 @@ export function ProjectInfoDialog({
 				</DialogHeader>
 
 				<DialogBody className="flex flex-col">
-					<InfoRow label="Duração" value={durationFormatted} />
+					<InfoRow label={t("projects.infoDialog.duration")} value={durationFormatted} />
 					<InfoRow
-						label="Criado"
+						label={t("projects.infoDialog.created")}
 						value={formatDate({ date: project.createdAt })}
 					/>
 					<InfoRow
-						label="Alterado"
+						label={t("projects.infoDialog.updated")}
 						value={formatDate({ date: project.updatedAt })}
 					/>
 					<InfoRow
-						label="ID do projeto"
+						label={t("projects.infoDialog.projectCode")}
 						value={
 							<code className="text-xs bg-muted px-1.5 py-0.5 rounded">
 								{project.id.slice(0, 8)}
@@ -71,9 +72,9 @@ export function ProjectInfoDialog({
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Fechar
+						{t("common.close")}
 					</Button>
-					<Button onClick={() => onOpenChange(false)}>Pronto</Button>
+					<Button onClick={() => onOpenChange(false)}>{t("common.done")}</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

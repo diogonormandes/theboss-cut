@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Delete02Icon,
@@ -434,7 +435,7 @@ export function Timeline() {
 				"panel bg-background relative flex h-full flex-col overflow-hidden rounded-sm border"
 			}
 			{...dragProps}
-			aria-label="Linha do tempo"
+			aria-label={t("timeline.label")}
 		>
 			<TimelineToolbar
 				zoomLevel={zoomLevel}
@@ -843,7 +844,7 @@ function TimelineTrackRows({
 								invokeAction("paste-copied");
 							}}
 						>
-							Colar itens
+							{t("timeline.track.paste")}
 						</ContextMenuItem>
 						<ContextMenuItem
 							icon={<HugeiconsIcon icon={VolumeHighIcon} />}
@@ -853,8 +854,8 @@ function TimelineTrackRows({
 							}}
 						>
 							{canTrackHaveAudio(track) && track.muted
-								? "Unmute track"
-								: "Mute track"}
+								? t("timeline.track.unmute")
+								: t("timeline.track.mute")}
 						</ContextMenuItem>
 						<ContextMenuItem
 							icon={<HugeiconsIcon icon={ViewIcon} />}
@@ -864,8 +865,8 @@ function TimelineTrackRows({
 							}}
 						>
 							{canTrackBeHidden(track) && track.hidden
-								? "Show track"
-								: "Hide track"}
+								? t("timeline.track.show")
+								: t("timeline.track.hide")}
 						</ContextMenuItem>
 						{track.id !== mainTrackId && (
 							<ContextMenuItem
@@ -876,7 +877,7 @@ function TimelineTrackRows({
 								}}
 								variant="destructive"
 							>
-								Apagar faixa
+								{t("timeline.track.delete")}
 							</ContextMenuItem>
 						)}
 					</ContextMenuContent>

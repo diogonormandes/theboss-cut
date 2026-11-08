@@ -6,6 +6,8 @@ import ReactMarkdown from "react-markdown";
 import { useLocalStorage } from "@/services/storage/use-local-storage";
 import { Button } from "../ui/button";
 import { Dialog, DialogBody, DialogContent, DialogTitle } from "../ui/dialog";
+import { t } from "@/i18n";
+import { Emblem } from "../brand/emblem";
 
 export function Onboarding() {
 	const [step, setStep] = useState(0);
@@ -27,11 +29,11 @@ export function Onboarding() {
 	const getStepTitle = () => {
 		switch (step) {
 			case 0:
-				return "Bem-vindo ao THEBOSS CUT 🔱";
+				return t("editor.onboarding.welcomeTitle");
 			case 1:
-				return "Seus vídeos ficam no seu PC";
+				return t("editor.onboarding.localTitle");
 			default:
-				return "Dicas rápidas";
+				return t("editor.onboarding.tipsTitle");
 		}
 	};
 
@@ -42,9 +44,9 @@ export function Onboarding() {
 					<div className="space-y-5">
 						<div className="space-y-3">
 							<Title title={getStepTitle()} />
-							<Description description="O editor de vídeo do THEBOSSVERSE: corte, legende, coloque textos, efeitos e músicas e exporte pronto para postar." />
+							<Description description={t("editor.onboarding.welcomeText")} />
 						</div>
-						<NextButton onClick={handleNext}>Próximo</NextButton>
+						<NextButton onClick={handleNext}>{t("common.next")}</NextButton>
 					</div>
 				);
 			case 1:
@@ -52,10 +54,10 @@ export function Onboarding() {
 					<div className="space-y-5">
 						<div className="space-y-3">
 							<Title title={getStepTitle()} />
-							<Description description="Nada é enviado para a internet: os projetos e os arquivos ficam guardados neste computador." />
-							<Description description="Arraste vídeos, fotos e músicas para a área de mídias para começar." />
+							<Description description={t("editor.onboarding.localText")} />
+							<Description description={t("editor.onboarding.localDrag")} />
 						</div>
-						<NextButton onClick={handleNext}>Próximo</NextButton>
+						<NextButton onClick={handleNext}>{t("common.next")}</NextButton>
 					</div>
 				);
 			default:
@@ -63,9 +65,9 @@ export function Onboarding() {
 					<div className="space-y-5">
 						<div className="space-y-3">
 							<Title title={getStepTitle()} />
-							<Description description="Espaço toca e pausa. S corta no ponto da agulha. No menu do tridente, no canto de cima, ficam todos os atalhos." />
+							<Description description={t("editor.onboarding.tipsText")} />
 						</div>
-						<NextButton onClick={handleClose}>Começar a editar</NextButton>
+						<NextButton onClick={handleClose}>{t("editor.onboarding.start")}</NextButton>
 					</div>
 				);
 		}
@@ -84,7 +86,12 @@ export function Onboarding() {
 }
 
 function Title({ title }: { title: string }) {
-	return <h2 className="text-lg font-bold md:text-xl">{title}</h2>;
+	return (
+		<h2 className="flex items-center gap-2.5 font-display text-2xl font-semibold tracking-wide md:text-[1.7rem]">
+			<Emblem size={36} />
+			{title}
+		</h2>
+	);
 }
 
 function Description({ description }: { description: string }) {

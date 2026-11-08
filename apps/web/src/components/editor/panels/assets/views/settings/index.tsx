@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { useState } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import {
@@ -222,8 +223,8 @@ export function SettingsView() {
 					}}
 				>
 					<TabsList>
-						<TabsTrigger value="project-info">Informações do projeto</TabsTrigger>
-						<TabsTrigger value="background">Fundo</TabsTrigger>
+						<TabsTrigger value="project-info">{t("panels.settings.projectInfo")}</TabsTrigger>
+						<TabsTrigger value="background">{t("panels.settings.background")}</TabsTrigger>
 					</TabsList>
 				</Tabs>
 			}
@@ -232,7 +233,7 @@ export function SettingsView() {
 				<div className="flex flex-col">
 					<Section showTopBorder={false}>
 						<SectionHeader>
-							<SectionTitle className="flex-1">Nome</SectionTitle>
+							<SectionTitle className="flex-1">{t("panels.settings.name")}</SectionTitle>
 							<span className="text-sm truncate">
 								{activeProject.metadata.name}
 							</span>
@@ -240,7 +241,7 @@ export function SettingsView() {
 					</Section>
 					<Section showTopBorder={false}>
 						<SectionHeader className="justify-between">
-							<SectionTitle className="flex-1">Quadros por segundo</SectionTitle>
+							<SectionTitle className="flex-1">{t("panels.settings.fps")}</SectionTitle>
 					<Select
 							value={String(Math.round(frameRateToFloat(activeProject.settings.fps)))}
 							onValueChange={(value) => {
@@ -249,7 +250,7 @@ export function SettingsView() {
 							}}
 							>
 								<SelectTrigger className="bg-transparent border-none p-1 h-auto">
-									<SelectValue placeholder="Escolha os quadros por segundo" />
+									<SelectValue placeholder={t("panels.settings.fpsPlaceholder")} />
 								</SelectTrigger>
 								<SelectContent>
 									{FPS_PRESETS.map((preset) => (
@@ -267,7 +268,7 @@ export function SettingsView() {
 						sectionKey="settings:aspect-ratio"
 					>
 						<SectionHeader>
-							<SectionTitle className="flex-1">Proporção</SectionTitle>
+							<SectionTitle className="flex-1">{t("panels.settings.aspectRatio")}</SectionTitle>
 						</SectionHeader>
 						<SectionContent className="px-2 flex flex-col gap-1 pb-2">
 							{presetItems.map((preset) => (
@@ -286,7 +287,7 @@ export function SettingsView() {
 							<div className="pb-2">
 								<AspectRatioItem
 									key="custom"
-									label="Personalizado"
+									label={t("panels.settings.custom")}
 									previewIcon={<OcSquarePlusIcon />}
 									isSelected={isCustomSelected}
 									onClick={selectCustomCanvasSize}
@@ -295,7 +296,7 @@ export function SettingsView() {
 											<NumberField
 												value={widthDraft.displayValue}
 												className="w-full"
-												aria-label="Largura da tela"
+												aria-label={t("panels.settings.canvasWidth")}
 												onFocus={widthDraft.onFocus}
 												onChange={widthDraft.onChange}
 												onBlur={widthDraft.onBlur}
@@ -303,7 +304,7 @@ export function SettingsView() {
 											<NumberField
 												value={heightDraft.displayValue}
 												className="w-full"
-												aria-label="Altura da tela"
+												aria-label={t("panels.settings.canvasHeight")}
 												onFocus={heightDraft.onFocus}
 												onChange={heightDraft.onChange}
 												onBlur={heightDraft.onBlur}

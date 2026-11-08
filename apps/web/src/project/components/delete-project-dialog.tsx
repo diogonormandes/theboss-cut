@@ -10,6 +10,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { t } from "@/i18n";
 
 export function DeleteProjectDialog({
 	isOpen,
@@ -38,33 +39,35 @@ export function DeleteProjectDialog({
 					<DialogTitle>
 						{singleName ? (
 							<>
-								{"Delete '"}
+								{t("projects.deleteDialog.titleSingleBefore")}
 								<span className="inline-block max-w-[300px] truncate align-bottom">
 									{singleName}
 								</span>
-								{"'?"}
+								{t("projects.deleteDialog.titleSingleAfter")}
 							</>
 						) : (
-							`Delete ${count} projects?`
+							t("projects.deleteDialog.titleMany", { count })
 						)}
 					</DialogTitle>
 				</DialogHeader>
 				<DialogBody>
 					<Alert variant="destructive">
-						<AlertTitle>Aviso</AlertTitle>
+						<AlertTitle>{t("projects.deleteDialog.warning")}</AlertTitle>
 						<AlertDescription>
-							This will permanently delete{" "}
-							{singleName ? `"${singleName}"` : `${count} projects`} and all
-							associated files.
+							{singleName
+								? t("projects.deleteDialog.descriptionSingle", {
+										name: singleName,
+									})
+								: t("projects.deleteDialog.descriptionMany", { count })}
 						</AlertDescription>
 					</Alert>
 					<div className="flex flex-col gap-3">
 						<Label className="text-xs font-semibold text-slate-500">
-							Type "DELETE" to confirm
+							{t("projects.deleteDialog.typeToConfirm")}
 						</Label>
 						<Input
 							type="text"
-							placeholder="DELETE"
+							placeholder={t("projects.deleteDialog.confirmWord")}
 							size="lg"
 							variant="destructive"
 						/>
@@ -72,10 +75,10 @@ export function DeleteProjectDialog({
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Cancelar
+						{t("common.cancel")}
 					</Button>
 					<Button variant="destructive" onClick={onConfirm}>
-						Apagar projeto
+						{t("projects.deleteDialog.confirm")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

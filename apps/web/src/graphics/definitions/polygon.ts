@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type { ParamDefinition } from "@/params";
 import { applyAlignedStroke } from "../stroke";
 import { STROKE_ALIGN_PARAM, type GraphicStrokeAlign } from "./shared";
@@ -20,48 +21,48 @@ interface PolygonParams {
 const POLYGON_PARAMS: ParamDefinition<keyof PolygonParams & string>[] = [
 	{
 		key: "fill",
-		label: "Preencher",
+		get label() { return t("effects.graphics.params.fill"); },
 		type: "color",
 		default: "#ffffff",
 	},
 	{
 		key: "stroke",
-		label: "Cor",
+		get label() { return t("effects.graphics.params.color"); },
 		type: "color",
 		default: "#000000",
 		group: "stroke",
 	},
 	{
 		key: "strokeWidth",
-		label: "Largura",
+		get label() { return t("effects.graphics.params.width"); },
 		type: "number",
 		default: 0,
 		min: 0,
 		max: 64,
 		step: 1,
-		shortLabel: "W",
+		get shortLabel() { return t("effects.graphics.shortLabels.width"); },
 		group: "stroke",
 	},
 	STROKE_ALIGN_PARAM,
 	{
 		key: "sides",
-		label: "Lados",
+		get label() { return t("effects.graphics.params.sides"); },
 		type: "number",
 		default: 5,
 		min: 3,
 		max: 12,
 		step: 1,
-		shortLabel: "S",
+		get shortLabel() { return t("effects.graphics.shortLabels.sides"); },
 	},
 	{
 		key: "cornerRadius",
-		label: "Arredondamento",
+		get label() { return t("effects.graphics.params.cornerRadius"); },
 		type: "number",
 		default: 0,
 		min: 0,
 		max: 50,
 		step: 1,
-		shortLabel: "R",
+		get shortLabel() { return t("effects.graphics.shortLabels.cornerRadius"); },
 	},
 ];
 
@@ -166,7 +167,7 @@ function traceRoundedPolygonPath({
 
 export const polygonGraphicDefinition: GraphicDefinition = {
 	id: "polygon",
-	name: "Polygon",
+	get name() { return t("effects.graphics.names.polygon"); },
 	keywords: ["polygon", "triangle", "pentagon", "hexagon", "diamond"],
 	params: POLYGON_PARAMS,
 	render({ ctx, params, width, height }) {

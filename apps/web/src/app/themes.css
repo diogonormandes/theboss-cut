@@ -1,0 +1,152 @@
+/* Temas do THEBOSS CUT: os mesmos do THEBOSSVERSE (Ajustes do programa → Tema).
+   Cada tema só troca as cores-base (--tb-*). Lá embaixo, essas cores viram as cores do editor.
+   O tema escolhido fica em <html data-tema="...">. Sem data-tema = Dourado BOSS. */
+
+/* 1. Dourado BOSS: o padrão */
+:root {
+  --tb-bg: #0a0a0b;
+  --tb-surface: #16171a;
+  --tb-surface-2: #22242a;
+  --tb-border: #2e3138;
+  --tb-border-strong: #60656f;
+  --tb-text: #edeef0;
+  --tb-text-muted: #8a8f98;
+  --tb-gold: #c9a96a;
+  --tb-gold-deep: #a88a4e;
+  --tb-gold-claro: #f3dca2;
+  --tb-gold-rgb: 201, 169, 106;
+  --tb-on-gold: #0a0a0b;
+  --tb-grad: linear-gradient(120deg, var(--tb-gold-claro), var(--tb-gold) 45%, var(--tb-gold-deep));
+  --tb-glow: 0 0 22px -4px rgba(var(--tb-gold-rgb), 0.45);
+}
+
+/* 2. Obsidiana: preto total, detalhes em prata */
+html[data-tema="obsidiana"] { --tb-bg: #000; --tb-surface: #0b0b0c; --tb-surface-2: #151517; --tb-border: #232327; --tb-border-strong: #4a4c52; --tb-gold: #e4e4e7; --tb-gold-deep: #a1a1aa; --tb-gold-claro: #ffffff; --tb-gold-rgb: 228, 228, 231; --tb-on-gold: #000; }
+
+/* 3. Neon Roxo */
+html[data-tema="neon"] { --tb-bg: #0a0713; --tb-surface: #140f24; --tb-surface-2: #1e1636; --tb-border: #2f2452; --tb-border-strong: #5d4a94; --tb-gold: #c084fc; --tb-gold-deep: #9333ea; --tb-gold-claro: #f0d9ff; --tb-gold-rgb: 192, 132, 252; --tb-on-gold: #12061f; }
+
+/* 4. Rubi */
+html[data-tema="rubi"] { --tb-bg: #12060c; --tb-surface: #1f0d16; --tb-surface-2: #2d1421; --tb-border: #4a1f34; --tb-border-strong: #7d3557; --tb-gold: #ff4f8b; --tb-gold-deep: #c2185b; --tb-gold-claro: #ffc1d8; --tb-gold-rgb: 255, 79, 139; --tb-on-gold: #1f0310; }
+
+/* 5. Esmeralda */
+html[data-tema="esmeralda"] { --tb-bg: #04100a; --tb-surface: #0b1d13; --tb-surface-2: #122c1d; --tb-border: #1c4a30; --tb-border-strong: #2f7d50; --tb-gold: #22c55e; --tb-gold-deep: #15803d; --tb-gold-claro: #bbf7d0; --tb-gold-rgb: 34, 197, 94; --tb-on-gold: #021a0b; }
+
+/* 6. Safira */
+html[data-tema="safira"] { --tb-bg: #050b18; --tb-surface: #0b162e; --tb-surface-2: #12224a; --tb-border: #1d3466; --tb-border-strong: #3a5ba8; --tb-gold: #3b82f6; --tb-gold-deep: #1d4ed8; --tb-gold-claro: #bfdbfe; --tb-gold-rgb: 59, 130, 246; --tb-on-gold: #ffffff; }
+
+/* 7. Platina: grafite com prata e um toque de azul gelo */
+html[data-tema="platina"] { --tb-bg: #16181c; --tb-surface: #20232a; --tb-surface-2: #2b2f38; --tb-border: #3e434e; --tb-border-strong: #707888; --tb-text: #f4f6fa; --tb-gold: #cfe0f5; --tb-gold-deep: #8fa6c4; --tb-gold-claro: #ffffff; --tb-gold-rgb: 207, 224, 245; --tb-on-gold: #16181c; }
+
+/* 8. Pôr do Sol */
+html[data-tema="por-do-sol"] { --tb-bg: #130a16; --tb-surface: #211223; --tb-surface-2: #2f1a31; --tb-border: #4a2748; --tb-border-strong: #7c4475; --tb-gold: #ff7a8a; --tb-gold-deep: #a855f7; --tb-gold-claro: #ffd0d6; --tb-gold-rgb: 255, 122, 138; --tb-on-gold: #1c0710; --tb-grad: linear-gradient(120deg, #ffb36b, #ff7a8a 50%, #a855f7); }
+
+/* 9. Aurora */
+html[data-tema="aurora"] { --tb-bg: #041210; --tb-surface: #0a1f1c; --tb-surface-2: #112e2a; --tb-border: #1b4740; --tb-border-strong: #357a6f; --tb-gold: #2dd4bf; --tb-gold-deep: #0d9488; --tb-gold-claro: #ccfbf1; --tb-gold-rgb: 45, 212, 191; --tb-on-gold: #021613; --tb-grad: linear-gradient(120deg, #2dd4bf, #a78bfa 60%, #f472b6); }
+html[data-tema="aurora"] body { background: radial-gradient(120% 70% at 10% -10%, rgba(244, 114, 182, 0.1), transparent 55%), radial-gradient(120% 70% at 90% -10%, rgba(45, 212, 191, 0.12), transparent 60%), #041210; }
+
+/* 10. Carbono Vermelho: fibra de carbono, vermelho esportivo */
+html[data-tema="carbono"] { --tb-bg: #0a0a0a; --tb-surface: #141414; --tb-surface-2: #1e1e1e; --tb-border: #2e2e2e; --tb-border-strong: #565656; --tb-gold: #ef233c; --tb-gold-deep: #b5121f; --tb-gold-claro: #ff8a96; --tb-gold-rgb: 239, 35, 60; --tb-on-gold: #ffffff; }
+html[data-tema="carbono"] body { background: repeating-linear-gradient(45deg, #0b0b0b 0 4px, #0e0e0e 4px 8px); }
+
+/* 11. Operação Tática: verde militar, areia e grade de radar */
+html[data-tema="tatico"] { --tb-bg: #0d0e0a; --tb-surface: #181913; --tb-surface-2: #23241b; --tb-border: #36372a; --tb-border-strong: #64634a; --tb-gold: #d4b77c; --tb-gold-deep: #9c8350; --tb-gold-claro: #f1e2bd; --tb-gold-rgb: 212, 183, 124; --tb-on-gold: #14110a; --tb-grad: linear-gradient(120deg, #e2c98f, #9c8350); }
+html[data-tema="tatico"] body { background: linear-gradient(rgba(140, 160, 90, 0.05) 1px, transparent 1px) 0 0 / 32px 32px, linear-gradient(90deg, rgba(140, 160, 90, 0.05) 1px, transparent 1px) 0 0 / 32px 32px, #0d0e0a; }
+
+/* 12. Battle Royale: laranja fogo e amarelo */
+html[data-tema="royale"] { --tb-bg: #110e04; --tb-surface: #1d1808; --tb-surface-2: #2b230c; --tb-border: #473a14; --tb-border-strong: #7a6422; --tb-gold: #ffc400; --tb-gold-deep: #ff7a00; --tb-gold-claro: #fff0a8; --tb-gold-rgb: 255, 196, 0; --tb-on-gold: #1a1200; --tb-grad: linear-gradient(120deg, #ffe14d, #ffc400 50%, #ff7a00); }
+
+/* 13. Aura de Guerreiro: laranja energia com raios azuis */
+html[data-tema="aura"] { --tb-bg: #070a1a; --tb-surface: #0f1430; --tb-surface-2: #171f45; --tb-border: #26315f; --tb-border-strong: #46559a; --tb-gold: #ff7a00; --tb-gold-deep: #e64a00; --tb-gold-claro: #ffd39a; --tb-gold-rgb: 255, 122, 0; --tb-on-gold: #1a0a00; --tb-grad: linear-gradient(120deg, #ffb347, #ff7a00 55%, #e64a00); --tb-glow: 0 0 22px rgba(255, 122, 0, 0.4), 0 0 0 1px rgba(56, 189, 248, 0.35); }
+
+/* 14. Despertar das Sombras: azul elétrico e roxo, painéis de "sistema" */
+html[data-tema="sombras"] { --tb-bg: #06040f; --tb-surface: #110c24; --tb-surface-2: #1a1336; --tb-border: #2c2257; --tb-border-strong: #5240a0; --tb-text: #ece9ff; --tb-gold: #8b7bff; --tb-gold-deep: #5b3fe0; --tb-gold-claro: #d9d2ff; --tb-gold-rgb: 139, 123, 255; --tb-on-gold: #ffffff; --tb-grad: linear-gradient(120deg, #22d3ee, #8b7bff 45%, #5b3fe0); }
+html[data-tema="sombras"] body { background: radial-gradient(120% 80% at 80% -10%, rgba(139, 123, 255, 0.16), transparent 60%), radial-gradient(80% 60% at 0% 100%, rgba(34, 211, 238, 0.06), transparent 60%), #06040f; }
+
+/* ---------- as cores-base viram as cores do editor ---------- */
+.dark {
+  --background: var(--tb-bg);
+  --foreground: var(--tb-text);
+  --card: var(--tb-surface);
+  --card-foreground: var(--tb-text);
+  --popover: var(--tb-surface);
+  --popover-hover: var(--tb-surface-2);
+  --popover-foreground: var(--tb-text);
+  --primary: var(--tb-gold);
+  --primary-foreground: var(--tb-on-gold);
+  --secondary: rgba(var(--tb-gold-rgb), 0.12);
+  --secondary-border: rgba(var(--tb-gold-rgb), 0.3);
+  --secondary-foreground: var(--tb-gold-claro);
+  --muted: color-mix(in srgb, var(--tb-border) 70%, var(--tb-border-strong));
+  --muted-foreground: var(--tb-text-muted);
+  --accent: var(--tb-surface-2);
+  --accent-foreground: var(--tb-text);
+  --border: var(--tb-border);
+  --input: var(--tb-bg);
+  --ring: var(--tb-gold);
+  --sidebar-background: var(--tb-surface);
+  --sidebar-foreground: var(--tb-text);
+  --sidebar-primary: var(--tb-gold);
+  --sidebar-primary-foreground: var(--tb-on-gold);
+  --sidebar-accent: var(--tb-surface-2);
+  --sidebar-accent-foreground: var(--tb-text);
+  --sidebar-border: var(--tb-border);
+  --sidebar-ring: var(--tb-gold);
+  --sidebar: var(--tb-surface);
+}
+.dark .panel {
+  --background: var(--tb-surface);
+  --foreground: var(--tb-text);
+  --card: var(--tb-surface);
+  --card-foreground: var(--tb-text);
+  --secondary: rgba(var(--tb-gold-rgb), 0.12);
+  --secondary-border: rgba(var(--tb-gold-rgb), 0.3);
+  --secondary-foreground: var(--tb-gold-claro);
+  --muted: color-mix(in srgb, var(--tb-border) 70%, var(--tb-border-strong));
+  --accent: var(--tb-surface-2);
+  --accent-foreground: var(--tb-text);
+  --border: var(--tb-border);
+  --input: var(--tb-surface-2);
+  --ring: var(--tb-gold);
+}
+::selection { background: rgba(var(--tb-gold-rgb), 0.35); }
+
+/* botão de destaque (Exportar, Novo projeto): metal com brilho suave */
+.btn-boss {
+  background: var(--tb-grad);
+  color: var(--tb-on-gold);
+  box-shadow: var(--tb-glow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.btn-boss:hover { filter: brightness(1.08); box-shadow: 0 0 28px -2px rgba(var(--tb-gold-rgb), 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+.btn-boss:active { transform: translateY(1px); }
+
+/* ---------- emblema (tridente de ouro girando) e logotipo, iguais aos do THEBOSSVERSE ---------- */
+.tb-emblem { position: relative; display: inline-block; flex-shrink: 0; }
+.tb-emblem video, .tb-emblem img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.tb-wordmark { display: inline-flex; align-items: baseline; white-space: nowrap; font-family: var(--font-display), serif; font-weight: 600; line-height: 1; letter-spacing: 0.05em; }
+.tb-wordmark .wm-the { color: var(--tb-text); }
+.tb-wordmark .wm-boss {
+  background: linear-gradient(180deg, #f6e6bd 0%, #d9b36a 45%, #a8803c 78%, #e9cf8f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- cartões de escolha de tema (iguais aos do THEBOSSVERSE) ---------- */
+.tb-temas { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.tb-tema { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 10px; border-radius: 14px; border: 1px solid var(--tb-border); background: var(--tb-surface-2); color: var(--tb-text); text-align: left; cursor: pointer; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s; }
+.tb-tema:hover { transform: translateY(-2px); border-color: var(--tb-border-strong); }
+.tb-tema:focus-visible { outline: 2px solid var(--t-a); outline-offset: 2px; }
+.tb-tema.is-on { border-color: var(--t-a); box-shadow: 0 0 0 1px var(--t-a), 0 10px 30px -12px var(--t-a); }
+.tb-tema-mini { position: relative; display: block; height: 72px; border-radius: 10px; overflow: hidden; background: var(--t-bg); border: 1px solid rgba(255, 255, 255, 0.06); }
+.tb-mini-side { position: absolute; left: 0; top: 0; bottom: 0; width: 26%; background: var(--t-sf); border-right: 1px solid rgba(255, 255, 255, 0.05); }
+.tb-mini-side::before, .tb-mini-side::after { content: ""; position: absolute; left: 18%; right: 18%; height: 5px; border-radius: 3px; background: var(--t-a); top: 14px; opacity: 0.9; }
+.tb-mini-side::after { top: 26px; background: rgba(255, 255, 255, 0.18); }
+.tb-mini-card { position: absolute; left: 32%; right: 6%; top: 12px; height: 20px; border-radius: 6px; background: var(--t-sf); border: 1px solid rgba(255, 255, 255, 0.06); }
+.tb-mini-card.is-2 { top: 38px; right: 38%; height: 24px; background: linear-gradient(135deg, var(--t-sf), color-mix(in srgb, var(--t-a) 18%, var(--t-sf))); }
+.tb-mini-btn { position: absolute; right: 6%; bottom: 10px; width: 26%; height: 13px; border-radius: 7px; background: linear-gradient(90deg, var(--t-a), var(--t-b)); }
+.tb-tema-nome { display: flex; flex-direction: column; line-height: 1.3; padding: 0 2px 2px; }
+.tb-tema-nome b { font-size: 13px; font-weight: 600; }
+.tb-tema-nome small { font-size: 11.5px; color: var(--tb-text-muted); }
+.tb-tema-check { position: absolute; top: 16px; right: 16px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--t-a); color: var(--t-bg); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }

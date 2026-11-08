@@ -4,12 +4,13 @@
 html,body{margin:0;height:100%;background:#0a0a0b;color:#edeef0;font-family:system-ui,Segoe UI,sans-serif}
 body{display:grid;place-items:center}
 .c{display:grid;justify-items:center;gap:18px}
-img{width:120px;height:120px;filter:drop-shadow(0 0 24px rgba(201,169,106,.5));animation:p 2.4s ease-in-out infinite}
-h1{margin:0;font-size:30px;font-weight:900;font-style:italic;letter-spacing:.02em}
-h1 b{color:#c9a96a}
+/* o emblema do THEBOSSVERSE: o tridente de ouro girando (vídeo com fundo transparente) */
+.emblema{width:140px;height:140px;object-fit:contain;filter:drop-shadow(0 0 28px rgba(201,169,106,.35))}
+h1{margin:0;font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif;font-size:34px;font-weight:600;letter-spacing:.06em}
+h1 b{font-weight:600;background:linear-gradient(180deg,#f6e6bd 0%,#d9b36a 45%,#a8803c 78%,#e9cf8f 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 p{margin:0;color:#8a8f98;font-size:14px}
 .e{display:none;color:#ff9b9b}
 body[data-erro] .e{display:block} body[data-erro] .l{display:none}
-@keyframes p{50%{transform:scale(1.06);filter:drop-shadow(0 0 40px rgba(201,169,106,.8))}}
+@media (prefers-reduced-motion:reduce){.emblema{display:none}.parado{display:block!important}}
 </style></head>
-<body><div class="c"><img src="icone.png" alt=""><h1>THEBOSS <b>CUT</b></h1><p class="l">Preparando o editor…</p><p class="e">O editor não abriu. Feche e abra o THEBOSS CUT de novo.</p></div></body></html>
+<body><div class="c"><video class="emblema" src="emblema.webm" poster="icone.png" autoplay muted loop playsinline></video><img class="emblema parado" src="icone.png" alt="" style="display:none"><h1>THE<b>BOSS</b> CUT</h1><p class="l">Preparando o editor…</p><p class="e">O editor não abriu. Feche e abra o THEBOSS CUT de novo.</p></div></body></html>

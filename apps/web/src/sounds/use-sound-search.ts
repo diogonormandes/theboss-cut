@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { useEffect } from "react";
 import { useSoundsStore } from "@/sounds/sounds-store";
 
@@ -64,11 +65,11 @@ export function useSoundSearch({
 				setHasNextPage({ hasNext: !!data.next });
 				setTotalCount(data.count);
 			} else {
-				setSearchError({ error: `Load more failed: ${response.status}` });
+				setSearchError({ error: t("media.sounds.errors.searchFailed") });
 			}
 		} catch (err) {
 			setSearchError({
-				error: err instanceof Error ? err.message : "Load more failed",
+				error: t("media.sounds.errors.searchFailed"),
 			});
 		} finally {
 			setLoadingMore({ loading: false });
@@ -108,13 +109,13 @@ export function useSoundSearch({
 						setTotalCount({ count: data.count });
 						setCurrentPage({ page: 1 });
 					} else {
-						setSearchError({ error: `Search failed: ${response.status}` });
+						setSearchError({ error: t("media.sounds.errors.searchFailed") });
 					}
 				}
 			} catch (err) {
 				if (!ignore) {
 					setSearchError({
-						error: err instanceof Error ? err.message : "Search failed",
+						error: t("media.sounds.errors.searchFailed"),
 					});
 				}
 			} finally {

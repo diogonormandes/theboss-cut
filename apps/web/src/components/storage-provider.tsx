@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useEditor } from "@/editor/use-editor";
 import { storageService } from "@/services/storage/service";
+import { t } from "@/i18n";
 
 interface StorageContextType {
 	isInitialized: boolean;
@@ -49,7 +50,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
 
 				if (!hasSupport) {
 					toast.warning(
-						"O armazenamento não está completo. Algumas funções podem falhar.",
+						t("editor.storage.incomplete"),
 					);
 				}
 
@@ -67,7 +68,9 @@ export function StorageProvider({ children }: StorageProviderProps) {
 					isInitialized: false,
 					isLoading: false,
 					hasSupport: storageService.isFullySupported(),
-					error: error instanceof Error ? error.message : "Unknown error",
+					error: error instanceof Error
+						? error.message
+						: t("editor.storage.unknownError"),
 				});
 			}
 		};

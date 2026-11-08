@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type { EditorCore } from "@/core";
 import type {
 	TProject,
@@ -80,7 +81,7 @@ export class ProjectManager {
 	}
 
 	async createNewProject({ name }: { name: string }): Promise<string> {
-		const mainScene = buildDefaultScene({ name: "Main scene", isMain: true });
+		const mainScene = buildDefaultScene({ name: t("actions.project.mainScene"), isMain: true });
 		const newProject: TProject = {
 			metadata: {
 				id: generateUUID(),
@@ -120,7 +121,7 @@ export class ProjectManager {
 
 			return newProject.metadata.id;
 		} catch (error) {
-			toast.error("Não deu para salvar o projeto novo");
+			toast.error(t("actions.project.createFailed"));
 			throw error;
 		}
 	}
@@ -325,8 +326,8 @@ export class ProjectManager {
 		try {
 			const result = await storageService.loadProject({ id });
 			if (!result) {
-				toast.error("Projeto não encontrado", {
-					description: "Tente de novo",
+				toast.error(t("actions.project.notFound"), {
+					description: t("common.tryAgain"),
 				});
 				return;
 			}
@@ -350,9 +351,9 @@ export class ProjectManager {
 			this.updateMetadata(updatedProject);
 		} catch (error) {
 			console.error("Failed to rename project:", error);
-			toast.error("Não deu para renomear o projeto", {
+			toast.error(t("actions.project.renameFailed"), {
 				description:
-					error instanceof Error ? error.message : "Tente de novo",
+					t("common.tryAgain"),
 			});
 		}
 	}
@@ -383,13 +384,13 @@ export class ProjectManager {
 			if (missingProjectIds.length > 0) {
 				toast.error(
 					missingProjectIds.length === 1
-						? "Project not found"
-						: "Projects not found",
+						? t("actions.project.notFound")
+						: t("actions.project.notFoundMany"),
 					{
 						description:
 							missingProjectIds.length === 1
-								? "Tente de novo"
-								: "Some projects could not be found",
+								? t("common.tryAgain")
+								: t("actions.project.someNotFound"),
 					},
 				);
 				throw new Error(`Projects not found: ${missingProjectIds.join(", ")}`);
@@ -475,9 +476,9 @@ export class ProjectManager {
 			return duplicationPlans.map((plan) => plan.newProjectId);
 		} catch (error) {
 			console.error("Failed to duplicate projects:", error);
-			toast.error("Não deu para duplicar os projetos", {
+			toast.error(t("actions.project.duplicateFailed"), {
 				description:
-					error instanceof Error ? error.message : "Tente de novo",
+					t("common.tryAgain"),
 			});
 			throw error;
 		}

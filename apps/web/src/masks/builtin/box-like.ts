@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import {
 	DEFAULT_SHAPE_MASK_SHORT_SIDE_RATIO,
 	MIN_MASK_DIMENSION,
@@ -31,7 +32,7 @@ export const BOX_LIKE_MASK_PARAMS: ParamDefinition<
 >[] = [
 	{
 		key: "centerX",
-		label: "X",
+		get label() { return t("effects.masks.params.x"); },
 		type: "number",
 		default: 0,
 		min: -100,
@@ -40,7 +41,7 @@ export const BOX_LIKE_MASK_PARAMS: ParamDefinition<
 	},
 	{
 		key: "centerY",
-		label: "Y",
+		get label() { return t("effects.masks.params.y"); },
 		type: "number",
 		default: 0,
 		min: -100,
@@ -49,7 +50,7 @@ export const BOX_LIKE_MASK_PARAMS: ParamDefinition<
 	},
 	{
 		key: "width",
-		label: "Largura",
+		get label() { return t("effects.masks.params.width"); },
 		type: "number",
 		default: 0.6,
 		min: 1,
@@ -57,7 +58,7 @@ export const BOX_LIKE_MASK_PARAMS: ParamDefinition<
 	},
 	{
 		key: "height",
-		label: "Altura",
+		get label() { return t("effects.masks.params.height"); },
 		type: "number",
 		default: 0.6,
 		min: 1,
@@ -65,7 +66,7 @@ export const BOX_LIKE_MASK_PARAMS: ParamDefinition<
 	},
 	{
 		key: "rotation",
-		label: "Rotação",
+		get label() { return t("effects.masks.params.rotation"); },
 		type: "number",
 		default: 0,
 		min: 0,
@@ -74,7 +75,7 @@ export const BOX_LIKE_MASK_PARAMS: ParamDefinition<
 	},
 	{
 		key: "scale",
-		label: "Escala",
+		get label() { return t("effects.masks.params.scale"); },
 		type: "number",
 		default: 1,
 		min: 1,
@@ -83,13 +84,13 @@ export const BOX_LIKE_MASK_PARAMS: ParamDefinition<
 	},
 	{
 		key: "strokeAlign",
-		label: "Posição do contorno",
+		get label() { return t("effects.masks.params.strokeAlign"); },
 		type: "select",
 		default: "center",
 		options: [
-			{ value: "inside", label: "Dentro" },
-			{ value: "center", label: "Centro" },
-			{ value: "outside", label: "Fora" },
+			{ value: "inside", get label() { return t("effects.strokeAlign.inside"); } },
+			{ value: "center", get label() { return t("effects.strokeAlign.center"); } },
+			{ value: "outside", get label() { return t("effects.strokeAlign.outside"); } },
 		],
 	},
 ];

@@ -7,6 +7,7 @@ import {
 	useKeyboardShortcutsHelp,
 } from "@/actions/use-keyboard-shortcuts-help";
 import { useKeybindingsStore } from "@/actions/keybindings-store";
+import { ACTIONS, type TActionCategory } from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -16,6 +17,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { t } from "@/i18n";
 
 export function ShortcutsDialog({
 	isOpen,
@@ -57,7 +59,12 @@ export function ShortcutsDialog({
 				});
 				if (conflict) {
 					toast.error(
-						`Key "${keyString}" is already bound to "${conflict.existingAction}"`,
+						t("actions.shortcutsDialog.keyInUse", {
+							key: keyString,
+							action:
+								ACTIONS[conflict.existingAction]?.description ??
+								conflict.existingAction,
+						}),
 					);
 					setRecordingShortcut(null);
 					return;
@@ -110,7 +117,7 @@ export function ShortcutsDialog({
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
 			<DialogContent className="flex max-h-[80vh] max-w-2xl flex-col p-0">
 				<DialogHeader>
-					<DialogTitle>Atalhos do teclado</DialogTitle>
+					<DialogTitle>{t("actions.shortcutsDialog.title")}</DialogTitle>
 				</DialogHeader>
 
 				<DialogBody className="scrollbar-thin grow overflow-y-auto">
@@ -118,7 +125,7 @@ export function ShortcutsDialog({
 						{categories.map((category) => (
 							<div key={category} className="flex flex-col gap-1">
 								<h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-									{category}
+									{t(`actions.categories.${category as TActionCategory}`)}
 								</h3>
 								<div className="flex flex-col gap-1">
 									{shortcuts
@@ -140,7 +147,7 @@ export function ShortcutsDialog({
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="destructive" onClick={resetToDefaults}>
-						Voltar ao padrão
+						{t("actions.shortcutsDialog.resetToDefaults")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -193,7 +200,9 @@ function ShortcutItem({
 							})}
 						</div>
 						{index < displayKeys.length - 1 && (
-							<span className="text-muted-foreground text-xs">or</span>
+							<span className="text-muted-foreground text-xs">
+								{t("actions.shortcutsDialog.or")}
+							</span>
 						)}
 					</div>
 				))}
@@ -223,7 +232,9 @@ function EditableShortcutKey({
 			size="sm"
 			onClick={handleClick}
 			title={
-				isRecording ? "Press any key combination..." : "Click to edit shortcut"
+				isRecording
+					? t("actions.shortcutsDialog.pressKeys")
+					: t("actions.shortcutsDialog.clickToEdit")
 			}
 		>
 			{children}

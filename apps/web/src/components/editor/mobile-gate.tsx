@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { useRouter } from "next/navigation";
+import { t } from "@/i18n";
 
 const STORAGE_KEY = "mobile-acknowledged";
 
@@ -42,21 +43,20 @@ export function MobileGate({ children }: MobileGateProps) {
 				onClick={handleGoBack}
 			>
 				<HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
-				<span className=" text-sm">Voltar</span>
+				<span className=" text-sm">{t("common.back")}</span>
 			</Button>
 
 			<div className="flex flex-1 flex-col justify-center gap-5 px-7">
 				<div className="flex flex-col gap-3">
 					<h1 className="text-foreground text-3xl font-bold tracking-tight">
-						Só no computador (por enquanto)
+						{t("editor.mobileGate.title")}
 					</h1>
 					<p className="text-muted-foreground text-sm leading-relaxed">
-						O THEBOSS CUT foi feito para o computador. Em telas pequenas a
-						edição fica apertada.
+						{t("editor.mobileGate.text")}
 					</p>
 				</div>
 				<div className="flex items-center gap-3">
-					<Button onClick={handleContinue}>Ver mesmo assim</Button>
+					<Button onClick={handleContinue}>{t("editor.mobileGate.continue")}</Button>
 				</div>
 			</div>
 		</div>

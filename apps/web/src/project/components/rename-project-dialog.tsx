@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import { t } from "@/i18n";
 
 export function RenameProjectDialog({
 	isOpen,
@@ -35,11 +36,11 @@ export function RenameProjectDialog({
 		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Renomear projeto</DialogTitle>
+					<DialogTitle>{t("projects.renameDialog.title")}</DialogTitle>
 				</DialogHeader>
 
 				<DialogBody className="gap-3">
-					<Label>Novo nome</Label>
+					<Label>{t("projects.renameDialog.newName")}</Label>
 					<Input
 						value={name}
 						onChange={(e) => setName(e.target.value)}
@@ -49,7 +50,7 @@ export function RenameProjectDialog({
 								onConfirm(name);
 							}
 						}}
-						placeholder="Digite o novo nome"
+						placeholder={t("projects.renameDialog.placeholder")}
 					/>
 				</DialogBody>
 
@@ -62,9 +63,9 @@ export function RenameProjectDialog({
 							onOpenChange(false);
 						}}
 					>
-						Cancelar
+						{t("common.cancel")}
 					</Button>
-					<Button onClick={() => onConfirm(name)}>Renomear</Button>
+					<Button onClick={() => onConfirm(name)}>{t("common.rename")}</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

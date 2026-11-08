@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { useEditor } from "@/editor/use-editor";
@@ -24,19 +25,21 @@ export function TextView() {
 	};
 
 	return (
-		<PanelView title="Texto">
+		<PanelView title={t("effects.text.title")}>
 			<DraggableItem
-				name="Default text"
+				name={t("effects.text.defaultText")}
 				preview={
 					<div className="bg-accent flex size-full items-center justify-center rounded">
-						<span className="text-xs select-none">Texto padrão</span>
+						<span className="text-xs select-none">
+							{t("effects.text.defaultText")}
+						</span>
 					</div>
 				}
 				dragData={{
 					id: "temp-text-id",
 					type: DEFAULTS.text.element.type,
 					name: DEFAULTS.text.element.name,
-					content: "Default text",
+					content: t("effects.text.defaultText"),
 				}}
 				aspectRatio={1}
 				onAddToTimeline={handleAddToTimeline}

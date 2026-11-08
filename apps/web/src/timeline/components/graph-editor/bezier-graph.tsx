@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { useRef, useState, type PointerEvent } from "react";
 import { useShiftKey } from "@/hooks/use-shift-key";
 import { useCommittedRef } from "@/hooks/use-committed-ref";
@@ -164,7 +165,7 @@ export function BezierGraph({
 			onPointerUp={onPointerUp}
 			onPointerCancel={onPointerCancel}
 		>
-			<title>Editor de curva</title>
+			<title>{t("timeline.graphEditor.title")}</title>
 			<line
 				x1={p0.x}
 				y1={p0.y}

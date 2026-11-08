@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type { ParamDefinition } from "@/params";
 import type {
 	MaskDefinition,
@@ -41,7 +42,7 @@ const TEXT_MASK_ALIGNMENT = "center";
 const TEXT_MASK_PARAMS: ParamDefinition<keyof TextMaskParams & string>[] = [
 	{
 		key: "centerX",
-		label: "X",
+		get label() { return t("effects.masks.params.x"); },
 		type: "number",
 		default: 0,
 		min: -100,
@@ -50,7 +51,7 @@ const TEXT_MASK_PARAMS: ParamDefinition<keyof TextMaskParams & string>[] = [
 	},
 	{
 		key: "centerY",
-		label: "Y",
+		get label() { return t("effects.masks.params.y"); },
 		type: "number",
 		default: 0,
 		min: -100,
@@ -59,7 +60,7 @@ const TEXT_MASK_PARAMS: ParamDefinition<keyof TextMaskParams & string>[] = [
 	},
 	{
 		key: "fontSize",
-		label: "Tamanho",
+		get label() { return t("effects.masks.params.size"); },
 		type: "number",
 		default: 15,
 		min: MIN_FONT_SIZE,
@@ -68,7 +69,7 @@ const TEXT_MASK_PARAMS: ParamDefinition<keyof TextMaskParams & string>[] = [
 	},
 	{
 		key: "rotation",
-		label: "Rotação",
+		get label() { return t("effects.masks.params.rotation"); },
 		type: "number",
 		default: 0,
 		min: 0,
@@ -77,7 +78,7 @@ const TEXT_MASK_PARAMS: ParamDefinition<keyof TextMaskParams & string>[] = [
 	},
 	{
 		key: "scale",
-		label: "Escala",
+		get label() { return t("effects.masks.params.scale"); },
 		type: "number",
 		default: 1,
 		min: 1,
@@ -208,7 +209,7 @@ function computeTextMaskParamUpdate({
 
 export const textMaskDefinition: MaskDefinition<"text"> = {
 	type: "text",
-	name: "Text",
+	get name() { return t("effects.masks.names.text"); },
 	features: {
 		hasPosition: true,
 		hasRotation: true,
@@ -351,7 +352,7 @@ export const textMaskDefinition: MaskDefinition<"text"> = {
 				strokeColor: "#ffffff",
 				strokeWidth: 0,
 				strokeAlign: "center",
-				content: "Mask",
+				content: t("effects.masks.defaultText"),
 				fontSize: 15,
 				fontFamily: "Arial",
 				fontWeight: "normal",

@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { cloneAnimations } from "@/animation";
 import type { ElementAnimations } from "@/animation/types";
 import type { MediaAsset } from "@/media/types";
@@ -110,10 +111,10 @@ export function getSourceAudioActionLabel({
 	element,
 }: {
 	element: VideoElement;
-}): "Extract audio" | "Recover audio" {
+}): string {
 	return isSourceAudioSeparated({ element })
-		? "Recover audio"
-		: "Extract audio";
+		? t("timeline.sourceAudio.recover")
+		: t("timeline.sourceAudio.extract");
 }
 
 function cloneVolumeAnimations({

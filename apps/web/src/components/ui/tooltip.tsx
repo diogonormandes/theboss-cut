@@ -26,9 +26,9 @@ const tooltipVariants = cva(
 				personal:
 					"bg-green-100/90 text-green-900 dark:bg-green-900/20 dark:text-green-300 border-green-900 [border-width:0.5px]",
 				updates:
-					"bg-purple-100/90 text-purple-900 dark:bg-purple-900/20 dark:text-purple-300 border-purple-900 [border-width:0.5px]",
+					"bg-secondary text-secondary-foreground border-secondary-border [border-width:0.5px]",
 				forums:
-					"bg-blue-100/90 text-blue-900 dark:bg-blue-900/20 dark:text-blue-300 border-blue-900 [border-width:0.5px]",
+					"bg-secondary text-secondary-foreground border-secondary-border [border-width:0.5px]",
 				sidebar: "bg-white dark:bg-[#413F3E] p-2.5 flex flex-col gap-2",
 			},
 		},

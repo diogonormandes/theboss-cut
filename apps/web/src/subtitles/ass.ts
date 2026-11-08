@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type {
 	ParseSubtitleResult,
 	SubtitleCue,
@@ -228,31 +229,39 @@ export function parseAss({ input }: { input: string }): ParseSubtitleResult {
 
 	if (strippedInlineTagCueCount > 0) {
 		warnings.add(
-			`Stripped unsupported ASS inline override tags from ${strippedInlineTagCueCount} subtitle cue(s).`,
+			t("media.subtitles.warnings.strippedTags", {
+				count: strippedInlineTagCueCount,
+			}),
 		);
 	}
 
 	if (ignoredEffectCount > 0) {
 		warnings.add(
-			`Ignored ASS event effects in ${ignoredEffectCount} subtitle cue(s).`,
+			t("media.subtitles.warnings.ignoredEffects", {
+				count: ignoredEffectCount,
+			}),
 		);
 	}
 
 	if (missingStyleCueCount > 0) {
 		warnings.add(
-			`Fell back to default subtitle styling for ${missingStyleCueCount} cue(s) that referenced missing ASS styles.`,
+			t("media.subtitles.warnings.missingStyles", {
+				count: missingStyleCueCount,
+			}),
 		);
 	}
 
 	if (skippedNonDialogueEventCount > 0) {
 		warnings.add(
-			`Ignored ${skippedNonDialogueEventCount} non-dialogue ASS event(s).`,
+			t("media.subtitles.warnings.nonDialogue", {
+				count: skippedNonDialogueEventCount,
+			}),
 		);
 	}
 
 	if (usesHeavilyUnsupportedStyles) {
 		warnings.add(
-			"Ignored unsupported ASS style features such as outline, shadow, rotation, or scaling.",
+			t("media.subtitles.warnings.unsupportedStyles"),
 		);
 	}
 

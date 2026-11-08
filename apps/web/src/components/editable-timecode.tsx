@@ -12,6 +12,7 @@ import {
 	snapSeekMediaTime,
 	type MediaTime,
 } from "@/wasm";
+import { t } from "@/i18n";
 
 interface EditableTimecodeProps {
 	time: MediaTime;
@@ -153,7 +154,7 @@ export function EditableTimecode({
 				disabled && "cursor-default hover:bg-transparent",
 				className,
 			)}
-			title={disabled ? undefined : "Click to edit time"}
+			title={disabled ? undefined : t("editor.timecode.clickToEdit")}
 		>
 			{formattedTime}
 		</button>

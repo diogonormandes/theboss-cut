@@ -10,6 +10,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { useStoragePersistence } from "@/services/storage/use-storage-persistence";
+import { t } from "@/i18n";
 
 export function StoragePersistenceDialog() {
 	const { showDialog, onConfirm, onDismiss } = useStoragePersistence();
@@ -18,22 +19,23 @@ export function StoragePersistenceDialog() {
 		<Dialog open={showDialog} onOpenChange={(open) => !open && onDismiss()}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>Não perca os seus projetos</DialogTitle>
+					<DialogTitle>{t("media.storage.persistDialog.title")}</DialogTitle>
 				</DialogHeader>
 				<DialogBody>
 					<p className="text-base text-muted-foreground">
-						Quando o espaço do computador fica pouco, os projetos podem ser
-						apagados sozinhos.
+						{t("media.storage.persistDialog.warning")}
 					</p>
 					<p className="text-base text-muted-foreground">
-						Deixar o THEBOSS CUT proteger os seus projetos?
+						{t("media.storage.persistDialog.question")}
 					</p>
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={onDismiss}>
-						Agora não
+						{t("media.storage.persistDialog.notNow")}
 					</Button>
-					<Button onClick={onConfirm}>Permitir</Button>
+					<Button onClick={onConfirm}>
+						{t("media.storage.persistDialog.allow")}
+					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

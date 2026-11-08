@@ -1,5 +1,6 @@
 "use client";
 
+import { t, type TKey } from "@/i18n";
 import { useState, useMemo, useRef, useEffect, useCallback, type CSSProperties } from "react";
 import { List, type RowComponentProps } from "react-window";
 import {
@@ -19,10 +20,10 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { TextIcon } from "@hugeicons/core-free-icons";
 
 const FONT_TABS = [
-	{ key: "all", label: "Todas as fontes" },
-	{ key: "my-fonts", label: "Minhas fontes" },
-	{ key: "favorites", label: "Favoritos" },
-] as const;
+	{ key: "all", labelKey: "ui.fontPicker.tabs.all" },
+	{ key: "my-fonts", labelKey: "ui.fontPicker.tabs.myFonts" },
+	{ key: "favorites", labelKey: "ui.fontPicker.tabs.favorites" },
+] as const satisfies ReadonlyArray<{ key: string; labelKey: TKey }>;
 
 type FontTab = (typeof FONT_TABS)[number]["key"];
 
@@ -82,8 +83,8 @@ export function FontPicker({
 		}
 	}, [open]);
 
-	const activeTabLabel =
-		FONT_TABS.find((t) => t.key === activeTab)?.label.toLowerCase() ?? "";
+	const activeTabLabelKey = FONT_TABS.find((tab) => tab.key === activeTab)?.labelKey;
+	const activeTabLabel = activeTabLabelKey ? t(activeTabLabelKey).toLowerCase() : "";
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
@@ -98,7 +99,7 @@ export function FontPicker({
 						<HugeiconsIcon icon={TextIcon} />
 					</span>
 					<span className="truncate" style={{ fontFamily: defaultValue }}>
-						{defaultValue ?? "Select a font"}
+						{defaultValue ?? t("ui.fontPicker.selectFont")}
 					</span>
 				</div>
 				<ChevronDown className="size-3 shrink-0 opacity-50" />
@@ -120,7 +121,7 @@ export function FontPicker({
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 shrink-0 opacity-50" />
 					<Input
 						ref={searchInputRef}
-						placeholder={`Search ${activeTabLabel}...`}
+						placeholder={t("ui.fontPicker.searchPlaceholder", { tab: activeTabLabel })}
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
 						size="xs"
@@ -140,22 +141,22 @@ export function FontPicker({
 							)}
 							onClick={() => setActiveTab(tab.key)}
 						>
-							{tab.label}
+							{t(tab.labelKey)}
 						</button>
 					))}
 				</div>
 				{status === "loading" && (
 					<div className="py-8 text-center text-sm text-muted-foreground">
-						Carregando fontes...
+						{t("ui.fontPicker.loading")}
 					</div>
 				)}
 				{status === "error" && (
 					<div className="flex flex-col items-center gap-3 py-8 px-4">
 						<p className="text-sm text-muted-foreground text-center">
-							Não deu para carregar as fontes.
+							{t("ui.fontPicker.loadFailed")}
 						</p>
 						<Button variant="outline" size="sm" onClick={handleRetry}>
-							Tentar de novo
+							{t("common.tryAgain")}
 						</Button>
 					</div>
 				)}
@@ -163,7 +164,7 @@ export function FontPicker({
 					fontNames.length > 0 &&
 					filteredFonts.length === 0 && (
 						<div className="py-6 text-center text-sm text-muted-foreground">
-							Nenhuma fonte encontrada.
+							{t("ui.fontPicker.noResults")}
 						</div>
 					)}
 				{status === "idle" && atlas && filteredFonts.length > 0 && (

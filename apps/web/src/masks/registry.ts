@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { MAX_FEATHER } from "@/masks/feather";
 import type { ParamDefinition } from "@/params";
 import type {
@@ -32,7 +33,7 @@ export const BASE_MASK_PARAM_DEFINITIONS: ParamDefinition<
 >[] = [
 	{
 		key: "feather",
-		label: "Suavizar borda",
+		get label() { return t("effects.masks.params.feather"); },
 		type: "number",
 		default: 0,
 		min: 0,
@@ -42,7 +43,7 @@ export const BASE_MASK_PARAM_DEFINITIONS: ParamDefinition<
 	},
 	{
 		key: "strokeWidth",
-		label: "Espessura do contorno",
+		get label() { return t("effects.masks.params.strokeWidth"); },
 		type: "number",
 		default: 0,
 		min: 0,
@@ -51,7 +52,7 @@ export const BASE_MASK_PARAM_DEFINITIONS: ParamDefinition<
 	},
 	{
 		key: "strokeColor",
-		label: "Cor do contorno",
+		get label() { return t("effects.masks.params.strokeColor"); },
 		type: "color",
 		default: "#ffffff",
 	},
@@ -89,7 +90,9 @@ export class MasksRegistry extends DefinitionRegistry<
 	}): void {
 		const withBaseParams: RegisteredMaskDefinition = {
 			type: definition.type,
-			name: definition.name,
+			get name() {
+				return definition.name;
+			},
 			features: definition.features,
 			params: [...definition.params, ...BASE_MASK_PARAM_DEFINITIONS],
 			renderer: definition.renderer,

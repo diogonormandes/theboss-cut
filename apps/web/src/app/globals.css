@@ -150,7 +150,9 @@
   --breakpoint-xs: 30rem;
 
   /* Typography */
-  --font-sans: var(--font-inter), sans-serif;
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-cormorant), Georgia, serif;
 
   /* Font sizes */
   --text-xs: 0.72rem;
@@ -290,23 +292,4 @@
   }
 }
 
-/* ---------- THEBOSS CUT: preto e dourado (por cima do tema escuro) ---------- */
-.dark {
-  --background: hsl(240, 6%, 4%);
-  --card: hsl(240, 5%, 6%);
-  --popover: hsl(240, 5%, 6%);
-  --primary: hsl(40, 47%, 60%);
-  --primary-foreground: hsl(240, 6%, 4%);
-  --secondary: hsl(40, 30%, 12%);
-  --secondary-border: hsl(40, 35%, 22%);
-  --secondary-foreground: hsl(42, 70%, 75%);
-  --ring: hsl(40, 47%, 60%);
-  --border: hsl(40, 8%, 15%);
-  --sidebar-primary: hsl(40, 47%, 60%);
-}
-.dark .panel {
-  --secondary: hsl(40, 30%, 12%);
-  --secondary-border: hsl(40, 35%, 22%);
-  --secondary-foreground: hsl(42, 70%, 75%);
-}
-::selection { background: hsl(40 47% 60% / 0.35); }
+/* As cores do THEBOSS CUT (temas) ficam em themes.css */

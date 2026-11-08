@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { type ComponentProps, forwardRef, useEffect, useRef, useState } from "react";
 import { cn } from "@/utils/ui";
 import { Input } from "./input";
@@ -291,11 +292,11 @@ function ColorPickerContent({
 			<header className="border-b flex justify-between items-center pb-2 px-2">
 				<Select defaultValue="custom">
 					<SelectTrigger variant="outline">
-						<SelectValue placeholder="Escolha um modo" />
+						<SelectValue placeholder={t("ui.colorPicker.modePlaceholder")} />
 					</SelectTrigger>
 					<SelectContent position="popper">
-						<SelectItem value="custom">Personalizado</SelectItem>
-						<SelectItem value="saved">Salvos</SelectItem>
+						<SelectItem value="custom">{t("ui.colorPicker.custom")}</SelectItem>
+						<SelectItem value="saved">{t("ui.colorPicker.saved")}</SelectItem>
 					</SelectContent>
 				</Select>
 				<div>

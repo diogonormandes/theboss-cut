@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import type {
 	ParamDefinition,
 	NumberParamDefinition,
@@ -50,7 +51,9 @@ export function PropertyParamField({
 					<KeyframeToggle
 						isActive={keyframe.isActive}
 						isDisabled={keyframe.isDisabled}
-						title={`Toggle ${param.label.toLowerCase()} keyframe`}
+						title={t("panels.properties.toggleKeyframe", {
+							name: param.label.toLowerCase(),
+						})}
 						onToggle={keyframe.onToggle}
 					/>
 				) : undefined

@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import {
 	Command,
 	createElementSelectionResult,
@@ -125,7 +126,7 @@ function buildDuplicateElement({
 	return {
 		...element,
 		id,
-		name: `${element.name} (copy)`,
+		name: t("actions.elementName.copy", { name: element.name }),
 		startTime,
 		animations: cloneAnimations({
 			animations: element.animations,

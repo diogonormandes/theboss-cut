@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import {
 	getCurveHandlesForNormalizedCubicBezier,
 	getEditableScalarChannels,
@@ -191,7 +192,7 @@ function groupSelectedKeyframesByProperty({
 function getComponentLabel({ componentKey }: { componentKey: string }): string {
 	switch (componentKey) {
 		case "value":
-			return "Value";
+			return t("timeline.graphEditor.value");
 		default:
 			return componentKey.toUpperCase();
 	}
@@ -252,14 +253,14 @@ function resolvePropertySelection({
 	if (propertyKeyframes.keyframes.length > 2) {
 		return {
 			reason: "multiple-keyframes-selected",
-			message: "Select at most two adjacent keyframes per property.",
+			message: t("timeline.graphEditor.errors.tooManyKeyframes"),
 		};
 	}
 
 	if (!element.animations) {
 		return {
 			reason: "selected-element-has-no-animations",
-			message: "The selected keyframe has no editable graph.",
+			message: t("timeline.graphEditor.errors.noEditableCurve"),
 		};
 	}
 
@@ -270,7 +271,7 @@ function resolvePropertySelection({
 	if (!scalarResult || scalarResult.channels.length === 0) {
 		return {
 			reason: "selected-keyframe-has-no-scalar-channel",
-			message: "The selected keyframe has no editable graph channel.",
+			message: t("timeline.graphEditor.errors.noEditableCurve"),
 		};
 	}
 
@@ -324,7 +325,7 @@ function resolvePropertySelection({
 	if (contexts.length === 0) {
 		return {
 			reason: "selected-keyframe-missing-on-channel",
-			message: "The selected keyframe is not editable as a graph segment.",
+			message: t("timeline.graphEditor.errors.noEditableCurve"),
 		};
 	}
 
@@ -336,7 +337,7 @@ function resolvePropertySelection({
 			? [
 					{
 						key: "value",
-						label: "Curva",
+						label: t("timeline.graphEditor.curve"),
 						context: contexts[0].context,
 						allContexts: contexts.map(({ context }) => context),
 					},
@@ -389,14 +390,14 @@ function resolveSegmentForOption({
 	if (!option) {
 		return {
 			reason: "selected-properties-have-no-shared-component",
-			message: "Selected properties do not share a graph-editable channel.",
+			message: t("timeline.graphEditor.errors.noSharedCurve"),
 		};
 	}
 
 	if (!option.context.nextKey) {
 		return {
 			reason: "selected-keyframe-has-no-next-segment",
-			message: "Select a keyframe that has an outgoing segment.",
+			message: t("timeline.graphEditor.errors.noNextKeyframe"),
 		};
 	}
 
@@ -406,14 +407,14 @@ function resolveSegmentForOption({
 	) {
 		return {
 			reason: "selected-keyframes-are-not-adjacent",
-			message: "Selected keyframes must be adjacent on each property.",
+			message: t("timeline.graphEditor.errors.notAdjacent"),
 		};
 	}
 
 	if (option.context.keyframe.segmentToNext === "step") {
 		return {
 			reason: "selected-segment-is-hold",
-			message: "Hold segments have a fixed value - easing has no effect here.",
+			message: t("timeline.graphEditor.errors.holdSegment"),
 		};
 	}
 
@@ -430,7 +431,7 @@ function resolveSegmentForOption({
 		return {
 			reason: "selected-segment-is-flat",
 			message:
-				"Cannot edit a segment where both keyframes are at the same time.",
+				t("timeline.graphEditor.errors.sameTime"),
 		};
 	}
 
@@ -458,7 +459,7 @@ export function resolveGraphEditorSelectionState({
 	if (selectedKeyframes.length === 0) {
 		return createUnavailableState({
 			reason: "no-keyframe-selected",
-			message: "Select a keyframe to edit its curve.",
+			message: t("timeline.graphEditor.errors.selectKeyframe"),
 		});
 	}
 
@@ -469,7 +470,7 @@ export function resolveGraphEditorSelectionState({
 	if (!primaryKeyframe) {
 		return createUnavailableState({
 			reason: "no-keyframe-selected",
-			message: "Select a keyframe to edit its curve.",
+			message: t("timeline.graphEditor.errors.selectKeyframe"),
 		});
 	}
 
@@ -480,7 +481,7 @@ export function resolveGraphEditorSelectionState({
 	if (!selectedElement) {
 		return createUnavailableState({
 			reason: "selected-element-missing",
-			message: "The selected keyframe could not be resolved.",
+			message: t("timeline.graphEditor.errors.notFound"),
 		});
 	}
 
@@ -492,7 +493,7 @@ export function resolveGraphEditorSelectionState({
 	if (spansMultipleElements) {
 		return createUnavailableState({
 			reason: "selected-keyframes-span-multiple-elements",
-			message: "Selected keyframes must be on the same element.",
+			message: t("timeline.graphEditor.errors.differentElements"),
 		});
 	}
 
@@ -534,7 +535,7 @@ export function resolveGraphEditorSelectionState({
 	if (componentOptions.length === 0) {
 		return createUnavailableState({
 			reason: "selected-properties-have-no-shared-component",
-			message: "Selected properties do not share a graph-editable channel.",
+			message: t("timeline.graphEditor.errors.noSharedCurve"),
 		});
 	}
 
@@ -587,7 +588,7 @@ export function resolveGraphEditorSelectionState({
 	if (!primarySegment) {
 		return createUnavailableState({
 			reason: "selected-keyframe-missing-on-channel",
-			message: "The selected keyframe is not editable as a graph segment.",
+			message: t("timeline.graphEditor.errors.noEditableCurve"),
 			componentOptions,
 			activeComponentKey,
 		});
@@ -597,8 +598,8 @@ export function resolveGraphEditorSelectionState({
 		status: "ready",
 		message:
 			segments.length === 1
-				? "Edit graph"
-				: `Edit graph for ${segments.length} properties`,
+				? t("timeline.graphEditor.edit")
+				: t("timeline.graphEditor.editMany", { count: segments.length }),
 		componentOptions,
 		activeComponentKey,
 		trackId: selectedElement.trackId,

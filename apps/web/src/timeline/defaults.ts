@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { DEFAULT_NEW_ELEMENT_DURATION } from "@/timeline/creation";
 import type { TTimelineViewState } from "@/project/types";
 import type { BlendMode, Transform } from "@/rendering";
@@ -30,13 +31,17 @@ const defaultTextBackground = {
 
 const defaultTextElement: Omit<TextElement, "id"> = {
 	type: "text",
-	name: "Text",
+	get name() {
+		return t("timeline.element.defaultTextName");
+	},
 	duration: DEFAULT_NEW_ELEMENT_DURATION,
 	startTime: ZERO_MEDIA_TIME,
 	trimStart: ZERO_MEDIA_TIME,
 	trimEnd: ZERO_MEDIA_TIME,
 	params: {
-		content: "Default text",
+		get content() {
+			return t("timeline.element.defaultTextContent");
+		},
 		fontSize: 15,
 		fontFamily: "Arial",
 		color: "#ffffff",

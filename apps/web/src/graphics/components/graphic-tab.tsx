@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { useRef } from "react";
 import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
 import {
@@ -154,6 +155,7 @@ function StrokeSection({
 					<Button
 						variant="ghost"
 						size="icon"
+						aria-label={t("effects.graphics.toggleStroke")}
 						onClick={(event) => {
 							event.stopPropagation();
 							toggleStroke();
@@ -166,7 +168,7 @@ function StrokeSection({
 					</Button>
 				}
 			>
-				<SectionTitle>Contorno</SectionTitle>
+				<SectionTitle>{t("effects.graphics.stroke")}</SectionTitle>
 			</SectionHeader>
 			<SectionContent
 				className={cn(!isStrokeEnabled && "pointer-events-none opacity-50")}

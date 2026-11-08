@@ -99,7 +99,7 @@ function Prose({ children, html, className }: ProseProps) {
 	return (
 		<article
 			className={cn(
-				"prose prose-h2:font-semibold prose-h1:text-xl prose-a:text-blue-600 prose-p:first:mt-0 dark:prose-invert mx-auto max-w-none px-2",
+				"prose prose-h2:font-semibold prose-h1:text-xl prose-a:text-primary prose-p:first:mt-0 dark:prose-invert mx-auto max-w-none px-2",
 				className,
 			)}
 		>

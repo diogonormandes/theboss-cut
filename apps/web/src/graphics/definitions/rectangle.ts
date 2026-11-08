@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type { ParamDefinition } from "@/params";
 import { applyAlignedStroke } from "../stroke";
 import { STROKE_ALIGN_PARAM, type GraphicStrokeAlign } from "./shared";
@@ -14,44 +15,44 @@ interface RectangleParams {
 const RECTANGLE_PARAMS: ParamDefinition<keyof RectangleParams & string>[] = [
 	{
 		key: "fill",
-		label: "Preencher",
+		get label() { return t("effects.graphics.params.fill"); },
 		type: "color",
 		default: "#ffffff",
 	},
 	{
 		key: "stroke",
-		label: "Cor",
+		get label() { return t("effects.graphics.params.color"); },
 		type: "color",
 		default: "#000000",
 		group: "stroke",
 	},
 	{
 		key: "strokeWidth",
-		label: "Largura",
+		get label() { return t("effects.graphics.params.width"); },
 		type: "number",
 		default: 0,
 		min: 0,
 		max: 64,
 		step: 1,
-		shortLabel: "W",
+		get shortLabel() { return t("effects.graphics.shortLabels.width"); },
 		group: "stroke",
 	},
 	STROKE_ALIGN_PARAM,
 	{
 		key: "cornerRadius",
-		label: "Arredondamento",
+		get label() { return t("effects.graphics.params.cornerRadius"); },
 		type: "number",
 		default: 0,
 		min: 0,
 		max: 50,
 		step: 1,
-		shortLabel: "R",
+		get shortLabel() { return t("effects.graphics.shortLabels.cornerRadius"); },
 	},
 ];
 
 export const rectangleGraphicDefinition: GraphicDefinition = {
 	id: "rectangle",
-	name: "Rectangle",
+	get name() { return t("effects.graphics.names.rectangle"); },
 	keywords: ["rectangle", "square", "box"],
 	params: RECTANGLE_PARAMS,
 	render({ ctx, params, width, height }) {

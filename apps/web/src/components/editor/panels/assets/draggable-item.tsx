@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { Plus } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -187,7 +188,7 @@ export function DraggableItem({
 								{shouldShowPlusOnDrag && (
 									<PlusButton
 										onClick={handleAddToTimeline}
-										tooltipText="Add to timeline or drag to position"
+										tooltipText={t("panels.assets.addToTimeline")}
 									/>
 								)}
 							</AspectRatio>

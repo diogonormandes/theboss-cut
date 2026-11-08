@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type { ElementType } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -38,39 +39,57 @@ const createHugeiconsIcon =
 export const tabs = {
 	media: {
 		icon: createHugeiconsIcon({ icon: Folder03Icon }),
-		label: "Mídias",
+		get label() {
+			return t("panels.assets.tabs.media");
+		},
 	},
 	sounds: {
 		icon: createHugeiconsIcon({ icon: HeadphonesIcon }),
-		label: "Sons",
+		get label() {
+			return t("panels.assets.tabs.sounds");
+		},
 	},
 	text: {
 		icon: createHugeiconsIcon({ icon: TextIcon }),
-		label: "Texto",
+		get label() {
+			return t("panels.assets.tabs.text");
+		},
 	},
 	stickers: {
 		icon: createHugeiconsIcon({ icon: Happy01Icon }),
-		label: "Adesivos",
+		get label() {
+			return t("panels.assets.tabs.stickers");
+		},
 	},
 	effects: {
 		icon: createHugeiconsIcon({ icon: MagicWand05Icon }),
-		label: "Efeitos",
+		get label() {
+			return t("panels.assets.tabs.effects");
+		},
 	},
 	transitions: {
 		icon: createHugeiconsIcon({ icon: ArrowRightDoubleIcon }),
-		label: "Transições",
+		get label() {
+			return t("panels.assets.tabs.transitions");
+		},
 	},
 	captions: {
 		icon: createHugeiconsIcon({ icon: ClosedCaptionIcon }),
-		label: "Legendas",
+		get label() {
+			return t("panels.assets.tabs.captions");
+		},
 	},
 	adjustment: {
 		icon: createHugeiconsIcon({ icon: SlidersHorizontalIcon }),
-		label: "Ajuste",
+		get label() {
+			return t("panels.assets.tabs.adjustment");
+		},
 	},
 	settings: {
 		icon: createHugeiconsIcon({ icon: Settings01Icon }),
-		label: "Ajustes",
+		get label() {
+			return t("panels.assets.tabs.settings");
+		},
 	},
 } satisfies Record<
 	Tab,

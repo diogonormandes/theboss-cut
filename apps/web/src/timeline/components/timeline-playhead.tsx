@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { useRef } from "react";
 import { useContainerSize } from "@/hooks/use-container-size";
 import {
@@ -107,7 +108,7 @@ export function TimelinePlayhead({
 		<div
 			ref={playheadRef}
 			role="slider"
-			aria-label="Agulha da linha do tempo"
+			aria-label={t("timeline.playhead.label")}
 			aria-valuemin={0}
 			aria-valuemax={duration}
 			aria-valuenow={currentTime}
@@ -126,7 +127,7 @@ export function TimelinePlayhead({
 
 			<button
 				type="button"
-				aria-label="Arrastar a agulha"
+				aria-label={t("timeline.playhead.drag")}
 				className={`pointer-events-auto absolute top-1 left-1/2 size-3 -translate-x-1/2 transform cursor-col-resize rounded-full border-2 shadow-xs ${isSnappingToPlayhead ? "bg-primary border-primary" : "bg-primary border-primary/50"}`}
 				onMouseDown={handlePlayheadMouseDown}
 			/>

@@ -14,15 +14,16 @@ import { RenameProjectDialog } from "@/project/components/rename-project-dialog"
 import { DeleteProjectDialog } from "@/project/components/delete-project-dialog";
 import { useRouter } from "next/navigation";
 import { ExportButton } from "./export-button";
-import { ThemeToggle } from "../theme-toggle";
-import { DEFAULT_LOGO_URL } from "@/site/brand";
+import { ThemeButton } from "@/theme/components/theme-picker";
+import { Emblem } from "../brand/emblem";
 import { toast } from "sonner";
 import { useEditor } from "@/editor/use-editor";
 import { CommandIcon, Logout05Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ShortcutsDialog } from "@/actions/components/shortcuts-dialog";
-import Image from "next/image";
 import { cn } from "@/utils/ui";
+import { t } from "@/i18n";
+import { LanguageSubmenu } from "@/i18n/components/language-picker";
 
 export function EditorHeader() {
 	return (
@@ -33,7 +34,7 @@ export function EditorHeader() {
 			</div>
 			<nav className="flex items-center gap-2">
 				<ExportButton />
-				<ThemeToggle />
+				<ThemeButton />
 			</nav>
 		</header>
 	);
@@ -75,9 +76,9 @@ function ProjectDropdown() {
 					name: newName.trim(),
 				});
 			} catch (error) {
-				toast.error("Não deu para renomear o projeto", {
+				toast.error(t("editor.header.renameFailed"), {
 					description:
-						error instanceof Error ? error.message : "Tente de novo",
+						t("common.tryAgain"),
 				});
 			} finally {
 				setOpenDialog(null);
@@ -93,9 +94,9 @@ function ProjectDropdown() {
 				});
 				router.push("/projects");
 			} catch (error) {
-				toast.error("Não deu para apagar o projeto", {
+				toast.error(t("editor.header.deleteFailed"), {
 					description:
-						error instanceof Error ? error.message : "Tente de novo",
+						t("common.tryAgain"),
 				});
 			} finally {
 				setOpenDialog(null);
@@ -108,13 +109,8 @@ function ProjectDropdown() {
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button variant="ghost" size="icon" className="p-1 rounded-sm size-8">
-						<Image
-							src={DEFAULT_LOGO_URL}
-							alt="THEBOSS CUT"
-							width={32}
-							height={32}
-							className="size-6"
-						/>
+						<Emblem size={28} />
+						<span className="sr-only">THEBOSS CUT</span>
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="start" className="z-100 w-44">
@@ -123,15 +119,20 @@ function ProjectDropdown() {
 						disabled={isExiting}
 						icon={<HugeiconsIcon icon={Logout05Icon} />}
 					>
-						Sair do projeto
+						{t("editor.header.exitProject")}
 					</DropdownMenuItem>
 
 					<DropdownMenuItem
 						onClick={() => setOpenDialog("shortcuts")}
 						icon={<HugeiconsIcon icon={CommandIcon} />}
 					>
-						Atalhos
+						{t("editor.header.shortcuts")}
 					</DropdownMenuItem>
+
+					<DropdownMenuSeparator />
+					<LanguageSubmenu
+						beforeChange={() => editor.project.saveCurrentProject()}
+					/>
 
 				</DropdownMenuContent>
 			</DropdownMenu>
@@ -191,9 +192,9 @@ function EditableProjectName() {
 					name: newName,
 				});
 			} catch (error) {
-				toast.error("Não deu para renomear o projeto", {
+				toast.error(t("editor.header.renameFailed"), {
 					description:
-						error instanceof Error ? error.message : "Tente de novo",
+						t("common.tryAgain"),
 				});
 			}
 		}

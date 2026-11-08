@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { Command, type CommandResult } from "@/commands/base-command";
 import { EditorCore } from "@/core";
 import { toast } from "sonner";
@@ -88,8 +89,8 @@ export class AddMediaAssetCommand extends Command {
 				this.restoreProjectFpsAfterFailedSave({ editor });
 
 				if (storageService.isQuotaExceededError({ error })) {
-					toast.error("Pouco espaço para guardar", {
-						description: error instanceof Error ? error.message : undefined,
+					toast.error(t("actions.storage.lowSpace"), {
+						description: t("actions.storage.lowSpaceHint"),
 					});
 				}
 			});

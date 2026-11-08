@@ -1,4 +1,5 @@
 import type { ShortcutKey } from "@/actions/keybinding";
+import { t } from "@/i18n";
 import type { TActionWithOptionalArgs } from "./types";
 
 export type TActionCategory =
@@ -23,128 +24,188 @@ export interface TActionDefinition extends TActionBaseDefinition {
 
 export const ACTIONS = {
 	"toggle-play": {
-		description: "Tocar/Pausar",
+		get description() {
+			return t("actions.list.togglePlay");
+		},
 		category: "playback",
 	},
 	"stop-playback": {
-		description: "Parar",
+		get description() {
+			return t("actions.list.stopPlayback");
+		},
 		category: "playback",
 	},
 	"seek-forward": {
-		description: "Avançar 1 segundo",
+		get description() {
+			return t("actions.list.seekForward");
+		},
 		category: "playback",
 		args: { seconds: "number" },
 	},
 	"seek-backward": {
-		description: "Voltar 1 segundo",
+		get description() {
+			return t("actions.list.seekBackward");
+		},
 		category: "playback",
 		args: { seconds: "number" },
 	},
 	"frame-step-forward": {
-		description: "Avançar um quadro",
+		get description() {
+			return t("actions.list.frameStepForward");
+		},
 		category: "navigation",
 	},
 	"frame-step-backward": {
-		description: "Voltar um quadro",
+		get description() {
+			return t("actions.list.frameStepBackward");
+		},
 		category: "navigation",
 	},
 	"jump-forward": {
-		description: "Avançar 5 segundos",
+		get description() {
+			return t("actions.list.jumpForward");
+		},
 		category: "navigation",
 		args: { seconds: "number" },
 	},
 	"jump-backward": {
-		description: "Voltar 5 segundos",
+		get description() {
+			return t("actions.list.jumpBackward");
+		},
 		category: "navigation",
 		args: { seconds: "number" },
 	},
 	"goto-start": {
-		description: "Ir para o começo",
+		get description() {
+			return t("actions.list.gotoStart");
+		},
 		category: "navigation",
 	},
 	"goto-end": {
-		description: "Ir para o fim",
+		get description() {
+			return t("actions.list.gotoEnd");
+		},
 		category: "navigation",
 	},
 	split: {
-		description: "Cortar na agulha",
+		get description() {
+			return t("actions.list.split");
+		},
 		category: "editing",
 	},
 	"split-left": {
-		description: "Cortar e tirar a esquerda",
+		get description() {
+			return t("actions.list.splitLeft");
+		},
 		category: "editing",
 	},
 	"split-right": {
-		description: "Cortar e tirar a direita",
+		get description() {
+			return t("actions.list.splitRight");
+		},
 		category: "editing",
 	},
 	"delete-selected": {
-		description: "Apagar a seleção",
+		get description() {
+			return t("actions.list.deleteSelected");
+		},
 		category: "editing",
 	},
 	"copy-selected": {
-		description: "Copiar os itens selecionados",
+		get description() {
+			return t("actions.list.copySelected");
+		},
 		category: "editing",
 	},
 	"paste-copied": {
-		description: "Colar itens na agulha",
+		get description() {
+			return t("actions.list.pasteCopied");
+		},
 		category: "editing",
 	},
 	"toggle-snapping": {
-		description: "Ligar/desligar encaixe",
+		get description() {
+			return t("actions.list.toggleSnapping");
+		},
 		category: "editing",
 	},
 	"toggle-ripple-editing": {
-		description: "Ligar/desligar edição em cascata",
+		get description() {
+			return t("actions.list.toggleRippleEditing");
+		},
 		category: "editing",
 	},
 	"toggle-source-audio": {
-		description: "Separar ou recuperar o áudio original",
+		get description() {
+			return t("actions.list.toggleSourceAudio");
+		},
 		category: "editing",
 	},
 	"select-all": {
-		description: "Selecionar todos os itens",
+		get description() {
+			return t("actions.list.selectAll");
+		},
 		category: "selection",
 	},
 	"cancel-interaction": {
-		description: "Cancelar a ação atual",
+		get description() {
+			return t("actions.list.cancelInteraction");
+		},
 		category: "controls",
 	},
 	"deselect-all": {
-		description: "Tirar a seleção",
+		get description() {
+			return t("actions.list.deselectAll");
+		},
 		category: "selection",
 	},
 	"duplicate-selected": {
-		description: "Duplicar o item selecionado",
+		get description() {
+			return t("actions.list.duplicateSelected");
+		},
 		category: "selection",
 	},
 	"toggle-elements-muted-selected": {
-		description: "Tirar ou pôr o som dos itens selecionados",
+		get description() {
+			return t("actions.list.toggleElementsMutedSelected");
+		},
 		category: "selection",
 	},
 	"toggle-elements-visibility-selected": {
-		description: "Mostrar ou esconder os itens selecionados",
+		get description() {
+			return t("actions.list.toggleElementsVisibilitySelected");
+		},
 		category: "selection",
 	},
 	"toggle-bookmark": {
-		description: "Marcador na agulha",
+		get description() {
+			return t("actions.list.toggleBookmark");
+		},
 		category: "timeline",
 	},
 	undo: {
-		description: "Desfazer",
+		get description() {
+			return t("actions.list.undo");
+		},
 		category: "history",
 	},
 	redo: {
-		description: "Refazer",
+		get description() {
+			return t("actions.list.redo");
+		},
 		category: "history",
 	},
 	"remove-media-asset": {
-		description: "Remover mídia",
+		get description() {
+			return t("actions.list.removeMediaAsset");
+		},
 		category: "assets",
 		args: { projectId: "string", assetId: "string" },
 	},
 	"remove-media-assets": {
-		description: "Remover mídias",
+		get description() {
+			return t("actions.list.removeMediaAssets");
+		},
 		category: "assets",
 		args: { projectId: "string", assetIds: "string[]" },
 	},

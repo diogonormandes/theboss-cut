@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import type { Bookmark } from "@/timeline";
 import {
 	EMPTY_PREVIEW_OVERLAY_SOURCE_RESULT,
@@ -9,7 +10,9 @@ import type { MediaTime } from "@/wasm";
 
 export const bookmarkNotesPreviewOverlay: PreviewOverlayDefinition = {
 	id: "bookmark-notes",
-	label: "Mostrar notas dos marcadores",
+	get label() {
+		return t("timeline.bookmarks.showNotes");
+	},
 	defaultVisible: true,
 };
 

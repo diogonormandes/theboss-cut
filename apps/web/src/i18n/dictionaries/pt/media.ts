@@ -1,0 +1,208 @@
+// Mídia: importar arquivos, sons, adesivos, legendas e transcrição.
+const media = {
+	upload: {
+		uploadingOne: "Importando arquivo…",
+		uploadingMany: "Importando arquivos…",
+		uploadedNamed: "{name} foi importado",
+		uploadedOne: "1 arquivo foi importado",
+		uploadedMany: "{count} arquivos foram importados",
+		uploadedNone: "Nenhum arquivo foi importado",
+		failedOne: "Não deu para importar o arquivo. Tente de novo.",
+		failedMany: "Não deu para importar os arquivos. Tente de novo.",
+		unsupportedType:
+			"O THEBOSS CUT não abre este tipo de arquivo: {name}. Use vídeo, imagem ou áudio.",
+		noSpace: "Sem espaço para guardar {name}",
+		noSpaceSize:
+			"O arquivo tem {size}. Apague projetos ou arquivos que você não usa mais para liberar espaço.",
+		noSpaceSizeAvailable:
+			"O arquivo tem {size}, mas só sobram {available} livres. Apague projetos ou arquivos que você não usa mais para liberar espaço.",
+		cantPreview: "Não dá para ver a prévia de {name}",
+		unknownCodec: "Este formato de vídeo",
+		codecHint:
+			"{codec} não abre aqui, então este vídeo pode não aparecer direito na prévia. Converta para MP4 (H.264) e importe de novo.",
+		processFailed: "Não deu para abrir {name}",
+		processFailedDescription:
+			"O arquivo pode estar danificado ou num formato diferente. Tente converter para MP4 e importe de novo.",
+		failed: "Não deu para importar {name}. Tente de novo.",
+	},
+	storage: {
+		quotaExceeded:
+			"Não há espaço para guardar um arquivo de {size}. Apague projetos ou arquivos que você não usa mais e tente de novo.",
+		persistDialog: {
+			title: "Não perca os seus projetos",
+			warning:
+				"Quando o espaço do computador fica pouco, os projetos podem ser apagados sozinhos.",
+			question: "Deixar o THEBOSS CUT proteger os seus projetos?",
+			notNow: "Agora não",
+			allow: "Permitir",
+		},
+	},
+	sounds: {
+		tabs: {
+			soundEffects: "Efeitos sonoros",
+			saved: "Salvos",
+		},
+		searchPlaceholder: "Buscar efeitos sonoros",
+		filter: "Filtrar sons",
+		commercialOnly: "Só os liberados para uso comercial",
+		commercialOnlyOn: "Mostrando só sons liberados para uso comercial",
+		commercialOnlyOff: "Mostrando todos os sons, com qualquer licença",
+		loading: "Carregando sons…",
+		searching: "Buscando…",
+		loadingMore: "Carregando mais sons…",
+		notFound: "Nenhum som encontrado",
+		noneAvailable: "Nenhum som disponível",
+		loadingSaved: "Carregando sons salvos…",
+		emptySavedTitle: "Nenhum som salvo",
+		emptySavedHint: "Clique no coração de um som para guardar aqui",
+		savedCountOne: "1 som salvo",
+		savedCountMany: "{count} sons salvos",
+		clearAll: "Limpar tudo",
+		clearDialog: {
+			title: "Apagar todos os sons salvos?",
+			description:
+				"Os {count} sons salvos vão sair da sua lista. Não dá para desfazer.",
+			confirm: "Apagar todos os sons",
+		},
+		addToTimeline: "Adicionar à linha do tempo",
+		save: "Salvar som",
+		unsave: "Tirar dos salvos",
+		errors: {
+			searchFailed: "Não deu para buscar sons. Confira sua internet e tente de novo.",
+			loadSaved:
+				"Não deu para carregar os sons salvos. Feche e abra o THEBOSS CUT de novo.",
+			save: "Não deu para salvar o som. Tente de novo.",
+			remove: "Não deu para remover o som. Tente de novo.",
+			clear: "Não deu para apagar os sons salvos. Tente de novo.",
+		},
+		toast: {
+			saveFailed: "Não deu para salvar o som",
+			removeFailed: "Não deu para remover o som",
+			clearFailed: "Não deu para apagar os sons salvos",
+			unavailable: "Som indisponível",
+			addFailed:
+				"Não deu para adicionar o som. Confira a sua internet e tente de novo.",
+		},
+	},
+	stickers: {
+		searchPlaceholder: "Buscar…",
+		categoriesLabel: "Categorias de adesivos",
+		categories: {
+			all: "Todos",
+			flags: "Bandeiras",
+			shapes: "Formas",
+		},
+		recent: "Usadas há pouco",
+		clear: "Limpar",
+		seeAll: "Ver tudo",
+		results: "{count} resultados",
+		emptyTitle: "Nenhum adesivo encontrado",
+		notFoundFor: "Nenhum adesivo encontrado para “{query}”",
+		noneAvailable: "Ainda não há adesivos disponíveis.",
+		noneInCategory: "Ainda não há adesivos em {category}.",
+		addFailed: "Não deu para adicionar o adesivo",
+		shapes: {
+			square: "Quadrado",
+			circle: "Círculo",
+			triangle: "Triângulo",
+			hexagon: "Hexágono",
+			diamond: "Losango",
+			star: "Estrela",
+		},
+		regionGroups: {
+			europe: "Europa",
+			asia: "Ásia",
+			africa: "África",
+			america: "América",
+		},
+		regions: {
+			westernEurope: "Europa Ocidental",
+			easternEurope: "Europa Oriental",
+			northernEurope: "Norte da Europa",
+			southernEurope: "Sul da Europa",
+			southAsia: "Sul da Ásia",
+			southeastAsia: "Sudeste Asiático",
+			eastAsia: "Leste Asiático",
+			centralAsia: "Ásia Central",
+			middleEast: "Oriente Médio",
+			northAfrica: "Norte da África",
+			subSaharanAfrica: "África Subsaariana",
+			northAmerica: "América do Norte",
+			southAmerica: "América do Sul",
+			centralAmerica: "América Central",
+			caribbean: "Caribe",
+			oceania: "Oceania",
+			antarctica: "Antártida",
+			atlanticOcean: "Oceano Atlântico",
+			northAtlantic: "Atlântico Norte",
+		},
+		countries: {
+			england: "Inglaterra",
+			northernIreland: "Irlanda do Norte",
+			scotland: "Escócia",
+			wales: "País de Gales",
+		},
+	},
+	subtitles: {
+		title: "Legendas",
+		import: "Importar",
+		language: "Idioma",
+		chooseLanguage: "Escolha o idioma",
+		autoDetect: "Detectar sozinho",
+		generate: "Gerar legendas",
+		captionName: "Legenda {number}",
+		steps: {
+			extractingAudio: "Separando o áudio…",
+			preparingAudio: "Preparando o áudio…",
+			loadingModel: "Preparando a transcrição {percent}%",
+			transcribing: "Transcrevendo…",
+			generating: "Criando as legendas…",
+			reading: "Lendo o arquivo de legendas…",
+			importing: "Importando as legendas…",
+		},
+		errors: {
+			noCaptions: "Nenhuma legenda foi criada. Confira se o vídeo tem fala.",
+			noCues:
+				"Não achamos legendas neste arquivo. Confira se é um arquivo .srt ou .ass válido.",
+			transcribeFailed:
+				"Não deu para gerar as legendas. Tente de novo ou escolha o idioma do vídeo.",
+			importFailed:
+				"Não deu para importar as legendas. Use um arquivo .srt ou .ass e tente de novo.",
+		},
+		warnings: {
+			skipped:
+				"{imported} legendas importadas; {skipped} com defeito foram puladas.",
+			strippedTags:
+				"Alguns efeitos dentro do texto foram tirados de {count} legendas.",
+			ignoredEffects: "Efeitos de animação foram ignorados em {count} legendas.",
+			missingStyles:
+				"{count} legendas usavam um estilo que não existe no arquivo e ficaram com o estilo padrão.",
+			nonDialogue: "{count} itens que não são falas foram ignorados.",
+			unsupportedStyles:
+				"Alguns estilos do arquivo, como contorno, sombra, rotação ou tamanho, foram ignorados.",
+		},
+	},
+	transcription: {
+		noAudio:
+			"Nenhum áudio encontrado. Coloque na linha do tempo um vídeo ou áudio com som primeiro.",
+		languages: {
+			en: "Inglês",
+			es: "Espanhol",
+			it: "Italiano",
+			fr: "Francês",
+			de: "Alemão",
+			pt: "Português",
+			ru: "Russo",
+			ja: "Japonês",
+			zh: "Chinês",
+		},
+		models: {
+			tiny: "Mais rápida, menos precisa",
+			small: "Bom equilíbrio entre rapidez e precisão",
+			medium: "Mais precisa, mais lenta",
+			largeTurbo: "A mais precisa; fica rápida em placas de vídeo mais novas",
+		},
+	},
+};
+
+export default media;

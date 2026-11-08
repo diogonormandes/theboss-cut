@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +35,9 @@ export function PropertiesPanel() {
 		return (
 			<div className="panel bg-background flex h-full flex-col items-center justify-center overflow-hidden rounded-sm border">
 				<p className="text-muted-foreground text-sm">
-					{selectedElements.length} elements selected.0
+					{t("panels.properties.multipleSelected", {
+						count: selectedElements.length,
+					})}
 				</p>
 			</div>
 		);
@@ -54,10 +57,10 @@ export function PropertiesPanel() {
 	const visibleTabs = config.tabs;
 
 	const storedTabId = activeTabPerType[element.type];
-	const isStoredTabVisible = visibleTabs.some((t) => t.id === storedTabId);
+	const isStoredTabVisible = visibleTabs.some((tab) => tab.id === storedTabId);
 	const activeTabId = isStoredTabVisible ? storedTabId : config.defaultTab;
 	const activeTab =
-		visibleTabs.find((t) => t.id === activeTabId) ?? visibleTabs[0];
+		visibleTabs.find((tab) => tab.id === activeTabId) ?? visibleTabs[0];
 
 	if (!activeTab) return null;
 

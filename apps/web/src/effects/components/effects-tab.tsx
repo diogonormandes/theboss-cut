@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { useState } from "react";
 import type { ParamValues } from "@/params";
 import type { Effect } from "@/effects/types";
@@ -56,7 +57,7 @@ export function StandaloneEffectTab({
 	return (
 		<div className="flex flex-col h-full">
 			<div className="border-b px-3.5 h-11 shrink-0 flex items-center">
-				<SectionTitle>Efeito</SectionTitle>
+				<SectionTitle>{t("effects.effectsPanel.singleTitle")}</SectionTitle>
 			</div>
 			<EffectSection
 				effect={effect}
@@ -143,7 +144,7 @@ export function ClipEffectsTab({
 	return (
 		<div className="flex flex-col h-full">
 			<div className="border-b px-3.5 h-11 shrink-0 flex items-center">
-				<SectionTitle>Efeitos</SectionTitle>
+				<SectionTitle>{t("effects.effectsPanel.title")}</SectionTitle>
 			</div>
 			{effects.length === 0 ? (
 				<EmptyView />
@@ -214,9 +215,11 @@ function EmptyView() {
 				strokeWidth={1}
 			/>
 			<div className="flex flex-col gap-2">
-				<h3 className="font-medium text-foreground">Nenhum efeito</h3>
+				<h3 className="font-medium text-foreground">
+					{t("effects.effectsPanel.emptyTitle")}
+				</h3>
 				<p className="text-muted-foreground text-sm text-balance max-w-44">
-					Adicione efeitos a esta camada pelo painel de mídias.
+					{t("effects.effectsPanel.emptyDescription")}
 				</p>
 			</div>
 			<Button
@@ -224,7 +227,7 @@ function EmptyView() {
 				size="sm"
 				onClick={() => setActiveTab("effects")}
 			>
-				Abrir efeitos
+				{t("effects.effectsPanel.openEffects")}
 			</Button>
 		</div>
 	);
@@ -260,7 +263,7 @@ function EffectSection({
 							<Button
 								variant={effect.enabled ? "secondary" : "ghost"}
 								size="icon"
-								aria-label={`Toggle ${definition.name}`}
+								aria-label={t("effects.effectsPanel.toggle", { name: definition.name })}
 								onClick={onToggle}
 							>
 								<HugeiconsIcon
@@ -270,7 +273,7 @@ function EffectSection({
 							<Button
 								variant="ghost"
 								size="icon"
-								aria-label={`Remove ${definition.name}`}
+								aria-label={t("effects.effectsPanel.remove", { name: definition.name })}
 								onClick={onRemove}
 							>
 								<HugeiconsIcon icon={Delete02Icon} />

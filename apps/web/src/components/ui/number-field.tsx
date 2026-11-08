@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/i18n";
 import { cn } from "@/utils/ui";
 import { clamp } from "@/utils/math";
 import { useRef, useState, useLayoutEffect, type ComponentProps } from "react";
@@ -256,7 +257,7 @@ function NumberField({
 					<button
 						ref={iconRef}
 						type="button"
-						aria-label="Arraste para ajustar"
+						aria-label={t("ui.numberField.dragToAdjust")}
 						disabled={disabled}
 						className="text-muted-foreground [&_svg]:size-3.5! shrink-0 select-none pl-2.5 text-sm leading-none cursor-ew-resize"
 						onMouseDown={(event) => event.preventDefault()}
@@ -304,7 +305,7 @@ function NumberField({
 					<Button
 						variant="text"
 						size="text"
-						aria-label="Voltar ao padrão"
+						aria-label={t("ui.numberField.resetToDefault")}
 						onClick={onReset}
 					>
 						<HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-3.5!" />
