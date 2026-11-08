@@ -87,7 +87,10 @@ export class InsertElementCommand extends Command {
 				(item: MediaAsset) => item.id === newElement.mediaId,
 			);
 
-			if (asset?.width && asset?.height) {
+			// formato escolhido ao criar o projeto (ex.: 9:16): o primeiro vídeo não muda o tamanho
+			const isFormatLocked = activeProject?.settings.formatLocked === true;
+
+			if (asset?.width && asset?.height && !isFormatLocked) {
 				const nextCanvasSize = { width: asset.width, height: asset.height };
 				const shouldSetOriginalCanvasSize =
 					!activeProject?.settings.originalCanvasSize;

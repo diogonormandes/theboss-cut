@@ -6,6 +6,7 @@ import type {
 	TProjectSortKey,
 	TProjectSortOption,
 	TProjectSettings,
+	TCanvasSize,
 	TTimelineViewState,
 } from "@/project/types";
 import type { ExportOptions, ExportResult, ExportState } from "@/export";
@@ -80,7 +81,14 @@ export class ProjectManager {
 		await this.storageMigrationPromise;
 	}
 
-	async createNewProject({ name }: { name: string }): Promise<string> {
+	async createNewProject({
+		name,
+		canvasSize,
+	}: {
+		name: string;
+		/** formato escolhido na tela inicial; sem ele, o projeto segue o tamanho do primeiro vídeo */
+		canvasSize?: TCanvasSize;
+	}): Promise<string> {
 		const mainScene = buildDefaultScene({ name: t("actions.project.mainScene"), isMain: true });
 		const newProject: TProject = {
 			metadata: {
@@ -94,8 +102,9 @@ export class ProjectManager {
 			currentSceneId: mainScene.id,
 			settings: {
 				fps: DEFAULT_FPS,
-				canvasSize: DEFAULT_CANVAS_SIZE,
+				canvasSize: canvasSize ?? DEFAULT_CANVAS_SIZE,
 				canvasSizeMode: "preset",
+				formatLocked: canvasSize !== undefined,
 				lastCustomCanvasSize: null,
 				originalCanvasSize: null,
 				background: {

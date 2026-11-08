@@ -15,6 +15,26 @@ const projects = {
 	},
 	selectAll: "Selecionar tudo",
 	searchPlaceholder: "Buscar…",
+	start: {
+		title: "Começar um projeto",
+		subtitle: "Escolha o formato. Dá para mudar depois nas configurações do projeto.",
+		recentTitle: "Projetos recentes",
+	},
+	formats: {
+		vertical: { name: "Vertical", hint: "TikTok, Reels e Shorts" },
+		horizontal: { name: "Horizontal", hint: "YouTube e lives" },
+		square: { name: "Quadrado", hint: "Feed e posts" },
+		portrait: { name: "Retrato", hint: "Feed do Instagram" },
+		auto: { name: "Automático", hint: "Segue o tamanho do primeiro vídeo" },
+	},
+	newProjectDialog: {
+		title: "Novo projeto",
+		description: "Dê um nome e escolha o formato do vídeo.",
+		nameLabel: "Nome do projeto",
+		formatLabel: "Formato",
+		create: "Criar e abrir",
+		creating: "Criando…",
+	},
 	newProject: {
 		button: "Novo projeto",
 		buttonShort: "Novo",

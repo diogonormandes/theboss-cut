@@ -16,6 +16,26 @@ const projects: Dictionary["projects"] = {
 	},
 	selectAll: "Seleccionar todo",
 	searchPlaceholder: "Buscar…",
+	start: {
+		title: "Empezar un proyecto",
+		subtitle: "Elige el formato. Puedes cambiarlo después en la configuración del proyecto.",
+		recentTitle: "Proyectos recientes",
+	},
+	formats: {
+		vertical: { name: "Vertical", hint: "TikTok, Reels y Shorts" },
+		horizontal: { name: "Horizontal", hint: "YouTube y transmisiones" },
+		square: { name: "Cuadrado", hint: "Feed y publicaciones" },
+		portrait: { name: "Retrato", hint: "Feed de Instagram" },
+		auto: { name: "Automático", hint: "Sigue el tamaño del primer video" },
+	},
+	newProjectDialog: {
+		title: "Nuevo proyecto",
+		description: "Ponle un nombre y elige el formato del video.",
+		nameLabel: "Nombre del proyecto",
+		formatLabel: "Formato",
+		create: "Crear y abrir",
+		creating: "Creando…",
+	},
 	newProject: {
 		button: "Proyecto nuevo",
 		buttonShort: "Nuevo",

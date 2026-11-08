@@ -2,10 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import type { EditorCore } from "@/core";
 import { MigrationDialog } from "@/project/components/migration-dialog";
 import { StoragePersistenceDialog } from "@/services/storage/components/storage-persistence-dialog";
@@ -69,6 +67,10 @@ import { cn } from "@/utils/ui";
 import { LanguageButton } from "@/i18n/components/language-picker";
 import { ThemeButton } from "@/theme/components/theme-picker";
 import { Emblem, Wordmark } from "@/components/brand/emblem";
+import {
+	NewProjectDialog,
+	StartProjectStrip,
+} from "@/project/components/project-formats";
 import { t } from "@/i18n";
 const formatProjectDuration = ({
 	duration,
@@ -123,6 +125,16 @@ export default function ProjectsPage() {
 			<MigrationDialog />
 			<StoragePersistenceDialog />
 			<ProjectsHeader />
+			{!searchQuery && (
+				<div className="px-4 pt-2 pb-6">
+					<StartProjectStrip />
+				</div>
+			)}
+			{projectsToDisplay.length > 0 && (
+				<h2 className="font-display px-8 text-xl font-semibold tracking-wide">
+					{t("projects.start.recentTitle")}
+				</h2>
+			)}
 			<ProjectsToolbar projectIds={projectsToDisplay.map((p) => p.id)} />
 			<main className="mx-auto px-4 pt-2 pb-6 flex flex-col gap-4">
 				{isLoading || !isInitialized ? (
@@ -519,29 +531,25 @@ function SortDropdown({ children }: { children: React.ReactNode }) {
 }
 
 function NewProjectButton() {
-	const editor = useEditor();
-	const router = useRouter();
-
-	const handleCreateProject = async () => {
-		const projectId = await editor.project.createNewProject({
-			name: t("projects.newProject.defaultName"),
-		});
-		router.push(`/editor/${projectId}`);
-	};
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 	return (
-		<Button
-			size="lg"
-			className="btn-boss flex px-5 md:px-6"
-			onClick={handleCreateProject}
-		>
-			<span className="text-sm font-medium hidden md:block">
-				{t("projects.newProject.button")}
-			</span>
-			<span className="text-sm font-medium block md:hidden">
-				{t("projects.newProject.buttonShort")}
-			</span>
-		</Button>
+		<>
+			<Button
+				size="lg"
+				className="btn-boss flex gap-2 px-5 md:px-6"
+				onClick={() => setIsDialogOpen(true)}
+			>
+				<HugeiconsIcon icon={PlusSignIcon} className="size-4" />
+				<span className="text-sm font-semibold hidden md:block">
+					{t("projects.newProject.button")}
+				</span>
+				<span className="text-sm font-semibold block md:hidden">
+					{t("projects.newProject.buttonShort")}
+				</span>
+			</Button>
+			<NewProjectDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+		</>
 	);
 }
 
@@ -596,15 +604,15 @@ function ProjectItem({
 	};
 
 	const gridContent = (
-		<Card className="bg-background overflow-hidden border-none p-0">
-			<div className="bg-muted relative aspect-video">
+		<Card className="tb-project-card overflow-hidden p-0">
+			<div className="tb-project-thumb relative aspect-video">
 				<div className="absolute inset-0">
 					{project.thumbnail ? (
 						<Image
 							src={project.thumbnail}
 							alt={t("projects.card.thumbnailAlt")}
 							fill
-							className="object-cover"
+							className="object-contain"
 						/>
 					) : (
 						<div className="flex size-full items-center justify-center">
@@ -620,7 +628,7 @@ function ProjectItem({
 				)}
 			</div>
 
-			<CardContent className="flex flex-col gap-2 px-0 pt-4">
+			<CardContent className="flex flex-col gap-2 px-1 pt-3 pb-1">
 				<h3 className="group-hover:text-foreground/90 line-clamp-2 text-sm leading-snug font-medium">
 					{project.name}
 				</h3>
@@ -971,23 +979,8 @@ function ProjectsSkeleton() {
 
 function EmptyState() {
 	const { searchQuery, setSearchQuery } = useProjectsStore();
-	const router = useRouter();
 	const editor = useEditor();
 	const savedProjects = editor.project.getSavedProjects();
-
-	const handleCreateProject = async () => {
-		try {
-			const projectId = await editor.project.createNewProject({
-				name: t("projects.newProject.defaultName"),
-			});
-			router.push(`/editor/${projectId}`);
-		} catch (error) {
-			toast.error(t("projects.newProject.createFailed"), {
-				description:
-					t("common.tryAgain"),
-			});
-		}
-	};
 
 	if (savedProjects.length > 0) {
 		return (
@@ -1018,7 +1011,7 @@ function EmptyState() {
 	}
 
 	return (
-		<div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
+		<div className="flex flex-col items-center justify-center gap-6 py-10 text-center">
 			<div className="flex flex-col items-center gap-2">
 				<div className="bg-muted/30 flex size-16 items-center justify-center rounded-full">
 					<HugeiconsIcon
@@ -1033,10 +1026,6 @@ function EmptyState() {
 					{t("projects.empty.noProjectsText")}
 				</p>
 			</div>
-			<Button size="lg" className="gap-2" onClick={handleCreateProject}>
-				<HugeiconsIcon icon={PlusSignIcon} />
-				{t("projects.empty.createFirst")}
-			</Button>
 		</div>
 	);
 }

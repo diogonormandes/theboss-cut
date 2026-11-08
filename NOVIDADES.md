@@ -3,6 +3,9 @@ Próxima versão
 • Mensagens de aviso mais claras, que dizem o que fazer quando algo não dá certo
 • Datas e nomes de países aparecem no formato do idioma escolhido
 • 14 temas de cores, os mesmos do THEBOSSVERSE: clique na paleta (na tela de projetos ou no editor) e escolha o seu. O padrão é o Dourado BOSS
+• Nova tela inicial: comece um projeto com um clique já no formato certo (Vertical 9:16 para TikTok, Reels e Shorts, Horizontal 16:9, Quadrado 1:1, Retrato 4:5 ou Automático)
+• Escolheu vertical? Ele continua vertical mesmo quando você coloca um vídeo horizontal
+• Projetos recentes com miniatura inteira e cartões com brilho dourado
 • Novo visual da marca: o tridente dourado 3D girando, as letras do THEBOSSVERSE e os botões principais em dourado com brilho
 
 • Versão 1.0.0: primeira versão do THEBOSS CUT para Windows

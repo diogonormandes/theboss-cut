@@ -16,7 +16,8 @@ Ordem sugerida: cada etapa vira uma versão publicada (ferramenta 24).
 - [x] Fontes do THEBOSSVERSE (Geist no texto, Cormorant Garamond na marca e nos títulos) e o tridente 3D girando no lugar do logo
 - [ ] Ícones premium (trocar os ícones atuais por um conjunto com a cara da marca)
 - [ ] Ideia: o THEBOSS CUT abrir com o mesmo tema escolhido no programa THEBOSSVERSE
-- [ ] Tela inicial premium: projetos recentes com miniatura, "Novo projeto" com formatos prontos (9:16, 16:9, 1:1, 4:5)
+- [x] Tela inicial premium: projetos recentes com miniatura, "Novo projeto" com formatos prontos (9:16, 16:9, 1:1, 4:5 e Automático); o formato escolhido fica travado (o primeiro vídeo não muda o tamanho)
+- [ ] Ideia: atualizar a miniatura do projeto também quando o programa é fechado sem sair do projeto
 - [ ] Tirar da interface links, textos e logos do OpenCut (aviso só no LICENSE)
 - [ ] Tour de boas-vindas curto (primeira vez) e dicas nos botões
 - [ ] Salvamento automático e recuperar projeto se o PC desligar

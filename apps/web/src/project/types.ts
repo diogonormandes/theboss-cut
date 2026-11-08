@@ -32,6 +32,8 @@ export interface TProjectSettings {
 	canvasSizeMode?: "preset" | "custom";
 	lastCustomCanvasSize?: TCanvasSize | null;
 	originalCanvasSize?: TCanvasSize | null;
+	/** true quando a pessoa escolheu o formato ao criar: o primeiro vídeo não muda o tamanho */
+	formatLocked?: boolean;
 	background: TBackground;
 }
 
