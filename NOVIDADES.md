@@ -1,4 +1,13 @@
 Próxima versão
+• Legendas automáticas estilo CapCut: a palavra falada acende na hora certa (em dourado, numa caixa ou no estilo karaokê)
+• 5 modelos de legenda prontos: BOSS dourado, Neon, Clássico, Karaokê e Caixa. Dá para mudar fonte, tamanho, cores, contorno, sombra e o jeito que a legenda entra
+• Escolha a qualidade da transcrição: Rápida ou Precisa (melhor para live com barulho). Tudo é feito no seu PC
+• Corrija uma palavra direto na tela e o destaque continua certo
+• Dicionário de correções: troque "Bosch" por "BOSS" uma vez e ele corrige sozinho nas próximas legendas
+• No vídeo vertical, a legenda já nasce acima dos botões do TikTok, Reels e Shorts
+• Corrigido: editar um texto direto na tela não muda mais a fonte, o tamanho e a posição
+
+Próxima versão
 • O THEBOSS CUT agora fala português, inglês e espanhol: escolha o idioma pelas bandeiras na tela de projetos ou no menu do logo dentro do editor
 • Mensagens de aviso mais claras, que dizem o que fazer quando algo não dá certo
 • Datas e nomes de países aparecem no formato do idioma escolhido

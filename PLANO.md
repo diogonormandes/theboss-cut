@@ -17,17 +17,21 @@ Ordem sugerida: cada etapa vira uma versão publicada (ferramenta 24).
 - [ ] Ícones premium (trocar os ícones atuais por um conjunto com a cara da marca)
 - [ ] Ideia: o THEBOSS CUT abrir com o mesmo tema escolhido no programa THEBOSSVERSE
 - [x] Tela inicial premium: projetos recentes com miniatura, "Novo projeto" com formatos prontos (9:16, 16:9, 1:1, 4:5 e Automático); o formato escolhido fica travado (o primeiro vídeo não muda o tamanho)
-- [ ] Tirar da interface links, textos e logos do OpenCut (aviso só no LICENSE)
+- [x] Tirar da interface links, textos e logos do OpenCut (aviso só no LICENSE) — conferido; apagados os logos de patrocinadores que sobraram sem uso
 - [ ] Tour de boas-vindas curto (primeira vez) e dicas nos botões
 - [x] Salvamento automático e recuperar projeto se o PC desligar (salva menos de 1 s depois de cada mudança, salva ao fechar a janela, indicador "Salvo" no topo, aviso de recuperação na tela inicial, aviso se faltar espaço)
 - [x] Atualização automática do editor (confere a página de versões ao abrir e a cada 6 h, baixa em segundo plano, "Atualizar agora" salva/instala/reabre, "Depois" instala ao fechar) — vale a partir da próxima versão publicada
 
 ## Etapa 2 — Legendas automáticas estilo CapCut
-- [ ] Transcrição em português/inglês/espanhol com escolha de qualidade (rápida × precisa)
-- [ ] Legenda palavra por palavra com destaque da palavra falada
-- [ ] Modelos de legenda prontos (BOSS dourado, neon, clássico, karaokê, caixa) e personalização (fonte, cor, contorno, sombra, animação)
-- [ ] Editar o texto da legenda direto na tela e corrigir palavras
-- [ ] Posição segura para vertical (não ficar embaixo dos botões do TikTok/Reels)
+- [x] Transcrição em português/inglês/espanhol com escolha de qualidade (Rápida ~300 MB × Precisa ~760 MB, baixa só na 1ª vez) e tempo exato de cada palavra
+- [x] Legenda palavra por palavra com destaque da palavra falada (cor, caixa ou karaokê; a palavra cresce) — na prévia e no vídeo exportado
+- [x] Modelos de legenda prontos (BOSS dourado, neon, clássico, karaokê, caixa) e personalização (fonte, tamanho, cor, destaque, contorno, sombra, animação de entrada)
+- [x] Editar o texto da legenda direto na tela e corrigir palavras (o destaque continua certo e as linhas se arrumam sozinhas) + dicionário de correções ("Bosch" → "BOSS") aplicado sozinho nas próximas legendas
+- [x] Posição segura para vertical (a legenda nasce acima dos botões e da descrição do TikTok/Reels/Shorts)
+
+- [ ] Ideia: lista com o texto de todas as legendas para corrigir rápido (como no CapCut)
+- [ ] Ideia: escolher quantas palavras por legenda (1 a 6) e LETRAS MAIÚSCULAS
+- [ ] Ideia: modelos de legenda com emoji automático
 
 ## Etapa 3 — Corte de live (o diferencial)
 - [ ] Importar live longa e mostrar mapa da live (picos de fala, gritos, risadas, silêncio)
