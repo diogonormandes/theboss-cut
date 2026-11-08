@@ -15,8 +15,14 @@ import {
 	minMediaTime,
 	ZERO_MEDIA_TIME,
 } from "@/wasm";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 export class UpsertEffectParamKeyframeCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private readonly trackId: string;
 	private readonly elementId: string;
@@ -59,7 +65,7 @@ export class UpsertEffectParamKeyframeCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		const updatedTracks = updateElementInSceneTracks({
 			tracks: this.savedState,
@@ -97,7 +103,7 @@ export class UpsertEffectParamKeyframeCommand extends Command {
 			},
 		});
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 		return undefined;
 	}
 
@@ -107,6 +113,6 @@ export class UpsertEffectParamKeyframeCommand extends Command {
 		}
 
 		const editor = EditorCore.getInstance();
-		editor.timeline.updateTracks(this.savedState);
+		this.target.write(this.savedState);
 	}
 }

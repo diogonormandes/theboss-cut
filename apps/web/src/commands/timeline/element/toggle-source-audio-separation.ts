@@ -16,8 +16,14 @@ import type {
 	VideoElement,
 } from "@/timeline/types";
 import { generateUUID } from "@/utils/id";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 export class ToggleSourceAudioSeparationCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 
 	constructor(
@@ -31,7 +37,7 @@ export class ToggleSourceAudioSeparationCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		const sourceTrack = [
 			...this.savedState.overlay,
@@ -50,7 +56,7 @@ export class ToggleSourceAudioSeparationCommand extends Command {
 		const videoElement: VideoElement = sourceElement;
 
 		if (isSourceAudioSeparated({ element: videoElement })) {
-			editor.timeline.updateTracks(
+			this.target.write(
 				updateSourceAudioEnabled({
 					tracks: this.savedState,
 					trackId: this.params.trackId,
@@ -100,7 +106,7 @@ export class ToggleSourceAudioSeparationCommand extends Command {
 			return;
 		}
 
-		editor.timeline.updateTracks(
+		this.target.write(
 			updateSourceAudioEnabled({
 				tracks: appliedPlacement.updatedTracks,
 				trackId: this.params.trackId,
@@ -116,7 +122,7 @@ export class ToggleSourceAudioSeparationCommand extends Command {
 		}
 
 		const editor = EditorCore.getInstance();
-		editor.timeline.updateTracks(this.savedState);
+		this.target.write(this.savedState);
 	}
 }
 

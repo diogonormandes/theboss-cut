@@ -1,10 +1,69 @@
 import { useState, useRef } from "react";
 import { useEditor } from "@/editor/use-editor";
+import {
+	showOpenFilePickerSafe,
+	supportsOpenFilePicker,
+	type OpenFilePickerOptions,
+} from "@/services/storage/file-handle";
+import { rememberFileHandle, resolveDroppedFiles } from "./file-handle-registry";
 
 interface UseFileUploadOptions {
 	accept?: string;
 	multiple?: boolean;
 	onFilesSelected?: (files: File[]) => void;
+}
+
+const EXTENSIONS_BY_KIND: Record<string, string[]> = {
+	"video/*": [".mp4", ".mkv", ".mov", ".webm", ".m4v", ".avi", ".flv", ".ts"],
+	"audio/*": [".mp3", ".wav", ".m4a", ".aac", ".ogg", ".opus", ".flac"],
+	"image/*": [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".bmp"],
+};
+
+/** Converte o `accept` do <input> no formato do seletor do sistema. */
+export function buildPickerTypes(
+	accept: string | undefined,
+): OpenFilePickerOptions["types"] {
+	if (!accept || accept === "*") return undefined;
+	const mimeAccept: Record<string, string[]> = {};
+	for (const part of accept.split(",").map((p) => p.trim())) {
+		if (!part) continue;
+		if (part.startsWith(".")) {
+			mimeAccept["application/octet-stream"] = [
+				...(mimeAccept["application/octet-stream"] ?? []),
+				part,
+			];
+			continue;
+		}
+		mimeAccept[part] = EXTENSIONS_BY_KIND[part] ?? [];
+	}
+	return Object.keys(mimeAccept).length > 0 ? [{ accept: mimeAccept }] : undefined;
+}
+
+/**
+ * Abre o seletor de arquivos do sistema e devolve os arquivos já ligados aos
+ * handles (assim lives longas não precisam ser copiadas).
+ * `null` = navegador sem suporte (use o <input> comum); `[]` = cancelou.
+ */
+export async function pickFilesWithHandles({
+	accept,
+	multiple,
+}: {
+	accept?: string;
+	multiple?: boolean;
+}): Promise<File[] | null> {
+	if (!supportsOpenFilePicker()) return null;
+	const handles = await showOpenFilePickerSafe({
+		multiple: multiple ?? false,
+		types: buildPickerTypes(accept),
+	});
+	if (!handles) return [];
+	const files: File[] = [];
+	for (const handle of handles) {
+		const file = await handle.getFile();
+		rememberFileHandle({ file, handle });
+		files.push(file);
+	}
+	return files;
 }
 
 export function useFileUpload({
@@ -24,12 +83,32 @@ export function useFileUpload({
 		);
 	}
 
-	function openFilePicker() {
+	function openInputPicker() {
 		if (!inputRef.current) return;
 
 		inputRef.current.accept = accept || "*";
 		inputRef.current.multiple = multiple || false;
 		inputRef.current.click();
+	}
+
+	function openFilePicker() {
+		if (!supportsOpenFilePicker()) {
+			openInputPicker();
+			return;
+		}
+		pickFilesWithHandles({ accept, multiple })
+			.then((files) => {
+				if (files === null) {
+					openInputPicker();
+					return;
+				}
+				if (files.length > 0 && onFilesSelected) onFilesSelected(files);
+			})
+			.catch((error) => {
+				// Seletor recusado (ex.: página dentro de outra): usa o <input>.
+				console.warn("showOpenFilePicker failed, using <input>:", error);
+				openInputPicker();
+			});
 	}
 
 	function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -74,16 +153,16 @@ export function useFileUpload({
 		setIsDragOver(false);
 		dragCounterRef.current = 0;
 
-		if (onFilesSelected && containsFiles(e.dataTransfer)) {
-			const files = Array.from(e.dataTransfer.files);
-			const shouldUseMultiple = multiple ?? false;
+		if (!onFilesSelected || !containsFiles(e.dataTransfer)) return;
 
-			if (shouldUseMultiple) {
-				onFilesSelected(files);
-			} else if (files.length > 0) {
-				onFilesSelected([files[0]]);
-			}
-		}
+		const shouldUseMultiple = multiple ?? false;
+		const pick = (files: File[]) => {
+			if (shouldUseMultiple) onFilesSelected(files);
+			else if (files.length > 0) onFilesSelected([files[0]]);
+		};
+
+		// Tudo precisa ser lido AGORA: depois do evento a lista fica vazia.
+		void resolveDroppedFiles(e.dataTransfer).then(pick);
 	}
 
 	return {

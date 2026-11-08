@@ -16,8 +16,14 @@ import {
 	roundMediaTime,
 	subMediaTime,
 } from "@/wasm";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 export class SplitElementsCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private rightSideElements: { trackId: string; elementId: string }[] = [];
 	private readonly elements: { trackId: string; elementId: string }[];
@@ -45,7 +51,7 @@ export class SplitElementsCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 		this.rightSideElements = [];
 
 		const splitTrack = <
@@ -198,7 +204,7 @@ export class SplitElementsCommand extends Command {
 			audio: this.savedState.audio.map((track) => splitTrack(track)),
 		};
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 
 		if (this.rightSideElements.length > 0) {
 			return createElementSelectionResult(this.rightSideElements);
@@ -209,7 +215,7 @@ export class SplitElementsCommand extends Command {
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 }

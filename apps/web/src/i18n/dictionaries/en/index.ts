@@ -13,6 +13,7 @@ import theme from "./theme";
 import update from "./update";
 import tips from "./tips";
 import tour from "./tour";
+import liveMap from "./liveMap";
 
 import type { Dictionary } from "../../types";
 
@@ -32,4 +33,5 @@ export const en: Dictionary = {
 	update,
 	tips,
 	tour,
+	liveMap,
 };

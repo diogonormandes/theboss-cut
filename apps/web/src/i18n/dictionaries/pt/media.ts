@@ -37,6 +37,29 @@ const media = {
 			allow: "Permitir",
 		},
 	},
+	offline: {
+		badge: "Mídia offline",
+		wasAt: "Estava em: {path}",
+		locate: "Localizar arquivo",
+		locating: "Procurando…",
+		reasonMissing:
+			"O arquivo foi movido, renomeado ou apagado. Clique em Localizar arquivo e escolha onde ele está agora.",
+		reasonChanged:
+			"O arquivo neste lugar não é mais o mesmo. Clique em Localizar arquivo e escolha a gravação original.",
+		reasonPermission:
+			"Clique em Localizar arquivo para liberar de novo o acesso a esta gravação.",
+		relinked: "{name} voltou a funcionar",
+		mismatch: "Esse não parece ser o mesmo arquivo",
+		mismatchHint:
+			"O tamanho ou a duração não batem com {name}. Escolha a gravação original.",
+		failed: "Não deu para reconectar o arquivo. Tente de novo.",
+		remove: "Tirar da lista",
+		linked: "Usado direto do seu PC",
+		linkedHint:
+			"Este arquivo não foi copiado para o THEBOSS CUT, para não ocupar espaço em dobro. Não mova nem apague o arquivo enquanto estiver usando.",
+		exportBlocked:
+			"{name} está offline. Clique em Localizar arquivo na aba de mídias e depois exporte de novo.",
+	},
 	sounds: {
 		tabs: {
 			soundEffects: "Efeitos sonoros",

@@ -7,6 +7,7 @@ import {
 import type { FreeformPathMask } from "@/masks/types";
 import { isMaskableElement, updateElementInSceneTracks } from "@/timeline";
 import type { MaskableElement, SceneTracks } from "@/timeline";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 function deletePointsFromFreeformPathMask({
 	mask,
@@ -65,6 +66,11 @@ function deletePointsFromElementMask({
 }
 
 export class DeleteFreeformPathMaskPointsCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private readonly trackId: string;
 	private readonly elementId: string;
@@ -91,7 +97,7 @@ export class DeleteFreeformPathMaskPointsCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		let didDeletePoints = false;
 		const updatedTracks = updateElementInSceneTracks({
@@ -112,7 +118,7 @@ export class DeleteFreeformPathMaskPointsCommand extends Command {
 		});
 
 		if (didDeletePoints) {
-			editor.timeline.updateTracks(updatedTracks);
+			this.target.write(updatedTracks);
 			return {
 				selection: {
 					selectedMaskPoints: null,
@@ -126,7 +132,7 @@ export class DeleteFreeformPathMaskPointsCommand extends Command {
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 }

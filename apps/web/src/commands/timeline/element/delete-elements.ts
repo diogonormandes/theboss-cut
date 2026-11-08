@@ -2,6 +2,7 @@ import { Command, type CommandResult } from "@/commands/base-command";
 import type { SceneTracks } from "@/timeline";
 import { EditorCore } from "@/core";
 import type { TimelineTrack } from "@/timeline";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 function removeTrackElements<TTrack extends TimelineTrack>({
 	track,
@@ -22,6 +23,11 @@ function removeTrackElements<TTrack extends TimelineTrack>({
 }
 
 export class DeleteElementsCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private readonly elements: { trackId: string; elementId: string }[];
 
@@ -36,7 +42,7 @@ export class DeleteElementsCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		const updatedTracks: SceneTracks = {
 			overlay: this.savedState.overlay.map((track) =>
@@ -51,7 +57,7 @@ export class DeleteElementsCommand extends Command {
 			),
 		};
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 
 		return {
 			selection: {
@@ -66,7 +72,7 @@ export class DeleteElementsCommand extends Command {
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 }

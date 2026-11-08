@@ -24,6 +24,14 @@ export class BatchCommand extends Command {
 		}
 	}
 
+	getTargetSceneId(): string | null {
+		for (const command of this.commands) {
+			const sceneId = command.getTargetSceneId();
+			if (sceneId) return sceneId;
+		}
+		return null;
+	}
+
 	redo(): CommandResult | undefined {
 		let latestSelectionResult: CommandResult | undefined;
 

@@ -1,5 +1,6 @@
 import type { DragEvent } from "react";
 import { processMediaAssets } from "@/media/processing";
+import { resolveDroppedFiles } from "@/media/file-handle-registry";
 import { showMediaUploadToast } from "@/media/upload-toast";
 import {
 	DEFAULT_NEW_ELEMENT_DURATION,
@@ -262,8 +263,10 @@ export class DragDropController {
 
 			const coords = this.getMouseTimelineCoords({ event });
 			if (!coords) return;
+			// Lido aqui, ainda dentro do evento: lives longas viram referência
+			// (sem cópia para o app), como no painel de mídias.
 			this.executeFileDrop({
-				files: Array.from(event.dataTransfer.files),
+				files: resolveDroppedFiles(event.dataTransfer),
 				mouseX: coords.mouseX,
 				mouseY: coords.mouseY,
 			}).catch((error) => {
@@ -491,16 +494,18 @@ export class DragDropController {
 	}
 
 	private async executeFileDrop({
-		files,
+		files: filesPromise,
 		mouseX,
 		mouseY,
 	}: {
-		files: File[];
+		files: Promise<File[]>;
 		mouseX: number;
 		mouseY: number;
 	}): Promise<void> {
 		const projectId = this.config.getActiveProjectId();
 		if (!projectId) return;
+		const files = await filesPromise;
+		if (files.length === 0) return;
 
 		await showMediaUploadToast({
 			filesCount: files.length,

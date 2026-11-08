@@ -9,6 +9,7 @@ import {
 import { AssetsPanel } from "@/components/editor/panels/assets";
 import { PropertiesPanel } from "@/components/editor/panels/properties";
 import { Timeline } from "@/timeline/components";
+import { LiveMapStrip } from "@/components/editor/live-map/live-map-strip";
 import { PreviewPanel } from "@/preview/components";
 import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorProvider } from "@/components/providers/editor-provider";
@@ -204,7 +205,12 @@ function EditorLayout() {
 				className="min-h-0 px-3 pb-3"
 				data-tour="timeline"
 			>
-				<Timeline />
+				<div className="flex h-full min-h-0 flex-col gap-[0.18rem]">
+					<LiveMapStrip />
+					<div className="min-h-0 flex-1">
+						<Timeline />
+					</div>
+				</div>
 			</ResizablePanel>
 		</ResizablePanelGroup>
 	);

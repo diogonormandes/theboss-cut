@@ -13,6 +13,7 @@ import theme from "./theme";
 import update from "./update";
 import tips from "./tips";
 import tour from "./tour";
+import liveMap from "./liveMap";
 
 export const pt = {
 	common,
@@ -30,4 +31,5 @@ export const pt = {
 	update,
 	tips,
 	tour,
+	liveMap,
 };

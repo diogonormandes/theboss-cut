@@ -1,4 +1,5 @@
 import type { MediaType } from "@/media/types";
+import type { MediaStorageKind, OfflineReason } from "./media-reference";
 import type {
 	TProject,
 	TProjectMetadata,
@@ -27,6 +28,25 @@ export interface MediaAssetData {
 	hasAudio?: boolean;
 	ephemeral?: boolean;
 	thumbnailUrl?: string;
+	/**
+	 * Onde o arquivo está: "opfs" = cópia dentro do app; "handle" = só a
+	 * referência ao arquivo original no PC (lives longas, sem cópia).
+	 * Dados antigos não têm o campo e contam como "opfs".
+	 */
+	storage?: MediaStorageKind;
+	/** Referência ao arquivo original, quando `storage === "handle"`. */
+	handle?: FileSystemFileHandle;
+	/** Onde o arquivo estava no PC (só para mostrar; vem do app do Windows). */
+	originalPath?: string;
+}
+
+/**
+ * Mídia guardada por referência cujo arquivo não foi achado ao abrir o
+ * projeto (movido, renomeado, apagado ou sem permissão). Fica fora da lista
+ * normal de mídias até a pessoa usar "Localizar arquivo".
+ */
+export interface OfflineMediaAsset extends MediaAssetData {
+	reason: OfflineReason;
 }
 
 export type SerializedScene = Omit<TScene, "createdAt" | "updatedAt"> & {

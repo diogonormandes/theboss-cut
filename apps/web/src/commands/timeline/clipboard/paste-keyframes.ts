@@ -17,6 +17,7 @@ import {
 	minMediaTime,
 	ZERO_MEDIA_TIME,
 } from "@/wasm";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 function pasteKeyframesIntoElement({
 	element,
@@ -85,6 +86,11 @@ function pasteKeyframesIntoElement({
 }
 
 export class PasteKeyframesCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private readonly trackId: string;
 	private readonly elementId: string;
@@ -115,7 +121,7 @@ export class PasteKeyframesCommand extends Command {
 		}
 
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		const updatedTracks = updateElementInSceneTracks({
 			tracks: this.savedState,
@@ -129,7 +135,7 @@ export class PasteKeyframesCommand extends Command {
 				}),
 		});
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 		return undefined;
 	}
 
@@ -139,6 +145,6 @@ export class PasteKeyframesCommand extends Command {
 		}
 
 		const editor = EditorCore.getInstance();
-		editor.timeline.updateTracks(this.savedState);
+		this.target.write(this.savedState);
 	}
 }

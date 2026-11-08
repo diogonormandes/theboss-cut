@@ -7,9 +7,30 @@ import { generateUUID } from "@/utils/id";
 import { videoCache } from "@/services/video-cache/service";
 import { waveformCache } from "@/services/waveform-cache/service";
 import { BatchCommand, RemoveMediaAssetCommand } from "@/commands";
+import type { OfflineMediaAsset } from "@/services/storage/types";
+import {
+	getDesktopFilePath,
+	readLinkedFile,
+} from "@/services/storage/file-handle";
+import { pickReplacementFile } from "@/media/relink-media";
+import { hasSpaceFor } from "@/media/processing";
+import { decideMediaStorage } from "@/services/storage/media-reference";
+
+export type RelinkResult =
+	| "relinked"
+	| "cancelled"
+	| "mismatch"
+	/** Sem espaço para a cópia (o aviso com o que fazer já foi mostrado). */
+	| "noSpace"
+	| "failed";
 
 export class MediaManager {
 	private assets: MediaAsset[] = [];
+	/**
+	 * Mídias guardadas por referência cujo arquivo não foi achado. Ficam fora
+	 * de `assets` (e de prévia, áudio e exportação) até serem reconectadas.
+	 */
+	private offlineAssets: OfflineMediaAsset[] = [];
 	private isLoading = false;
 	private listeners = new Set<() => void>();
 
@@ -90,10 +111,11 @@ export class MediaManager {
 		this.notify();
 
 		try {
-			const mediaAssets = await storageService.loadAllMediaAssets({
+			const { assets, offline } = await storageService.loadProjectMediaState({
 				projectId,
 			});
-			this.assets = mediaAssets;
+			this.assets = assets;
+			this.offlineAssets = offline;
 			this.notify();
 		} catch (error) {
 			console.error("Failed to load media assets:", error);
@@ -115,8 +137,12 @@ export class MediaManager {
 			}
 		});
 
-		const mediaIds = this.assets.map((asset) => asset.id);
+		const mediaIds = [
+			...this.assets.map((asset) => asset.id),
+			...this.offlineAssets.map((asset) => asset.id),
+		];
 		this.assets = [];
+		this.offlineAssets = [];
 		this.notify();
 
 		try {
@@ -144,6 +170,7 @@ export class MediaManager {
 		});
 
 		this.assets = [];
+		this.offlineAssets = [];
 		this.notify();
 	}
 
@@ -154,6 +181,109 @@ export class MediaManager {
 	setAssets({ assets }: { assets: MediaAsset[] }): void {
 		this.assets = assets;
 		this.notify();
+	}
+
+	getOfflineAssets(): OfflineMediaAsset[] {
+		return this.offlineAssets;
+	}
+
+	/**
+	 * "Localizar arquivo": primeiro tenta o mesmo arquivo (talvez só falte
+	 * liberar o acesso); senão, pede à pessoa para escolher e confere se é o
+	 * mesmo (tamanho e duração parecidos). Chamar direto do clique.
+	 */
+	async relinkOfflineAsset({
+		projectId,
+		id,
+	}: {
+		projectId: string;
+		id: string;
+	}): Promise<RelinkResult> {
+		const offline = this.offlineAssets.find((asset) => asset.id === id);
+		if (!offline) return "failed";
+
+		try {
+			let file: File | null = null;
+			let handle: FileSystemFileHandle | null = null;
+
+			if (offline.reason === "permission" && offline.handle) {
+				const linked = await readLinkedFile({
+					handle: offline.handle,
+					expectedSize: offline.size,
+					request: true,
+				});
+				if (linked.status === "online") {
+					file = linked.file;
+					handle = offline.handle;
+				}
+			}
+
+			if (!file) {
+				const picked = await pickReplacementFile({ asset: offline });
+				if (picked.status !== "ok") return picked.status;
+				file = picked.file;
+				handle = picked.handle;
+			}
+
+			const storage = decideMediaStorage({
+				size: file.size,
+				type: offline.type,
+				durationSeconds: offline.duration,
+				hasHandle: handle !== null,
+			});
+			// Sem handle (seletor comum do navegador) a mídia vira cópia no app:
+			// confere o espaço antes, como na importação.
+			if (storage === "opfs" && !(await hasSpaceFor({ file }))) {
+				return "noSpace";
+			}
+			const {
+				reason: _reason,
+				size: _size,
+				lastModified: _lastModified,
+				handle: _oldHandle,
+				originalPath: oldPath,
+				...rest
+			} = offline;
+			const asset: MediaAsset = {
+				...rest,
+				file,
+				url: URL.createObjectURL(file),
+				storage,
+				...(storage === "handle" &&
+					handle && {
+						handle,
+						originalPath: getDesktopFilePath(file) || oldPath,
+					}),
+			};
+
+			await storageService.saveMediaAsset({ projectId, mediaAsset: asset });
+
+			this.offlineAssets = this.offlineAssets.filter((a) => a.id !== id);
+			this.assets = [...this.assets, asset];
+			videoCache.clearVideo({ mediaId: id });
+			this.notify();
+			return "relinked";
+		} catch (error) {
+			console.error("Failed to relink media asset:", error);
+			return "failed";
+		}
+	}
+
+	/** Tira da lista uma mídia offline (só a referência; o arquivo do PC fica). */
+	async removeOfflineAsset({
+		projectId,
+		id,
+	}: {
+		projectId: string;
+		id: string;
+	}): Promise<void> {
+		this.offlineAssets = this.offlineAssets.filter((asset) => asset.id !== id);
+		this.notify();
+		try {
+			await storageService.deleteMediaAsset({ projectId, id });
+		} catch (error) {
+			console.error("Failed to remove offline media asset:", error);
+		}
 	}
 
 	isLoadingMedia(): boolean {

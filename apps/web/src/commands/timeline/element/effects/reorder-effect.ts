@@ -2,6 +2,7 @@ import { Command, type CommandResult } from "@/commands/base-command";
 import { EditorCore } from "@/core";
 import { isVisualElement, updateElementInSceneTracks } from "@/timeline";
 import type { SceneTracks, VisualElement } from "@/timeline";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 function reorderEffectsOnElement({
 	element,
@@ -19,6 +20,11 @@ function reorderEffectsOnElement({
 }
 
 export class ReorderClipEffectsCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private readonly trackId: string;
 	private readonly elementId: string;
@@ -45,7 +51,7 @@ export class ReorderClipEffectsCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		const updatedTracks = updateElementInSceneTracks({
 			tracks: this.savedState,
@@ -61,14 +67,14 @@ export class ReorderClipEffectsCommand extends Command {
 			},
 		});
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 		return undefined;
 	}
 
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 }

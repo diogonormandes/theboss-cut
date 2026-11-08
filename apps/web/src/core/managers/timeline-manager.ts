@@ -754,6 +754,7 @@ export class TimelineManager {
 		const command = new TracksSnapshotCommand({
 			before: committedTracks,
 			after: afterTracks,
+			sceneId: this.editor.scenes.getActiveSceneOrNull()?.id ?? null,
 		});
 		this.editor.command.push({ command });
 		this.previewOverlay.clear();
@@ -938,7 +939,24 @@ export class TimelineManager {
 		return null;
 	}
 
-	updateTracks(newTracks: SceneTracks): void {
+	/**
+	 * Grava as faixas. Com `sceneId` de uma cena que não é a aberta, grava só
+	 * naquela cena (sem mexer na prévia da cena aberta) — usado pelo desfazer.
+	 */
+	updateTracks(
+		newTracks: SceneTracks,
+		options?: { sceneId?: string | null },
+	): void {
+		const activeSceneId = this.editor.scenes.getActiveSceneOrNull()?.id ?? null;
+		const targetSceneId = options?.sceneId ?? activeSceneId;
+		if (targetSceneId && targetSceneId !== activeSceneId) {
+			this.editor.scenes.updateSceneTracks({
+				tracks: newTracks,
+				sceneId: targetSceneId,
+			});
+			this.notify();
+			return;
+		}
 		this.previewOverlay.clear();
 		this.previewTracks = null;
 		this.editor.scenes.updateSceneTracks({ tracks: newTracks });

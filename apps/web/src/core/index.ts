@@ -46,13 +46,17 @@ export class EditorCore {
 		this.diagnostics = new DiagnosticsManager(this);
 		registerTranscriptionDiagnostics({ diagnostics: this.diagnostics });
 		this.playback.bindTimelineScope();
-		this.command.registerReactor(() => {
-			const activeScene = this.scenes.getActiveSceneOrNull();
-			if (!activeScene) {
+		// Tira faixas vazias da cena em que o comando mexeu (no refazer, pode
+		// não ser a cena aberta).
+		this.command.registerReactor(({ sceneId }) => {
+			const scene = sceneId
+				? this.scenes.getSceneById(sceneId)
+				: this.scenes.getActiveSceneOrNull();
+			if (!scene) {
 				return;
 			}
 
-			const tracks = activeScene.tracks;
+			const tracks = scene.tracks;
 			const prunedTracks = {
 				...tracks,
 				overlay: tracks.overlay.filter((track) => track.elements.length > 0),
@@ -62,7 +66,7 @@ export class EditorCore {
 				prunedTracks.overlay.length !== tracks.overlay.length ||
 				prunedTracks.audio.length !== tracks.audio.length
 			) {
-				this.timeline.updateTracks(prunedTracks);
+				this.timeline.updateTracks(prunedTracks, { sceneId: scene.id });
 			}
 		});
 		this.save.start();

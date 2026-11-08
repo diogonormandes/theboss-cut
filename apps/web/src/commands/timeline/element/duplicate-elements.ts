@@ -10,12 +10,18 @@ import { EditorCore } from "@/core";
 import { applyPlacement, resolveTrackPlacement } from "@/timeline/placement";
 import { cloneAnimations } from "@/animation";
 import type { MediaTime } from "@/wasm";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 interface DuplicateElementsParams {
 	elements: { trackId: string; elementId: string }[];
 }
 
 export class DuplicateElementsCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private duplicatedElements: { trackId: string; elementId: string }[] = [];
 	private savedState: SceneTracks | null = null;
 	private elements: DuplicateElementsParams["elements"];
@@ -27,7 +33,7 @@ export class DuplicateElementsCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 		this.duplicatedElements = [];
 
 		let updatedTracks = this.savedState;
@@ -94,7 +100,7 @@ export class DuplicateElementsCommand extends Command {
 			}
 		}
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 
 		if (this.duplicatedElements.length > 0) {
 			return createElementSelectionResult(this.duplicatedElements);
@@ -105,7 +111,7 @@ export class DuplicateElementsCommand extends Command {
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 

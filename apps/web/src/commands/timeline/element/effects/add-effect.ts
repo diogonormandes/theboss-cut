@@ -3,6 +3,7 @@ import { EditorCore } from "@/core";
 import { isVisualElement, updateElementInSceneTracks } from "@/timeline";
 import type { SceneTracks, VisualElement } from "@/timeline";
 import { buildDefaultEffectInstance } from "@/effects";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 function addEffectToElement({
 	element,
@@ -17,6 +18,11 @@ function addEffectToElement({
 }
 
 export class AddClipEffectCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private effectId: string | null = null;
 	private readonly trackId: string;
@@ -40,7 +46,7 @@ export class AddClipEffectCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		const updatedTracks = updateElementInSceneTracks({
 			tracks: this.savedState,
@@ -58,14 +64,14 @@ export class AddClipEffectCommand extends Command {
 			},
 		});
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 		return undefined;
 	}
 
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 

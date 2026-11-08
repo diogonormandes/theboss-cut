@@ -31,6 +31,7 @@ import { DEFAULTS } from "@/timeline/defaults";
 import { getElementFontFamilies } from "@/timeline/element-utils";
 import { getRaisedProjectFpsForImportedMedia } from "@/fps/utils";
 import type { MediaAsset } from "@/media/types";
+import { findOfflineMediaInUse } from "@/services/storage/media-reference";
 
 export interface MigrationState {
 	isMigrating: boolean;
@@ -465,20 +466,14 @@ export class ProjectManager {
 			);
 
 			await Promise.all(
-				duplicationPlans.map(async ({ sourceProjectId, newProjectId }) => {
-					const sourceMediaAssets = await storageService.loadAllMediaAssets({
-						projectId: sourceProjectId,
-					});
-
-					await Promise.all(
-						sourceMediaAssets.map((mediaAsset) =>
-							storageService.saveMediaAsset({
-								projectId: newProjectId,
-								mediaAsset,
-							}),
-						),
-					);
-				}),
+				// Copia os registros direto (sem abrir os arquivos): lives guardadas
+				// por referência continuam ligadas na cópia mesmo se estiverem offline.
+				duplicationPlans.map(({ sourceProjectId, newProjectId }) =>
+					storageService.copyProjectMedia({
+						fromProjectId: sourceProjectId,
+						toProjectId: newProjectId,
+					}),
+				),
 			);
 
 			for (const { newProject } of duplicationPlans) {
@@ -667,6 +662,15 @@ export class ProjectManager {
 		if (!this.active) return false;
 
 		const tracks = this.editor.scenes.getActiveScene().tracks;
+		// Com mídia offline em uso a miniatura sairia preta: mantém a antiga.
+		if (
+			findOfflineMediaInUse({
+				tracks,
+				offline: this.editor.media.getOfflineAssets(),
+			}).length > 0
+		) {
+			return false;
+		}
 		const mediaAssets = this.editor.media.getAssets();
 		const duration = this.editor.timeline.getTotalDuration();
 		const { canvasSize, background } = this.active.settings;

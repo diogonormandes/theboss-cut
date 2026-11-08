@@ -6,6 +6,7 @@
  */
 
 import type { AudioCodec, StreamTargetChunk, VideoCodec } from "mediabunny";
+import { rememberFileHandle } from "@/media/file-handle-registry";
 import {
 	type Bloco,
 	FACECAM_RAIO,
@@ -417,10 +418,14 @@ export async function listarLivesGeradas(): Promise<ArquivoGerado[]> {
 /** Abre a live gravada como File (sem ler o conteúdo para a memória). */
 export async function abrirArquivoGerado(nome: string): Promise<File> {
 	const raiz = await navigator.storage.getDirectory();
-	const bruto = await (await raiz.getFileHandle(nome)).getFile();
+	const handle = await raiz.getFileHandle(nome);
+	const bruto = await handle.getFile();
 	const tipo = nome.endsWith(".mkv") ? "video/x-matroska" : "video/mp4";
 	// novo File com o tipo certo; aponta para o mesmo conteúdo em disco
-	return new File([bruto], nome, { type: tipo, lastModified: bruto.lastModified });
+	const file = new File([bruto], nome, { type: tipo, lastModified: bruto.lastModified });
+	// Passo 2: liga o File ao handle, como o seletor do sistema faria (live longa sem cópia)
+	rememberFileHandle({ file, handle });
+	return file;
 }
 
 export async function apagarLiveGerada(nome: string): Promise<void> {

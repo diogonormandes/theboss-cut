@@ -38,6 +38,29 @@ const media: Dictionary["media"] = {
 			allow: "Permitir",
 		},
 	},
+	offline: {
+		badge: "Medio sin conexión",
+		wasAt: "Estaba en: {path}",
+		locate: "Buscar archivo",
+		locating: "Buscando…",
+		reasonMissing:
+			"El archivo se movió, se renombró o se borró. Haz clic en Buscar archivo y elige dónde está ahora.",
+		reasonChanged:
+			"El archivo en este lugar ya no es el mismo. Haz clic en Buscar archivo y elige la grabación original.",
+		reasonPermission:
+			"Haz clic en Buscar archivo para volver a permitir el acceso a esta grabación.",
+		relinked: "{name} volvió a funcionar",
+		mismatch: "No parece ser el mismo archivo",
+		mismatchHint:
+			"El tamaño o la duración no coinciden con {name}. Elige la grabación original.",
+		failed: "No se pudo volver a conectar el archivo. Inténtalo de nuevo.",
+		remove: "Quitar de la lista",
+		linked: "Usado directo desde tu PC",
+		linkedHint:
+			"Este archivo no se copió a THEBOSS CUT, para no ocupar el doble de espacio. No muevas ni borres el archivo mientras lo uses.",
+		exportBlocked:
+			"{name} no está conectado. Haz clic en Buscar archivo en la pestaña de medios y luego exporta de nuevo.",
+	},
 	sounds: {
 		tabs: {
 			soundEffects: "Efectos de sonido",

@@ -2,7 +2,7 @@
 // Porta fixa para os projetos (guardados no navegador interno) continuarem no mesmo lugar sempre.
 // Nada sai do computador: os vídeos e projetos ficam aqui.
 
-const { app, BrowserWindow, shell, Menu, ipcMain } = require("electron");
+const { app, BrowserWindow, shell, Menu, ipcMain, session } = require("electron");
 const { spawn } = require("child_process");
 const path = require("path");
 const http = require("http");
@@ -137,7 +137,45 @@ async function criarJanela() {
   else janela.webContents.executeJavaScript("document.body.dataset.erro='1'").catch(() => {});
 }
 
+// Permissões da página. "fileSystem" (abrir a live direto do PC, sem copiar,
+// e reabrir depois pela referência guardada) só para o editor em ENDERECO e
+// só para LER. As outras continuam como o Electron já fazia, mas apenas para
+// o editor e para a tela de carregamento; qualquer outra origem é negada.
+function origemDe(url) {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return "";
+  }
+}
+function ehDoEditor(url) {
+  return origemDe(url) === ENDERECO;
+}
+function ehPaginaLocal(url) {
+  return typeof url === "string" && url.startsWith("file:");
+}
+function permitir(permissao, url, detalhes) {
+  if (permissao === "fileSystem") {
+    if (!ehDoEditor(url)) return false;
+    const tipo = detalhes && detalhes.fileAccessType;
+    return !tipo || tipo === "readable";
+  }
+  return ehDoEditor(url) || ehPaginaLocal(url);
+}
+function configurarPermissoes() {
+  const s = session.defaultSession;
+  s.setPermissionRequestHandler((webContents, permissao, responder, detalhes) => {
+    const url = (detalhes && (detalhes.requestingUrl || detalhes.securityOrigin)) || webContents.getURL();
+    responder(permitir(permissao, url, detalhes));
+  });
+  s.setPermissionCheckHandler((webContents, permissao, origem, detalhes) => {
+    const url = origem || (detalhes && (detalhes.requestingUrl || detalhes.securityOrigin)) || (webContents ? webContents.getURL() : "");
+    return permitir(permissao, url, detalhes);
+  });
+}
+
 app.whenReady().then(() => {
+  configurarPermissoes();
   ligarServidor();
   criarJanela();
   atualizacao.iniciar();

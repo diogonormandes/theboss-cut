@@ -10,8 +10,11 @@ import {
 	isStorageQuotaExceededError,
 	readStorageQuotaStatus,
 } from "./quota";
+import { readLinkedFile } from "./file-handle";
+import { normalizeMediaStorage } from "./media-reference";
 import type {
 	MediaAssetData,
+	OfflineMediaAsset,
 	StorageConfig,
 	SerializedProject,
 	SerializedScene,
@@ -143,6 +146,9 @@ class StorageService {
 			bookmarks: scene.bookmarks,
 			createdAt: scene.createdAt.toISOString(),
 			updatedAt: scene.updatedAt.toISOString(),
+			...(scene.canvasSize ? { canvasSize: scene.canvasSize } : {}),
+			...(scene.sourceRange ? { sourceRange: scene.sourceRange } : {}),
+			...(scene.kind ? { kind: scene.kind } : {}),
 		}));
 
 		const serializedProject: SerializedProject = {
@@ -199,6 +205,9 @@ class StorageService {
 				bookmarks: normalizeBookmarks({ raw: scene.bookmarks }),
 				createdAt: new Date(scene.createdAt),
 				updatedAt: new Date(scene.updatedAt),
+				...(scene.canvasSize ? { canvasSize: scene.canvasSize } : {}),
+				...(scene.sourceRange ? { sourceRange: scene.sourceRange } : {}),
+				...(scene.kind ? { kind: scene.kind } : {}),
 			})) ?? [];
 
 		const project: TProject = {
@@ -294,6 +303,10 @@ class StorageService {
 		const { mediaMetadataAdapter, mediaAssetsAdapter } =
 			this.getProjectMediaAdapters({ projectId });
 
+		// Só vira referência se houver mesmo um handle; senão, cópia como antes.
+		const storage =
+			mediaAsset.storage === "handle" && mediaAsset.handle ? "handle" : "opfs";
+
 		const metadata: MediaAssetData = {
 			id: mediaAsset.id,
 			name: mediaAsset.name,
@@ -303,9 +316,21 @@ class StorageService {
 			width: mediaAsset.width,
 			height: mediaAsset.height,
 			duration: mediaAsset.duration,
+			fps: mediaAsset.fps,
+			hasAudio: mediaAsset.hasAudio,
 			thumbnailUrl: mediaAsset.thumbnailUrl,
 			ephemeral: mediaAsset.ephemeral,
+			storage,
+			...(storage === "handle" && { handle: mediaAsset.handle }),
+			...(storage === "handle" &&
+				mediaAsset.originalPath && { originalPath: mediaAsset.originalPath }),
 		};
+
+		if (storage === "handle") {
+			// A live fica onde está: nada é copiado para o armazenamento do app.
+			await mediaMetadataAdapter.set({ key: mediaAsset.id, value: metadata });
+			return;
+		}
 
 		try {
 			await mediaAssetsAdapter.set({
@@ -333,40 +358,37 @@ class StorageService {
 		}
 	}
 
-	async loadMediaAsset({
-		projectId,
-		id,
+	private buildObjectUrl = async ({
+		file,
+		type,
 	}: {
-		projectId: string;
-		id: string;
-	}): Promise<MediaAsset | null> {
-		const { mediaMetadataAdapter, mediaAssetsAdapter } =
-			this.getProjectMediaAdapters({ projectId });
-
-		const [file, metadata] = await Promise.all([
-			mediaAssetsAdapter.get(id),
-			mediaMetadataAdapter.get(id),
-		]);
-
-		if (!file || !metadata) return null;
-
-		let url: string;
-		if (metadata.type === "image" && (!file.type || file.type === "")) {
+		file: File;
+		type: MediaAssetData["type"];
+	}): Promise<string> => {
+		if (type === "image" && (!file.type || file.type === "")) {
 			try {
 				const text = await file.text();
 				if (text.trim().startsWith("<svg")) {
 					const svgBlob = new Blob([text], { type: "image/svg+xml" });
-					url = URL.createObjectURL(svgBlob);
-				} else {
-					url = URL.createObjectURL(file);
+					return URL.createObjectURL(svgBlob);
 				}
 			} catch {
-				url = URL.createObjectURL(file);
+				// cai no caminho normal abaixo
 			}
-		} else {
-			url = URL.createObjectURL(file);
 		}
+		return URL.createObjectURL(file);
+	};
 
+	private buildAsset({
+		metadata,
+		file,
+		url,
+	}: {
+		metadata: MediaAssetData;
+		file: File;
+		url: string;
+	}): MediaAsset {
+		const storage = normalizeMediaStorage(metadata.storage);
 		return {
 			id: metadata.id,
 			name: metadata.name,
@@ -376,31 +398,157 @@ class StorageService {
 			width: metadata.width,
 			height: metadata.height,
 			duration: metadata.duration,
+			fps: metadata.fps,
+			hasAudio: metadata.hasAudio,
 			thumbnailUrl: metadata.thumbnailUrl,
 			ephemeral: metadata.ephemeral,
+			storage,
+			...(storage === "handle" && metadata.handle && { handle: metadata.handle }),
+			...(metadata.originalPath && { originalPath: metadata.originalPath }),
 		};
 	}
 
+	/**
+	 * Carrega uma mídia e diz se ela está disponível. Mídias guardadas por
+	 * referência podem voltar "offline" (arquivo movido, apagado, trocado ou
+	 * sem permissão); as copiadas para o app que sumiram voltam `null`.
+	 */
+	async loadMediaAssetWithStatus({
+		projectId,
+		id,
+	}: {
+		projectId: string;
+		id: string;
+	}): Promise<
+		| { status: "online"; asset: MediaAsset }
+		| { status: "offline"; asset: OfflineMediaAsset }
+		| null
+	> {
+		const { mediaMetadataAdapter, mediaAssetsAdapter } =
+			this.getProjectMediaAdapters({ projectId });
+
+		const metadata = await mediaMetadataAdapter.get(id);
+		if (!metadata) return null;
+
+		if (normalizeMediaStorage(metadata.storage) === "handle") {
+			const linked = await readLinkedFile({
+				handle: metadata.handle,
+				expectedSize: metadata.size,
+			});
+			if (linked.status === "offline") {
+				return {
+					status: "offline",
+					asset: { ...metadata, storage: "handle", reason: linked.reason },
+				};
+			}
+			const url = await this.buildObjectUrl({
+				file: linked.file,
+				type: metadata.type,
+			});
+			return {
+				status: "online",
+				asset: this.buildAsset({ metadata, file: linked.file, url }),
+			};
+		}
+
+		const file = await mediaAssetsAdapter.get(id);
+		if (!file) return null;
+		const url = await this.buildObjectUrl({ file, type: metadata.type });
+		return {
+			status: "online",
+			asset: this.buildAsset({ metadata, file, url }),
+		};
+	}
+
+	async loadMediaAsset({
+		projectId,
+		id,
+	}: {
+		projectId: string;
+		id: string;
+	}): Promise<MediaAsset | null> {
+		const result = await this.loadMediaAssetWithStatus({ projectId, id });
+		return result?.status === "online" ? result.asset : null;
+	}
+
+	/** Só as mídias disponíveis (as offline ficam de fora). */
 	async loadAllMediaAssets({
 		projectId,
 	}: {
 		projectId: string;
 	}): Promise<MediaAsset[]> {
+		const { assets } = await this.loadProjectMediaState({ projectId });
+		return assets;
+	}
+
+	/** Mídias disponíveis e mídias offline do projeto. */
+	async loadProjectMediaState({
+		projectId,
+	}: {
+		projectId: string;
+	}): Promise<{ assets: MediaAsset[]; offline: OfflineMediaAsset[] }> {
 		const { mediaMetadataAdapter } = this.getProjectMediaAdapters({
 			projectId,
 		});
 
 		const mediaIds = await mediaMetadataAdapter.list();
-		const mediaItems: MediaAsset[] = [];
+		const assets: MediaAsset[] = [];
+		const offline: OfflineMediaAsset[] = [];
 
 		for (const id of mediaIds) {
-			const item = await this.loadMediaAsset({ projectId, id });
-			if (item) {
-				mediaItems.push(item);
-			}
+			const result = await this.loadMediaAssetWithStatus({ projectId, id });
+			if (!result) continue;
+			if (result.status === "online") assets.push(result.asset);
+			else offline.push(result.asset);
 		}
 
-		return mediaItems;
+		return { assets, offline };
+	}
+
+	/**
+	 * Copia as mídias de um projeto para outro (usado ao duplicar).
+	 * Mídias guardadas por referência só têm o registro copiado (com o
+	 * handle), sem abrir o arquivo nem pedir permissão: mesmo offline, a
+	 * cópia continua mostrando "Mídia offline" e "Localizar arquivo".
+	 * Só as mídias copiadas para o app têm o arquivo copiado.
+	 */
+	async copyProjectMedia({
+		fromProjectId,
+		toProjectId,
+	}: {
+		fromProjectId: string;
+		toProjectId: string;
+	}): Promise<void> {
+		const source = this.getProjectMediaAdapters({ projectId: fromProjectId });
+		const target = this.getProjectMediaAdapters({ projectId: toProjectId });
+
+		const mediaIds = await source.mediaMetadataAdapter.list();
+		for (const id of mediaIds) {
+			const metadata = await source.mediaMetadataAdapter.get(id);
+			if (!metadata) continue;
+
+			if (normalizeMediaStorage(metadata.storage) === "handle") {
+				await target.mediaMetadataAdapter.set({ key: id, value: metadata });
+				continue;
+			}
+
+			const file = await source.mediaAssetsAdapter.get(id);
+			if (!file) continue;
+			try {
+				await target.mediaAssetsAdapter.set({ key: id, value: file });
+				await target.mediaMetadataAdapter.set({ key: id, value: metadata });
+			} catch (error) {
+				try {
+					await target.mediaAssetsAdapter.remove(id);
+				} catch {
+					// mantém o erro original
+				}
+				if (this.isQuotaExceededError({ error })) {
+					throw new StorageQuotaExceededError({ requiredBytes: file.size });
+				}
+				throw error;
+			}
+		}
 	}
 
 	async deleteMediaAsset({
@@ -464,6 +612,22 @@ class StorageService {
 		return {
 			mediaItems: mediaIds.length,
 		};
+	}
+
+	/**
+	 * Ids de todas as mídias de todos os projetos guardados (só a lista, sem
+	 * abrir nenhum arquivo). Usado para apagar o cache do mapa da live das
+	 * mídias que já não existem. Se algo falhar, lança: quem chama não apaga nada.
+	 */
+	async listAllMediaIds(): Promise<Set<string>> {
+		const ids = new Set<string>();
+		for (const projectId of await this.projectsAdapter.list()) {
+			const { mediaMetadataAdapter } = this.getProjectMediaAdapters({
+				projectId,
+			});
+			for (const id of await mediaMetadataAdapter.list()) ids.add(id);
+		}
+		return ids;
 	}
 
 	async loadSavedSounds(): Promise<SavedSoundsData> {

@@ -6,8 +6,14 @@ import {
 	updateElementInSceneTracks,
 } from "@/timeline";
 import { applyElementUpdate } from "@/timeline/update-pipeline";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 export class UpdateElementsCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private readonly updates: Array<{
 		trackId: string;
@@ -30,7 +36,7 @@ export class UpdateElementsCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 		let updatedTracks = this.savedState;
 
 		for (const updateEntry of this.updates) {
@@ -62,14 +68,14 @@ export class UpdateElementsCommand extends Command {
 			});
 		}
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 		return undefined;
 	}
 
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 }

@@ -7,6 +7,9 @@ import type { MediaAsset } from "@/media/types";
 import { readVideoFile } from "./mediabunny";
 import type { VideoFileData } from "./mediabunny";
 import { renderThumbnailDataUrl } from "./thumbnail";
+import { getRememberedFileHandle } from "./file-handle-registry";
+import { decideMediaStorage } from "@/services/storage/media-reference";
+import { getDesktopFilePath } from "@/services/storage/file-handle";
 
 export interface ProcessedMediaAsset extends Omit<MediaAsset, "id"> {}
 
@@ -84,6 +87,19 @@ async function generateImageThumbnail({
 	});
 }
 
+/** Confere se cabe uma cópia do arquivo no app; se não, avisa o que fazer. */
+export async function hasSpaceFor({ file }: { file: File }): Promise<boolean> {
+	const storageCheck = await storageService.canStoreFile({ size: file.size });
+	if (storageCheck.canStore) return true;
+	toast.error(t("media.upload.noSpace", { name: file.name }), {
+		description: getStorageLimitDescription({
+			fileSize: file.size,
+			availableBytes: storageCheck.availableBytes,
+		}),
+	});
+	return false;
+}
+
 export async function processMediaAssets({
 	files,
 	onProgress,
@@ -105,19 +121,11 @@ export async function processMediaAssets({
 			continue;
 		}
 
-		const storageCheck = await storageService.canStoreFile({
-			size: file.size,
-		});
+		const handle = getRememberedFileHandle({ file });
 
-		if (!storageCheck.canStore) {
-			toast.error(t("media.upload.noSpace", { name: file.name }), {
-				description: getStorageLimitDescription({
-					fileSize: file.size,
-					availableBytes: storageCheck.availableBytes,
-				}),
-			});
-			continue;
-		}
+		// Sem referência ao arquivo, ele com certeza será copiado: confere o
+		// espaço já. Com referência, confere depois de saber se vai copiar.
+		if (!handle && !(await hasSpaceFor({ file }))) continue;
 
 		const url = URL.createObjectURL(file);
 		let thumbnailUrl: string | undefined;
@@ -162,11 +170,29 @@ export async function processMediaAssets({
 				duration = await getMediaDuration({ file });
 			}
 
+			const storage = decideMediaStorage({
+				size: file.size,
+				type: fileType,
+				durationSeconds: duration,
+				hasHandle: handle !== null,
+			});
+
+			if (handle && storage === "opfs" && !(await hasSpaceFor({ file }))) {
+				URL.revokeObjectURL(url);
+				continue;
+			}
+
 			processedAssets.push({
 				name: file.name,
 				type: fileType,
 				file,
 				url,
+				storage,
+				...(storage === "handle" &&
+					handle && {
+						handle,
+						originalPath: getDesktopFilePath(file) || undefined,
+					}),
 				thumbnailUrl,
 				duration,
 				width,

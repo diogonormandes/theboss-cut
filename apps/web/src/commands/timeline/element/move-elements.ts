@@ -14,8 +14,14 @@ import type {
 	PlannedTrackCreation,
 } from "@/timeline/group-move";
 import { findTrackInSceneTracks } from "@/timeline/track-element-update";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 export class MoveElementCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 
 	constructor({
@@ -35,7 +41,7 @@ export class MoveElementCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		let tracksToUpdate = this.savedState;
 		for (const createTrack of [...this.createTracks].sort(
@@ -113,7 +119,7 @@ export class MoveElementCommand extends Command {
 			}),
 		});
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 		return createElementSelectionResult(
 			this.moves.map(({ elementId, targetTrackId }) => ({
 				trackId: targetTrackId,
@@ -125,7 +131,7 @@ export class MoveElementCommand extends Command {
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 }

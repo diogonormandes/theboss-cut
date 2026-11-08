@@ -2,6 +2,7 @@ import type { ElementAnimations } from "@/animation/types";
 import type { Effect } from "@/effects/types";
 import type { Mask } from "@/masks/types";
 import type { ParamValues } from "@/params";
+import type { TCanvasSize } from "@/project/types";
 import type { MediaTime } from "@/wasm";
 
 export type ElementRef = {
@@ -16,6 +17,15 @@ export interface Bookmark {
 	duration?: MediaTime;
 }
 
+/** Trecho da mídia de origem que uma cena de corte usa (em segundos da fonte). */
+export interface SceneSourceRange {
+	mediaId: string;
+	srcStart: number;
+	srcEnd: number;
+}
+
+export type SceneKind = "corte";
+
 export interface TScene {
 	id: string;
 	name: string;
@@ -24,6 +34,12 @@ export interface TScene {
 	bookmarks: Bookmark[];
 	createdAt: Date;
 	updatedAt: Date;
+	/** Formato próprio da cena (ex.: 1080x1920 num corte 9:16). Sem ele, vale o do projeto. */
+	canvasSize?: TCanvasSize;
+	/** De onde a cena foi cortada (só nas cenas criadas a partir de trechos). */
+	sourceRange?: SceneSourceRange;
+	/** "corte" quando a cena foi criada a partir de um trecho da live. */
+	kind?: SceneKind;
 }
 
 export type TrackType = "video" | "text" | "audio" | "graphic" | "effect";

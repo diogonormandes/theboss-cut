@@ -28,4 +28,13 @@ export abstract class Command {
 	redo(): CommandResult | undefined {
 		return this.execute();
 	}
+
+	/**
+	 * Cena em que o comando mexeu (gravada na primeira execução), para o
+	 * desfazer/refazer agir nela mesmo que outra cena esteja aberta.
+	 * `null` quando o comando não mexe nas faixas de uma cena.
+	 */
+	getTargetSceneId(): string | null {
+		return null;
+	}
 }

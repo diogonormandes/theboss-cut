@@ -211,6 +211,8 @@ export class ScenesManager {
 
 		this.list = ensuredScenes;
 		this.active = currentScene || fallbackScene;
+		// Projeto novo/aberto: o histórico do projeto anterior não vale aqui.
+		this.editor.command?.clear();
 		this.notify();
 
 		const hasAddedMainScene = ensuredScenes.length > scenes.length;
@@ -236,6 +238,7 @@ export class ScenesManager {
 	clearScenes(): void {
 		this.list = [];
 		this.active = null;
+		this.editor.command?.clear();
 		this.notify();
 	}
 
@@ -293,19 +296,39 @@ export class ScenesManager {
 		});
 	}
 
-	updateSceneTracks({ tracks }: { tracks: SceneTracks }): void {
-		if (!this.active) return;
+	/** Procura uma cena pelo id (ativa ou não). */
+	getSceneById(sceneId: string): TScene | null {
+		return this.list.find((scene) => scene.id === sceneId) ?? null;
+	}
+
+	/**
+	 * Grava as faixas de uma cena. Sem `sceneId`, grava na cena ativa (como antes).
+	 * Com `sceneId`, grava naquela cena mesmo que outra esteja aberta — é o que
+	 * faz o desfazer/refazer voltar na cena certa.
+	 */
+	updateSceneTracks({
+		tracks,
+		sceneId,
+	}: {
+		tracks: SceneTracks;
+		sceneId?: string | null;
+	}): void {
+		const targetId = sceneId ?? this.active?.id ?? null;
+		if (!targetId) return;
+
+		const targetScene = this.list.find((s) => s.id === targetId);
+		if (!targetScene) return;
 
 		const updatedScene: TScene = {
-			...this.active,
+			...targetScene,
 			tracks,
 			updatedAt: new Date(),
 		};
 
-		this.list = this.list.map((s) =>
-			s.id === this.active?.id ? updatedScene : s,
-		);
-		this.active = updatedScene;
+		this.list = this.list.map((s) => (s.id === targetId ? updatedScene : s));
+		if (this.active?.id === targetId) {
+			this.active = updatedScene;
+		}
 		this.notify();
 
 		const activeProject = this.editor.project.getActive();

@@ -49,12 +49,18 @@ import {
 import { MASKABLE_ELEMENT_TYPES } from "@/timeline";
 import type { MediaAsset } from "@/media/types";
 import { cn } from "@/utils/ui";
+import type { OfflineMediaAsset } from "@/services/storage/types";
+import {
+	OfflineMediaItem,
+	useLocateOfflineMedia,
+} from "@/components/editor/panels/assets/offline-media-item";
 import {
 	CloudUploadIcon,
 	GridViewIcon,
 	LeftToRightListDashIcon,
 	SortingOneNineIcon,
 	Image02Icon,
+	Link01Icon,
 	MusicNote03Icon,
 	Video01Icon,
 } from "@hugeicons/core-free-icons";
@@ -63,6 +69,7 @@ import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 export function MediaView() {
 	const editor = useEditor();
 	const mediaFiles = useEditor((e) => e.media.getAssets());
+	const offlineMedia = useEditor((e) => e.media.getOfflineAssets());
 	const activeProject = useEditor((e) => e.project.getActive());
 
 	const {
@@ -209,7 +216,8 @@ export function MediaView() {
 				contentClassName="h-full"
 				{...dragProps}
 			>
-				{isDragOver || filteredMediaItems.length === 0 ? (
+				{isDragOver ||
+				(filteredMediaItems.length === 0 && offlineMedia.length === 0) ? (
 					<MediaDragOverlay
 						isVisible={true}
 						isProcessing={isProcessing}
@@ -226,6 +234,7 @@ export function MediaView() {
 						<MediaScopeRegistrar />
 						<MediaItemList
 							items={filteredMediaItems}
+							offlineItems={offlineMedia}
 							mode={mediaViewMode}
 							onRemove={handleRemove}
 						/>
@@ -343,10 +352,12 @@ function MediaItemWithContextMenu({
 
 function MediaItemList({
 	items,
+	offlineItems,
 	mode,
 	onRemove,
 }: {
 	items: MediaAsset[];
+	offlineItems: OfflineMediaAsset[];
 	mode: MediaViewMode;
 	onRemove: ({
 		event,
@@ -357,6 +368,7 @@ function MediaItemList({
 	}) => void;
 }) {
 	const isGrid = mode === "grid";
+	const offline = useLocateOfflineMedia();
 
 	return (
 		<div
@@ -365,6 +377,16 @@ function MediaItemList({
 				isGrid ? { gridTemplateColumns: "repeat(auto-fill, 7rem)" } : undefined
 			}
 		>
+			{offlineItems.map((item) => (
+				<OfflineMediaItem
+					key={item.id}
+					asset={item}
+					variant={isGrid ? "grid" : "compact"}
+					busy={offline.busyId === item.id}
+					onLocate={() => void offline.locate(item)}
+					onRemove={() => offline.remove(item)}
+				/>
+			))}
 			{items.map((item) => (
 				<MediaItemWithContextMenu item={item} onRemove={onRemove} key={item.id}>
 					<SelectableItem className={cn(!isGrid && "w-full")} id={item.id}>
@@ -398,6 +420,19 @@ function MediaDurationBadge({ duration }: { duration?: number }) {
 	return (
 		<div className="absolute right-1 bottom-1 rounded bg-black/70 px-1 text-xs text-white">
 			{formatDuration({ duration })}
+		</div>
+	);
+}
+
+/** Arquivo usado direto do PC (sem cópia): avisa para não mover nem apagar. */
+function LinkedFileBadge() {
+	return (
+		<div
+			className="absolute top-1 left-1 flex items-center gap-0.5 rounded bg-black/70 px-1 text-[0.6rem] text-[var(--tb-gold)]"
+			title={`${t("media.offline.linked")}. ${t("media.offline.linkedHint")}`}
+		>
+			<HugeiconsIcon icon={Link01Icon} className="size-3" />
+			<span className="sr-only">{t("media.offline.linked")}</span>
 		</div>
 	);
 }
@@ -477,6 +512,9 @@ function MediaPreview({
 					/>
 					{shouldShowDurationBadge ? (
 						<MediaDurationBadge duration={item.duration} />
+					) : null}
+					{shouldShowDurationBadge && item.storage === "handle" ? (
+						<LinkedFileBadge />
 					) : null}
 				</div>
 			);

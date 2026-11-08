@@ -4,6 +4,11 @@ import type { EditorSelectionSnapshot } from "@/selection/editor-selection";
 import { applyRippleAdjustments, computeRippleAdjustments } from "@/ripple";
 import type { SceneTracks } from "@/timeline/types";
 
+/** Cena em que o comando mexeu (ou a aberta, se o comando não diz). */
+export interface CommandReactorContext {
+	sceneId: string | null;
+}
+
 interface CommandHistoryEntry {
 	command: Command;
 	previousSelection: EditorSelectionSnapshot;
@@ -14,7 +19,7 @@ export class CommandManager {
 	public isRippleEnabled = false;
 	private history: CommandHistoryEntry[] = [];
 	private redoStack: CommandHistoryEntry[] = [];
-	private reactors: Array<() => void> = [];
+	private reactors: Array<(context: CommandReactorContext) => void> = [];
 
 	constructor(private editor: EditorCore) {}
 
@@ -26,7 +31,12 @@ export class CommandManager {
 		const result = command.execute();
 		this.applyRippleIfEnabled({ beforeTracks });
 		const selectionOverride = this.applySelectionOverride(result);
-		this.runReactors();
+		this.runReactors({
+			sceneId:
+				command.getTargetSceneId() ??
+				this.editor.scenes.getActiveSceneOrNull()?.id ??
+				null,
+		});
 		this.history.push({
 			command,
 			previousSelection,
@@ -44,13 +54,16 @@ export class CommandManager {
 		this.redoStack = [];
 	}
 
-	registerReactor(reactor: () => void): void {
+	registerReactor(reactor: (context: CommandReactorContext) => void): void {
 		this.reactors.push(reactor);
 	}
 
 	undo(): void {
 		if (this.history.length === 0) return;
 		const entry = this.history.pop();
+		// A cena do comando sumiu: o passo não tem onde agir. Descarta em vez
+		// de aplicar na cena aberta (que é outra).
+		if (entry && this.isTargetSceneMissing(entry.command)) return;
 		entry?.command.undo();
 		if (entry) {
 			// Only restore selection for commands that explicitly changed it.
@@ -58,7 +71,12 @@ export class CommandManager {
 			// preserving any UI-driven selection changes (clicks, box select)
 			// that happened between commands. Commands that remove editor-owned
 			// selection targets must declare a selection override to clear stale refs.
-			if (entry.selectionOverride !== undefined) {
+			const targetSceneId = entry.command.getTargetSceneId();
+			const isOtherScene =
+				targetSceneId !== null &&
+				targetSceneId !==
+					(this.editor.scenes.getActiveSceneOrNull()?.id ?? null);
+			if (entry.selectionOverride !== undefined && !isOtherScene) {
 				this.editor.selection.restoreSnapshot({
 					snapshot: entry.previousSelection,
 				});
@@ -73,15 +91,26 @@ export class CommandManager {
 		if (!entry) {
 			return;
 		}
+		if (this.isTargetSceneMissing(entry.command)) return;
 
-		const beforeTracks = this.isRippleEnabled
-			? (this.editor.scenes.getActiveSceneOrNull()?.tracks ?? null)
-			: null;
+		// Refazer age na cena do comando, mesmo que outra cena esteja aberta.
+		const targetSceneId = entry.command.getTargetSceneId();
+		const activeSceneId = this.editor.scenes.getActiveSceneOrNull()?.id ?? null;
+		const isOtherScene =
+			targetSceneId !== null && targetSceneId !== activeSceneId;
+		const rippleSceneId = targetSceneId ?? activeSceneId;
+		const beforeTracks =
+			this.isRippleEnabled && rippleSceneId
+				? (this.editor.scenes.getSceneById(rippleSceneId)?.tracks ?? null)
+				: null;
 		const previousSelection = this.getSelectionSnapshot();
 		const result = entry.command.redo();
-		this.applyRippleIfEnabled({ beforeTracks });
-		const selectionOverride = this.applySelectionOverride(result);
-		this.runReactors();
+		this.applyRippleIfEnabled({ beforeTracks, sceneId: rippleSceneId });
+		// A seleção só vale para a cena aberta: não seleciona itens de outra cena.
+		const selectionOverride = isOtherScene
+			? undefined
+			: this.applySelectionOverride(result);
+		this.runReactors({ sceneId: rippleSceneId });
 
 		this.history.push({
 			command: entry.command,
@@ -118,22 +147,31 @@ export class CommandManager {
 		});
 	}
 
-	private runReactors(): void {
+	private runReactors(context: CommandReactorContext): void {
 		for (const reactor of this.reactors) {
-			reactor();
+			reactor(context);
 		}
+	}
+
+	private isTargetSceneMissing(command: Command): boolean {
+		const sceneId = command.getTargetSceneId();
+		return sceneId !== null && this.editor.scenes.getSceneById(sceneId) === null;
 	}
 
 	private applyRippleIfEnabled({
 		beforeTracks,
+		sceneId,
 	}: {
 		beforeTracks: SceneTracks | null;
+		sceneId?: string | null;
 	}): void {
 		if (!this.isRippleEnabled || !beforeTracks) {
 			return;
 		}
 
-		const afterTracks = this.editor.scenes.getActiveSceneOrNull()?.tracks;
+		const afterTracks = sceneId
+			? this.editor.scenes.getSceneById(sceneId)?.tracks
+			: this.editor.scenes.getActiveSceneOrNull()?.tracks;
 		if (!afterTracks) {
 			return;
 		}
@@ -149,6 +187,6 @@ export class CommandManager {
 			tracks: afterTracks,
 			adjustments,
 		});
-		this.editor.timeline.updateTracks(tracksWithRipple);
+		this.editor.timeline.updateTracks(tracksWithRipple, { sceneId });
 	}
 }

@@ -6,6 +6,7 @@ import { getFrameTime, moveBookmarkInArray } from "@/timeline/bookmarks/index";
 import type { MediaTime } from "@/wasm";
 
 export class MoveBookmarkCommand extends Command {
+	private sceneId: string | null = null;
 	private savedScenes: TScene[] | null = null;
 
 	constructor({
@@ -25,7 +26,11 @@ export class MoveBookmarkCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		const activeScene = editor.scenes.getActiveScene();
+		// Refazer age na mesma cena da primeira vez, mesmo com outra aberta.
+		const activeScene = this.sceneId
+			? editor.scenes.getSceneById(this.sceneId)
+			: editor.scenes.getActiveScene();
+		this.sceneId = activeScene?.id ?? null;
 		const activeProject = editor.project.getActive();
 
 		if (!activeScene || !activeProject) {
@@ -64,5 +69,9 @@ export class MoveBookmarkCommand extends Command {
 			const editor = EditorCore.getInstance();
 			editor.scenes.setScenes({ scenes: this.savedScenes });
 		}
+	}
+
+	getTargetSceneId(): string | null {
+		return this.sceneId;
 	}
 }

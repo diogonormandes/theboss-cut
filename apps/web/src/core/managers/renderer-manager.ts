@@ -9,6 +9,7 @@ import { createTimelineAudioBuffer } from "@/media/audio";
 import { formatTimecode } from "opencut-wasm";
 import { frameRateToFloat } from "@/fps/utils";
 import { downloadBlob } from "@/utils/browser";
+import { findOfflineMediaInUse } from "@/services/storage/media-reference";
 
 type SnapshotResult =
 	| { success: true; blob: Blob; filename: string }
@@ -157,6 +158,20 @@ export class RendererManager {
 
 			if (!activeProject) {
 				return { success: false, error: t("actions.export.noProject") };
+			}
+
+			// Mídia offline em uso: o vídeo sairia preto e sem som. Para antes.
+			const offlineInUse = findOfflineMediaInUse({
+				tracks,
+				offline: this.editor.media.getOfflineAssets(),
+			});
+			if (offlineInUse.length > 0) {
+				return {
+					success: false,
+					error: t("media.offline.exportBlocked", {
+						name: offlineInUse[0].name,
+					}),
+				};
 			}
 
 			const duration = this.editor.timeline.getTotalDuration();

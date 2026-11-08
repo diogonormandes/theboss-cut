@@ -9,6 +9,7 @@ import type { AnimationPath } from "@/animation/types";
 import type { ParamValue } from "@/params";
 import type { SceneTracks, TimelineElement } from "@/timeline";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 function removeKeyframeAndPersist({
 	element,
@@ -48,6 +49,11 @@ function removeKeyframeAndPersist({
 }
 
 export class RemoveKeyframeCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private readonly trackId: string;
 	private readonly elementId: string;
@@ -78,7 +84,7 @@ export class RemoveKeyframeCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		const updatedTracks = updateElementInSceneTracks({
 			tracks: this.savedState,
@@ -93,7 +99,7 @@ export class RemoveKeyframeCommand extends Command {
 				}),
 		});
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 		return undefined;
 	}
 
@@ -103,6 +109,6 @@ export class RemoveKeyframeCommand extends Command {
 		}
 
 		const editor = EditorCore.getInstance();
-		editor.timeline.updateTracks(this.savedState);
+		this.target.write(this.savedState);
 	}
 }

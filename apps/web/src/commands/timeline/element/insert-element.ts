@@ -19,6 +19,7 @@ import {
 	validateElementTrackCompatibility,
 } from "@/timeline/placement";
 import { roundMediaTime } from "@/wasm";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 type InsertElementPlacement =
 	| { mode: "explicit"; trackId: string }
@@ -30,6 +31,11 @@ export interface InsertElementParams {
 }
 
 export class InsertElementCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private elementId: string;
 	private savedState: SceneTracks | null = null;
 	private targetTrackId: string | null = null;
@@ -46,7 +52,7 @@ export class InsertElementCommand extends Command {
 
 	execute(): CommandResult | undefined {
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 
 		if (!this.validateElementBasics({ element: this.element })) {
 			return;
@@ -113,7 +119,7 @@ export class InsertElementCommand extends Command {
 			}
 		}
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 
 		return {
 			selection: {
@@ -130,7 +136,7 @@ export class InsertElementCommand extends Command {
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 

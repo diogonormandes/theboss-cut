@@ -20,8 +20,14 @@ import {
 	subMediaTime,
 	ZERO_MEDIA_TIME,
 } from "@/wasm";
+import { SceneTracksTarget } from "@/commands/timeline/scene-tracks-target";
 
 export class PasteCommand extends Command {
+	private readonly target = new SceneTracksTarget();
+
+	getTargetSceneId(): string | null {
+		return this.target.getSceneId();
+	}
 	private savedState: SceneTracks | null = null;
 	private pastedElements: { trackId: string; elementId: string }[] = [];
 	private readonly time: MediaTime;
@@ -43,7 +49,7 @@ export class PasteCommand extends Command {
 		if (this.clipboardItems.length === 0) return undefined;
 
 		const editor = EditorCore.getInstance();
-		this.savedState = editor.scenes.getActiveScene().tracks;
+		this.savedState = this.target.read();
 		this.pastedElements = [];
 
 		const minStart = this.clipboardItems.reduce(
@@ -144,7 +150,7 @@ export class PasteCommand extends Command {
 			}
 		}
 
-		editor.timeline.updateTracks(updatedTracks);
+		this.target.write(updatedTracks);
 
 		if (this.pastedElements.length > 0) {
 			return createElementSelectionResult(this.pastedElements);
@@ -155,7 +161,7 @@ export class PasteCommand extends Command {
 	undo(): void {
 		if (this.savedState) {
 			const editor = EditorCore.getInstance();
-			editor.timeline.updateTracks(this.savedState);
+			this.target.write(this.savedState);
 		}
 	}
 

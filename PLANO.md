@@ -38,11 +38,17 @@ Ordem sugerida: cada etapa vira uma versão publicada (ferramenta 24).
 Decisões do BOSS (08/11/2026): o formato 9:16 (Dividido ou Seguir rosto) é perguntado a cada vez que os cortes são criados; a live NÃO é copiada para dentro do programa (aviso de "mídia offline" com "Localizar arquivo" se ela sumir); cortes sugeridos de até 60 s, exportados em Vídeos\THEBOSS CUT\<nome do projeto>.
 Antes de liberar: testar com uma gravação real do OBS do BOSS.
 - [x] Base: exportar, legendar e separar áudio de live longa sem estourar a memória (lê só o trecho usado; teste: corte de 60 s de uma live de 4 h em 0,5 s, pico de ~110–150 MB, áudio sincronizado em até 20 ms)
-- [ ] Importar live longa e mostrar mapa da live (picos de fala, gritos, risadas, silêncio)
+- [x] Importar live longa SEM copiar (arquivo continua onde o OBS salvou; "Mídia offline" + "Localizar arquivo" se ele sumir; exportar com mídia offline avisa em vez de sair preto)
+- [x] Mapa da live: faixa acima da linha do tempo com fala, gritos, picos e silêncio; clicar leva ao ponto; fica guardado (teste: live de 4 h analisada em ~80 s, 73 MB de memória, 90 de 90 gritos achados)
+- [ ] Risadas no mapa (classificador de áudio só nos melhores trechos — fase 2)
+- [x] Base dos vários cortes: desfazer (Ctrl+Z) sempre na cena certa; criar várias cenas a partir de trechos num passo só
 - [ ] Cortar silêncios automaticamente (com ajuste de intensidade)
 - [ ] Sugerir os melhores momentos e montar vários cortes de uma vez
 - [ ] Enquadramento automático 9:16 seguindo o rosto
 - [ ] Exportar vários cortes em fila
+
+- [ ] Arrumar 5 testes automáticos antigos que já vinham quebrados do projeto original (máscaras, posicionamento, atalhos)
+- [ ] Testar no programa do Windows: permissão para reabrir a live sem copiar depois de fechar o programa
 
 ## Etapa 4 — Efeitos, transições e modelos
 - [ ] Pacote de efeitos (zoom, tremida, flash, brilho, desfoque, câmera lenta suave)
