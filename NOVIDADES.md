@@ -8,6 +8,7 @@ Próxima versão
 • Projetos recentes com miniatura inteira e cartões com brilho dourado
 • Seu trabalho fica salvo sozinho: o editor mostra "Salvo" no topo e salva tudo ao fechar a janela
 • Se o PC desligar ou o programa fechar de repente, ao abrir de novo aparece o aviso para continuar de onde parou
+• Atualização automática: quando sair versão nova, o THEBOSS CUT baixa sozinho e pergunta se você quer atualizar agora ou quando fechar o programa
 • Novo visual da marca: o tridente dourado 3D girando, as letras do THEBOSSVERSE e os botões principais em dourado com brilho
 
 • Versão 1.0.0: primeira versão do THEBOSS CUT para Windows

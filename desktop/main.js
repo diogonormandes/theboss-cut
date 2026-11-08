@@ -2,7 +2,7 @@
 // Porta fixa para os projetos (guardados no navegador interno) continuarem no mesmo lugar sempre.
 // Nada sai do computador: os vídeos e projetos ficam aqui.
 
-const { app, BrowserWindow, shell, Menu } = require("electron");
+const { app, BrowserWindow, shell, Menu, ipcMain } = require("electron");
 const { spawn } = require("child_process");
 const path = require("path");
 const http = require("http");
@@ -12,6 +12,32 @@ const PORTA = 47210;
 const ENDERECO = `http://127.0.0.1:${PORTA}`;
 let janela = null;
 let servidor = null;
+let podeFechar = false;
+const atualizacao = require("./atualizacao").criar({ registrar: (m) => console.log(m) });
+
+// pede ao editor para salvar o projeto (e a miniatura). Se passar de 4 segundos, segue mesmo assim.
+function salvarAntesDeFechar() {
+  if (!janela || janela.isDestroyed()) return Promise.resolve();
+  const salvar = janela.webContents
+    .executeJavaScript("window.__thebosscutBeforeClose ? window.__thebosscutBeforeClose() : true", true)
+    .catch(() => false);
+  const limite = new Promise((ok) => setTimeout(ok, 4000));
+  return Promise.race([salvar, limite]);
+}
+
+// atualização: avisa o editor sempre que a situação muda
+atualizacao.ouvir((estado) => {
+  if (janela && !janela.isDestroyed()) janela.webContents.send("atualizacao", estado);
+});
+ipcMain.on("atualizacao-pedir", (e) => e.sender.send("atualizacao", atualizacao.estado()));
+ipcMain.handle("atualizacao-agora", async () => {
+  if (!atualizacao.temPronta()) return false;
+  await salvarAntesDeFechar();
+  if (!atualizacao.instalar({ reabrir: true })) return false;
+  podeFechar = true;
+  app.quit();
+  return true;
+});
 
 if (!app.requestSingleInstanceLock()) app.quit();
 app.on("second-instance", () => {
@@ -76,19 +102,20 @@ async function criarJanela() {
     icon: path.join(__dirname, "icone.png"),
     autoHideMenuBar: true,
     show: false,
-    webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false },
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      spellcheck: false,
+      preload: path.join(__dirname, "preload.js"),
+    },
   });
   janela.on("page-title-updated", (e) => e.preventDefault());
   // antes de fechar: o editor salva o projeto (e a miniatura). Se passar de 4 segundos, fecha mesmo assim.
-  let podeFechar = false;
   janela.on("close", (e) => {
     if (podeFechar) return;
     e.preventDefault();
-    const salvar = janela.webContents
-      .executeJavaScript("window.__thebosscutBeforeClose ? window.__thebosscutBeforeClose() : true", true)
-      .catch(() => false);
-    const limite = new Promise((ok) => setTimeout(ok, 4000));
-    Promise.race([salvar, limite]).finally(() => {
+    salvarAntesDeFechar().finally(() => {
       podeFechar = true;
       if (janela && !janela.isDestroyed()) janela.close();
     });
@@ -113,9 +140,12 @@ async function criarJanela() {
 app.whenReady().then(() => {
   ligarServidor();
   criarJanela();
+  atualizacao.iniciar();
 });
 app.on("window-all-closed", () => app.quit());
 app.on("before-quit", () => {
+  // a pessoa escolheu "Depois": a versão nova já baixada é instalada agora, em silêncio
+  if (atualizacao.temPronta()) atualizacao.instalar({ reabrir: false });
   try {
     servidor?.kill();
   } catch {}

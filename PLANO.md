@@ -20,7 +20,7 @@ Ordem sugerida: cada etapa vira uma versão publicada (ferramenta 24).
 - [ ] Tirar da interface links, textos e logos do OpenCut (aviso só no LICENSE)
 - [ ] Tour de boas-vindas curto (primeira vez) e dicas nos botões
 - [x] Salvamento automático e recuperar projeto se o PC desligar (salva menos de 1 s depois de cada mudança, salva ao fechar a janela, indicador "Salvo" no topo, aviso de recuperação na tela inicial, aviso se faltar espaço)
-- [ ] Atualização automática do editor (avisa e atualiza sozinho pela página de versões)
+- [x] Atualização automática do editor (confere a página de versões ao abrir e a cada 6 h, baixa em segundo plano, "Atualizar agora" salva/instala/reabre, "Depois" instala ao fechar) — vale a partir da próxima versão publicada
 
 ## Etapa 2 — Legendas automáticas estilo CapCut
 - [ ] Transcrição em português/inglês/espanhol com escolha de qualidade (rápida × precisa)

@@ -10,6 +10,7 @@ import { THEME_BOOT_SCRIPT } from "@/theme/boot";
 import { cookies } from "next/headers";
 import { LOCALE_STORAGE_KEY, LOCALE_TAGS, parseLocale } from "@/i18n/locales";
 import { LocaleProvider } from "@/i18n/provider";
+import { UpdateNotice } from "@/components/update-notice";
 
 // As mesmas fontes do THEBOSSVERSE: Geist no texto e Cormorant Garamond nos títulos e na marca.
 const sans = Geist({ subsets: ["latin"], variable: "--font-geist" });
@@ -60,6 +61,7 @@ export default async function RootLayout({
 						<TooltipProvider>
 							<Toaster />
 							{children}
+							<UpdateNotice />
 						</TooltipProvider>
 					</LocaleProvider>
 				</ThemeProvider>

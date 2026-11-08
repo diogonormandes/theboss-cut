@@ -10,6 +10,7 @@ import actions from "./actions";
 import media from "./media";
 import effects from "./effects";
 import theme from "./theme";
+import update from "./update";
 
 export const pt = {
 	common,
@@ -24,4 +25,5 @@ export const pt = {
 	media,
 	effects,
 	theme,
+	update,
 };

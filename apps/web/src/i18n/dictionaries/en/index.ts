@@ -10,6 +10,7 @@ import actions from "./actions";
 import media from "./media";
 import effects from "./effects";
 import theme from "./theme";
+import update from "./update";
 
 import type { Dictionary } from "../../types";
 
@@ -26,4 +27,5 @@ export const en: Dictionary = {
 	media,
 	effects,
 	theme,
+	update,
 };
