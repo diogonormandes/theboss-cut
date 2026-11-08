@@ -356,3 +356,41 @@ export function buildSubtitleTextElement({
 		},
 	};
 }
+
+/**
+ * Arruma as linhas de uma legenda automática depois que a pessoa corrige o texto na tela
+ * (a mesma regra de quando a legenda é criada).
+ */
+export function rewrapCaptionContent({
+	content,
+	params,
+	canvasSize,
+}: {
+	content: string;
+	params: Record<string, unknown>;
+	canvasSize: { width: number; height: number };
+}): string {
+	const ctx = createMeasurementContext();
+	if (!ctx) return content;
+	const fontFamily = typeof params.fontFamily === "string" ? params.fontFamily : "Arial";
+	const fontSize = typeof params.fontSize === "number" ? params.fontSize : SUBTITLE_FONT_SIZE;
+	const fontWeight = params.fontWeight === "bold" ? "bold" : "normal";
+	const fontStyle = params.fontStyle === "italic" ? "italic" : "normal";
+	const scaledFontSize = fontSize * (canvasSize.height / FONT_SIZE_SCALE_REFERENCE);
+	ctx.font = `${fontStyle} ${fontWeight} ${scaledFontSize}px ${quoteFontFamily({ fontFamily })}, sans-serif`;
+	setCanvasLetterSpacing({
+		ctx,
+		letterSpacingPx:
+			typeof params.letterSpacing === "number"
+				? params.letterSpacing
+				: DEFAULTS.text.letterSpacing,
+	});
+	const isVertical = canvasSize.height > canvasSize.width;
+	const maxWidth = canvasSize.width * (isVertical ? 0.82 : SUBTITLE_MAX_WIDTH_RATIO);
+	return wrapSubtitleText({
+		ctx,
+		// junta as linhas antigas numa só antes de quebrar de novo
+		text: content.replace(/\s*[\r\n]+\s*/g, " "),
+		maxWidth,
+	});
+}

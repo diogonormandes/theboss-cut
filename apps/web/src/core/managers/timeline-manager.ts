@@ -1,3 +1,5 @@
+import { syncCaptionWordsAfterEdit } from "@/subtitles/realign-words";
+import { rewrapCaptionContent } from "@/subtitles/build-subtitle-text-element";
 import type { EditorCore } from "@/core";
 import type { ElementBounds } from "@/preview/element-bounds";
 import type { ParamValues } from "@/params";
@@ -768,6 +770,11 @@ export class TimelineManager {
 
 	private applyPreviewOverlay(tracks: SceneTracks): SceneTracks {
 		if (this.previewOverlay.size === 0) return tracks;
+		const canvasSize = this.editor.project.getActiveOrNull()?.settings.canvasSize;
+		const rewrapCaption = canvasSize
+			? (content: string, params: Record<string, unknown>) =>
+					rewrapCaptionContent({ content, params, canvasSize })
+			: undefined;
 
 		const applyTrackOverlay = <TTrack extends TimelineTrack>(
 			track: TTrack,
@@ -782,7 +789,12 @@ export class TimelineManager {
 			const nextElements = track.elements.map((element) => {
 				const overlay = this.previewOverlay.get(element.id);
 				return overlay
-					? ({ ...element, ...overlay } as TimelineElement)
+					? syncCaptionWordsAfterEdit(element, {
+							...element,
+							...overlay,
+							// junta os ajustes (antes, mudar só o texto apagava fonte, tamanho e posição)
+							params: { ...element.params, ...(overlay.params ?? {}) },
+						} as TimelineElement, rewrapCaption)
 					: element;
 			});
 

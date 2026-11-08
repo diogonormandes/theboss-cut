@@ -7,6 +7,7 @@ import {
 import type { RetimeConfig, SceneTracks, TimelineElement } from "@/timeline";
 import { isRetimableElement } from "@/timeline";
 import { ZERO_MEDIA_TIME, roundMediaTime } from "@/wasm";
+import { realignCaptionWords } from "@/subtitles/realign-words";
 
 type ElementUpdateField = keyof TimelineElement | string;
 
@@ -33,6 +34,33 @@ interface ElementUpdateRule {
 }
 
 const deriveRules: ElementUpdateRule[] = [
+	{
+		// legenda automática corrigida: refaz o tempo de cada palavra para o destaque continuar certo
+		triggers: ["params"],
+		apply: ({ element, originalElement, patch }) => {
+			if (
+				element.type !== "text" ||
+				!element.caption ||
+				typeof patch.params?.content !== "string" ||
+				patch.params.content === originalElement.params.content
+			) {
+				return { element };
+			}
+			return {
+				element: {
+					...element,
+					caption: {
+						...element.caption,
+						words: realignCaptionWords({
+							words: element.caption.words,
+							content: patch.params.content,
+						}),
+					},
+				},
+				changedFields: ["caption"],
+			};
+		},
+	},
 	{
 		triggers: ["retime"],
 		apply: ({ element, originalElement, patch }) => {
