@@ -159,43 +159,8 @@ export function drawMeasuredTextLayout({
 	ctx.fillStyle = textColor;
 	setCanvasLetterSpacing({ ctx, letterSpacingPx: layout.letterSpacing });
 
-	if (
-		background?.enabled &&
-		backgroundColor &&
-		backgroundColor !== "transparent" &&
-		layout.lines.length > 0
-	) {
-		const backgroundRect = getTextBackgroundRect({
-			textAlign: layout.textAlign,
-			block: layout.block,
-			background: {
-				...background,
-				color: backgroundColor,
-			},
-			fontSizeRatio: layout.fontSizeRatio,
-		});
-		if (backgroundRect) {
-			const p =
-				clamp({
-					value: background.cornerRadius,
-					min: CORNER_RADIUS_MIN,
-					max: CORNER_RADIUS_MAX,
-				}) / 100;
-			const radius =
-				(Math.min(backgroundRect.width, backgroundRect.height) / 2) * p;
-			ctx.fillStyle = backgroundColor;
-			ctx.beginPath();
-			ctx.roundRect(
-				backgroundRect.left,
-				backgroundRect.top,
-				backgroundRect.width,
-				backgroundRect.height,
-				radius,
-			);
-			ctx.fill();
-			ctx.fillStyle = textColor;
-		}
-	}
+	drawTextLayoutBackground({ ctx, layout, background, backgroundColor });
+	ctx.fillStyle = textColor;
 
 	for (let index = 0; index < layout.lines.length; index++) {
 		const lineY = index * layout.lineHeightPx - layout.block.visualCenterOffset;
@@ -238,4 +203,55 @@ export function strokeMeasuredTextLayout({
 		const lineY = index * layout.lineHeightPx - layout.block.visualCenterOffset;
 		ctx.strokeText(layout.lines[index], 0, lineY);
 	}
+}
+
+/** Caixa de fundo atrás do texto (quando ligada). */
+export function drawTextLayoutBackground({
+	ctx,
+	layout,
+	background,
+	backgroundColor,
+}: {
+	ctx: TextCanvasContext;
+	layout: MeasuredTextLayout;
+	background?: ResolvedTextBackgroundLike | null;
+	backgroundColor?: string;
+}): void {
+	if (
+		background?.enabled &&
+		backgroundColor &&
+		backgroundColor !== "transparent" &&
+		layout.lines.length > 0
+	) {
+		const backgroundRect = getTextBackgroundRect({
+			textAlign: layout.textAlign,
+			block: layout.block,
+			background: {
+				...background,
+				color: backgroundColor,
+			},
+			fontSizeRatio: layout.fontSizeRatio,
+		});
+		if (backgroundRect) {
+			const p =
+				clamp({
+					value: background.cornerRadius,
+					min: CORNER_RADIUS_MIN,
+					max: CORNER_RADIUS_MAX,
+				}) / 100;
+			const radius =
+				(Math.min(backgroundRect.width, backgroundRect.height) / 2) * p;
+			ctx.fillStyle = backgroundColor;
+			ctx.beginPath();
+			ctx.roundRect(
+				backgroundRect.left,
+				backgroundRect.top,
+				backgroundRect.width,
+				backgroundRect.height,
+				radius,
+			);
+			ctx.fill();
+		}
+	}
+
 }

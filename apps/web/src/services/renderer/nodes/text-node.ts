@@ -3,6 +3,7 @@ import type { TextElement } from "@/timeline";
 import type { EffectPass } from "@/effects/types";
 import type { BlendMode, Transform } from "@/rendering";
 import { drawMeasuredTextLayout } from "@/text/primitives";
+import { drawCaptionText } from "@/text/caption-render";
 import type { MeasuredTextElement } from "@/text/measure-element";
 
 export type TextNodeParams = TextElement & {
@@ -21,6 +22,8 @@ export interface ResolvedTextNodeState {
 	backgroundColor: string;
 	effectPasses: EffectPass[][];
 	measuredText: MeasuredTextElement;
+	/** só nas legendas automáticas: em que ponto da fala estamos */
+	captionTiming?: { captionTime: number; elapsedSeconds: number };
 }
 
 export class TextNode extends BaseNode<TextNodeParams, ResolvedTextNodeState> {}
@@ -48,14 +51,30 @@ export function renderTextToContext({
 		ctx.rotate((resolved.transform.rotate * Math.PI) / 180);
 	}
 
-	drawMeasuredTextLayout({
-		ctx,
-		layout: resolved.measuredText,
-		textColor: resolved.textColor,
-		background: resolved.measuredText.resolvedBackground,
-		backgroundColor: resolved.backgroundColor,
-		textBaseline: baseline,
-	});
+	const caption = node.params.caption;
+	if (caption?.style && caption.words.length > 0 && resolved.captionTiming) {
+		drawCaptionText({
+			ctx,
+			layout: resolved.measuredText,
+			textColor: resolved.textColor,
+			background: resolved.measuredText.resolvedBackground,
+			backgroundColor: resolved.backgroundColor,
+			words: caption.words,
+			style: caption.style,
+			captionTime: resolved.captionTiming.captionTime,
+			elapsedSeconds: resolved.captionTiming.elapsedSeconds,
+			textBaseline: baseline,
+		});
+	} else {
+		drawMeasuredTextLayout({
+			ctx,
+			layout: resolved.measuredText,
+			textColor: resolved.textColor,
+			background: resolved.measuredText.resolvedBackground,
+			backgroundColor: resolved.backgroundColor,
+			textBaseline: baseline,
+		});
+	}
 
 	ctx.restore();
 }

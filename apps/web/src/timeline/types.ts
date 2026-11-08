@@ -139,8 +139,33 @@ export interface TextCaptionWord {
 	end: number;
 }
 
+/** Como a palavra falada aparece: só cor, caixa atrás, karaokê (as já faladas ficam acesas) ou nada. */
+export type CaptionHighlightMode = "none" | "color" | "box" | "karaoke";
+/** Como a legenda entra na tela. */
+export type CaptionEntryAnimation = "none" | "pop" | "fade" | "slide";
+
+/** Visual da legenda automática (modelos prontos + personalização). Medidas relativas ao tamanho da letra. */
+export interface CaptionStyle {
+	templateId?: string;
+	highlight: CaptionHighlightMode;
+	highlightColor: string;
+	boxColor: string;
+	boxTextColor: string;
+	/** quanto a palavra falada cresce (1 = não cresce) */
+	popScale: number;
+	strokeColor: string;
+	/** grossura do contorno (0 = sem contorno), em fração do tamanho da letra */
+	strokeWidth: number;
+	shadowColor: string;
+	/** desfoque da sombra (0 = sem sombra), em fração do tamanho da letra */
+	shadowBlur: number;
+	shadowOffsetY: number;
+	animation: CaptionEntryAnimation;
+}
+
 export interface TextCaptionData {
 	words: TextCaptionWord[];
+	style?: CaptionStyle;
 }
 
 export interface TextElement extends BaseTimelineElement {

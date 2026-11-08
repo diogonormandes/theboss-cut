@@ -1,4 +1,4 @@
-import { mediaTimeToSeconds, roundMediaTime } from "@/wasm";
+import { mediaTimeToSeconds, roundMediaTime, type MediaTime } from "@/wasm";
 import { getElementLocalTime } from "@/animation";
 import { resolveEffectParamsAtTime } from "@/animation/effect-param-channel";
 import {
@@ -372,6 +372,17 @@ function resolveTextNode({
 			localTime,
 			ctx: getTextMeasurementContext(),
 		}),
+		...(node.params.caption
+			? {
+					captionTiming: {
+						// as palavras contam a partir do começo original da legenda (antes de qualquer corte)
+						captionTime: mediaTimeToSeconds({
+							time: (localTime + node.params.trimStart) as MediaTime,
+						}),
+						elapsedSeconds: mediaTimeToSeconds({ time: localTime as MediaTime }),
+					},
+				}
+			: {}),
 	};
 }
 

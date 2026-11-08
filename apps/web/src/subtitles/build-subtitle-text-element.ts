@@ -6,6 +6,7 @@ import {
 	setCanvasLetterSpacing,
 } from "@/text/layout";
 import { DEFAULTS } from "@/timeline/defaults";
+import { DEFAULT_CAPTION_STYLE } from "@/text/caption-render";
 import { mediaTimeFromSeconds } from "@/wasm";
 import type { CreateTextElement } from "@/timeline";
 import type { TextBackground } from "@/text/background";
@@ -319,7 +320,7 @@ export function buildSubtitleTextElement({
 		duration: mediaTimeFromSeconds({ seconds: caption.duration }),
 		startTime: mediaTimeFromSeconds({ seconds: caption.startTime }),
 		...(caption.words && caption.words.length > 0
-			? { caption: { words: caption.words } }
+			? { caption: { words: caption.words, style: { ...DEFAULT_CAPTION_STYLE } } }
 			: {}),
 		params: {
 			...DEFAULTS.text.element.params,
