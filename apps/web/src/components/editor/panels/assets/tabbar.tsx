@@ -6,7 +6,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
+import { PremiumTabButton } from "@/components/editor/panels/assets/premium-tab-icons";
 import { cn } from "@/utils/ui";
 import {
 	TAB_KEYS,
@@ -56,20 +56,13 @@ export function TabBar() {
 					return (
 						<Tooltip key={tabKey} delayDuration={10}>
 							<TooltipTrigger asChild>
-								<Button
-									variant={activeTab === tabKey ? "secondary" : "ghost"}
-									size="icon"
+								<PremiumTabButton
+									tabKey={tabKey}
+									active={activeTab === tabKey}
 									aria-label={tab.label}
 									data-tour={`tab-${tabKey}`}
-									className={cn(
-										"shrink-0",
-										"h-8 w-8",
-										activeTab !== tabKey && "text-muted-foreground",
-									)}
 									onClick={() => setActiveTab(tabKey)}
-								>
-									<tab.icon />
-								</Button>
+								/>
 							</TooltipTrigger>
 							<TooltipContent
 								side="right"

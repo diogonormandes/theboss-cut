@@ -259,3 +259,153 @@ html[data-tema="sombras"] body { background: radial-gradient(120% 80% at 80% -10
   .tb-tour-backdrop, .tb-tour-card { animation: none; }
   .tb-tour-spot, .tb-tour-card { transition: none; }
 }
+
+/* ícones premium da barra lateral */
+/* Pastilha de vidro (opção F) + ouro metálico (opção E). Parado = nenhuma animação infinita;
+   o ativo tem um único efeito contínuo e lento (reflexo no vidro). Só transform/opacity. */
+.tbi-btn {
+  all: unset; box-sizing: border-box; flex: none;
+  position: relative; display: grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 11px;
+  cursor: pointer; color: var(--tb-text-muted);
+  transition: color .25s ease;
+}
+.tbi-btn:hover { color: var(--tb-text); }
+.tbi-btn:focus-visible { outline: 2px solid var(--tb-gold); outline-offset: 1px; }
+.tbi-btn[aria-pressed="true"] { color: var(--tb-gold-claro); }
+
+/* palco com perspectiva + halo dourado (estático) por baixo do ativo */
+.tbi-stage { position: relative; display: block; width: 34px; height: 34px; perspective: 200px; pointer-events: none; }
+.tbi-stage::after {
+  content: ""; position: absolute; left: 50%; bottom: -5px; width: 28px; height: 10px;
+  transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(var(--tb-gold-rgb), .55), rgba(var(--tb-gold-rgb), 0));
+  opacity: 0; transition: opacity .35s ease; z-index: 0;
+}
+.tbi-btn[aria-pressed="true"] .tbi-stage::after { opacity: 1; }
+
+/* pastilha de vidro */
+.tbi-pill {
+  position: relative; z-index: 1; display: grid; place-items: center;
+  width: 100%; height: 100%; border-radius: 10px; overflow: hidden; isolation: isolate;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tb-text) 9%, transparent), color-mix(in srgb, var(--tb-text) 1.5%, transparent) 55%, rgba(var(--tb-gold-rgb), .04)),
+    color-mix(in srgb, var(--tb-surface-2) 55%, transparent);
+  border: 1px solid rgba(var(--tb-gold-rgb), .22);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--tb-text) 14%, transparent), 0 2px 5px -2px color-mix(in srgb, var(--tb-bg) 80%, transparent);
+  transform: rotateX(0deg) rotateY(0deg);
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), border-color .3s ease, box-shadow .3s ease;
+}
+/* brilho de luz no topo do vidro */
+.tbi-pill::before {
+  content: ""; position: absolute; inset: 1px 3px auto 3px; height: 45%; z-index: 0;
+  border-radius: 8px 8px 13px 13px / 8px 8px 7px 7px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tb-text) 18%, transparent), transparent);
+  pointer-events: none;
+}
+.tbi-btn:is(:hover, :focus-visible) .tbi-pill {
+  transform: rotateX(var(--tbi-rx, 9deg)) rotateY(var(--tbi-ry, -9deg));
+  border-color: rgba(var(--tb-gold-rgb), .45);
+}
+.tbi-btn[aria-pressed="true"] .tbi-pill {
+  border-color: var(--tb-gold);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tb-text) 10%, transparent), color-mix(in srgb, var(--tb-text) 2%, transparent) 55%, rgba(var(--tb-gold-rgb), .12)),
+    color-mix(in srgb, var(--tb-surface-2) 60%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--tb-text) 18%, transparent),
+    inset 0 0 10px rgba(var(--tb-gold-rgb), .18),
+    0 0 0 1px rgba(var(--tb-gold-rgb), .18),
+    0 5px 12px -6px rgba(var(--tb-gold-rgb), .55);
+}
+
+/* reflexo lento que atravessa o vidro do ativo (único efeito contínuo) */
+.tbi-sheen {
+  position: absolute; inset: -2px; z-index: 3; pointer-events: none; opacity: 0;
+  background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, var(--tb-gold-claro) 30%, transparent) 50%, transparent 65%);
+  transform: translateX(-110%);
+}
+.tbi-btn[aria-pressed="true"] .tbi-sheen { opacity: 1; animation: tbi-sheen 5.5s ease-in-out 1.2s infinite; }
+@keyframes tbi-sheen { 0%, 78% { transform: translateX(-110%); } 100% { transform: translateX(110%); } }
+
+/* ícone */
+.tbi-svg {
+  position: relative; z-index: 2; display: block; width: 20px; height: 20px; overflow: visible;
+  transform-origin: center; transition: transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.tbi-svg * { transform-box: fill-box; transform-origin: center; }
+.tbi-btn:is(:hover, :focus-visible) .tbi-svg { transform: scale(1.06); }
+
+/* ouro metálico: miolo dos desenhos da E, traço dos desenhos da F (hover/ativo) */
+.tbi-e .tbi-duo { fill: var(--tbi-ouro); opacity: .38; transition: opacity .3s ease; }
+.tbi-btn:is(:hover, :focus-visible) .tbi-e .tbi-duo { opacity: .8; }
+.tbi-btn[aria-pressed="true"] .tbi-e .tbi-duo { opacity: 1; }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-f { stroke: var(--tbi-ouro); }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-f .tbi-knob { fill: var(--tbi-ouro); }
+.tbi-f .tbi-rail { opacity: .75; }
+
+/* Mídias: pasta da E + tampa abre e folha sobe (F) */
+.tbi-ic-media .tbi-sheet { fill: var(--tbi-ouro); opacity: 0; }
+.tbi-ic-media .tbi-lid { fill: var(--tbi-ouro); opacity: 0; transform-origin: 50% 100%; }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-media .tbi-lid { animation: tbi-lid .75s cubic-bezier(.3,.9,.3,1); }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-media .tbi-sheet { animation: tbi-sheet .75s cubic-bezier(.3,.9,.3,1); }
+@keyframes tbi-lid { 0% { opacity: .5; transform: none; } 40% { opacity: .7; transform: skewX(-14deg) scaleY(.72); } 100% { opacity: 0; transform: none; } }
+@keyframes tbi-sheet { 0%, 100% { opacity: 0; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-28px); } }
+
+/* Sons: fone da E + conchas pulsam e ondinhas (F) */
+.tbi-ic-sounds .tbi-wave { fill: none; stroke: var(--tbi-ouro); stroke-width: 16; stroke-linecap: round; opacity: 0; }
+.tbi-wave-l { --tbi-wx: -16px; }
+.tbi-wave-r { --tbi-wx: 16px; }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-sounds .tbi-cup { animation: tbi-thump .8s ease-out; }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-sounds .tbi-wave { animation: tbi-wave .8s ease-out; }
+.tbi-ic-sounds .tbi-cup-r, .tbi-ic-sounds .tbi-wave-r { animation-delay: .06s !important; }
+@keyframes tbi-thump { 0%, 100% { transform: scale(1); } 25% { transform: scale(1.16); } 50% { transform: scale(.97); } 70% { transform: scale(1.08); } }
+@keyframes tbi-wave { 0% { opacity: 0; transform: translateX(0); } 35% { opacity: 1; } 100% { opacity: 0; transform: translateX(var(--tbi-wx, 0)); } }
+
+/* Texto (F): o T dá um pulinho */
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-text .tbi-t { animation: tbi-hop .6s cubic-bezier(.3,.9,.3,1); }
+@keyframes tbi-hop { 0%, 100% { transform: translateY(0) scale(1, 1); } 30% { transform: translateY(-3px) scale(.96, 1.05); } 60% { transform: translateY(.6px) scale(1.05, .95); } 80% { transform: translateY(-.6px); } }
+
+/* Adesivos (E): risadinha */
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-stickers { animation: tbi-ri .7s cubic-bezier(.3,.7,.3,1); }
+@keyframes tbi-ri { 0%, 100% { transform: none; } 25% { transform: rotate(-12deg) scale(1.06); } 50% { transform: rotate(8deg) scaleY(.92); } 75% { transform: rotate(-3deg); } }
+
+/* Efeitos (E): varinha balança e solta faíscas */
+.tbi-ic-effects { transform-origin: 20% 80%; }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-effects { animation: tbi-varinha .7s cubic-bezier(.3,.7,.3,1); }
+@keyframes tbi-varinha { 0%, 100% { transform: none; } 40% { transform: rotate(-16deg); } 70% { transform: rotate(4deg); } }
+.tbi-faisca {
+  position: absolute; z-index: 2; top: 7px; right: 7px; width: 4px; height: 4px; border-radius: 50%;
+  pointer-events: none; opacity: 0;
+  background: var(--tb-gold-claro); box-shadow: 0 0 5px rgba(var(--tb-gold-rgb), .9);
+}
+.tbi-f1 { --tbi-dx: 5px; --tbi-dy: -6px; --tbi-atraso: 0s; }
+.tbi-f2 { --tbi-dx: 7px; --tbi-dy: -1px; --tbi-atraso: .08s; width: 3px; height: 3px; }
+.tbi-f3 { --tbi-dx: 1px; --tbi-dy: -8px; --tbi-atraso: .16s; width: 3px; height: 3px; }
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-faisca { animation: tbi-faisca .8s ease-out var(--tbi-atraso) 1 both; }
+@keyframes tbi-faisca { 0% { opacity: 0; transform: translate(0, 0) scale(.4); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--tbi-dx), var(--tbi-dy)) scale(1); } }
+
+/* Transições (F): setas avançam */
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-transitions .tbi-chev { animation: tbi-dash .6s cubic-bezier(.3,.9,.3,1); }
+.tbi-ic-transitions .tbi-chev-2 { animation-delay: .07s !important; }
+@keyframes tbi-dash { 0%, 100% { transform: translateX(0); opacity: 1; } 45% { transform: translateX(2.4px); opacity: .55; } 70% { transform: translateX(-.6px); opacity: 1; } }
+
+/* Legendas (F): CC liga como TV */
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-captions .tbi-screen { animation: tbi-tvon .7s cubic-bezier(.2,.8,.2,1); }
+@keyframes tbi-tvon { 0% { transform: scale(.85, .06); opacity: .9; } 30% { transform: scale(1, .06); opacity: 1; } 65% { transform: scale(1, 1.12); } 100% { transform: scale(1, 1); opacity: 1; } }
+
+/* Ajustes (F): botões deslizam */
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-adjustment .tbi-knob { animation: tbi-slide .9s cubic-bezier(.4,0,.2,1); }
+.tbi-ic-adjustment .tbi-knob-2 { animation-delay: .06s !important; }
+.tbi-ic-adjustment .tbi-knob-3 { animation-delay: .12s !important; }
+@keyframes tbi-slide { 0%, 100% { transform: translateX(0); } 45% { transform: translateX(var(--tbi-dx, 0)); } 70% { transform: translateX(calc(var(--tbi-dx, 0px) * .85)); } }
+
+/* Configurações (E): engrenagem gira 60° (6 dentes: termina igual) */
+.tbi-btn:is(:hover, :focus-visible, [aria-pressed="true"]) .tbi-ic-settings { animation: tbi-gira .9s cubic-bezier(.3,.7,.3,1); }
+@keyframes tbi-gira { 0% { transform: none; } 70% { transform: rotate(70deg); } 100% { transform: rotate(60deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tbi-btn, .tbi-btn *, .tbi-btn *::before, .tbi-btn *::after { animation: none !important; transition: none !important; }
+  .tbi-btn .tbi-pill, .tbi-btn .tbi-svg { transform: none !important; }
+  .tbi-sheen { opacity: 0 !important; }
+}

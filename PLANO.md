@@ -14,7 +14,8 @@ Ordem sugerida: cada etapa vira uma versão publicada (ferramenta 24).
 - [x] Perguntar o idioma na primeira vez que o programa abre (bandeiras na tela de boas-vindas do tour)
 - [x] Temas iguais aos do THEBOSSVERSE (14 temas, Dourado BOSS como padrão) aplicados em tudo (botões, painéis, linha do tempo, diálogos), com botão de paleta na tela de projetos e no editor
 - [x] Fontes do THEBOSSVERSE (Geist no texto, Cormorant Garamond na marca e nos títulos) e o tridente 3D girando no lugar do logo
-- [ ] Ícones premium (trocar os ícones atuais por um conjunto com a cara da marca)
+- [x] Ícones premium animados na barra lateral: pastilha de vidro com inclinação 3D + ouro metálico; cada ícone tem um movimento próprio ao passar o mouse; parados não gastam nada do PC (escolha do BOSS: mistura das opções E e F)
+- [ ] Ideia: levar o mesmo estilo de ícone para a barra da linha do tempo e os menus
 - [ ] Ideia: o THEBOSS CUT abrir com o mesmo tema escolhido no programa THEBOSSVERSE
 - [x] Tela inicial premium: projetos recentes com miniatura, "Novo projeto" com formatos prontos (9:16, 16:9, 1:1, 4:5 e Automático); o formato escolhido fica travado (o primeiro vídeo não muda o tamanho)
 - [x] Tirar da interface links, textos e logos do OpenCut (aviso só no LICENSE) — conferido; apagados os logos de patrocinadores que sobraram sem uso
