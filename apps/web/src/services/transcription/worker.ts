@@ -3,7 +3,10 @@ import {
 	type AutomaticSpeechRecognitionPipeline,
 	type AutomaticSpeechRecognitionOutput,
 } from "@huggingface/transformers";
-import type { TranscriptionSegment } from "@/transcription/types";
+import type {
+	TranscriptionSegment,
+	TranscriptionWord,
+} from "@/transcription/types";
 import {
 	DEFAULT_CHUNK_LENGTH_SECONDS,
 	DEFAULT_STRIDE_SECONDS,
@@ -23,6 +26,7 @@ export type WorkerResponse =
 			type: "transcribe-complete";
 			text: string;
 			segments: TranscriptionSegment[];
+			words: TranscriptionWord[];
 	  }
 	| { type: "transcribe-error"; error: string }
 	| { type: "cancelled" };
@@ -138,7 +142,9 @@ async function handleTranscribe({
 			chunk_length_s: DEFAULT_CHUNK_LENGTH_SECONDS,
 			stride_length_s: DEFAULT_STRIDE_SECONDS,
 			language: language === "auto" ? undefined : language,
-			return_timestamps: true,
+			task: "transcribe",
+			// tempo de cada palavra (para a legenda palavra por palavra)
+			return_timestamps: "word",
 		});
 
 		if (cancelled) return;
@@ -147,24 +153,20 @@ async function handleTranscribe({
 			? rawResult[0]
 			: rawResult;
 
-		const segments: TranscriptionSegment[] = [];
-
-		if (result.chunks) {
-			for (const chunk of result.chunks) {
-				if (chunk.timestamp && chunk.timestamp.length >= 2) {
-					segments.push({
-						text: chunk.text,
-						start: chunk.timestamp[0] ?? 0,
-						end: chunk.timestamp[1] ?? chunk.timestamp[0] ?? 0,
-					});
-				}
-			}
+		const words: TranscriptionWord[] = [];
+		for (const chunk of result.chunks ?? []) {
+			const text = chunk.text.trim();
+			if (!text || !chunk.timestamp) continue;
+			const start = chunk.timestamp[0] ?? 0;
+			const end = chunk.timestamp[1] ?? start;
+			words.push({ text, start, end: Math.max(end, start) });
 		}
 
 		self.postMessage({
 			type: "transcribe-complete",
 			text: result.text,
-			segments,
+			segments: groupWordsIntoSegments(words),
+			words,
 		} satisfies WorkerResponse);
 	} catch (error) {
 		if (cancelled) return;
@@ -173,4 +175,34 @@ async function handleTranscribe({
 			error: error instanceof Error ? error.message : "Transcription failed",
 		} satisfies WorkerResponse);
 	}
+}
+
+// Junta as palavras em frases (para quem ainda usa frases inteiras, como exportar SRT).
+const SENTENCE_END = /[.!?…]$/;
+const SEGMENT_PAUSE_SECONDS = 1;
+
+function groupWordsIntoSegments(
+	words: TranscriptionWord[],
+): TranscriptionSegment[] {
+	const segments: TranscriptionSegment[] = [];
+	let current: TranscriptionWord[] = [];
+
+	const flush = () => {
+		if (current.length === 0) return;
+		segments.push({
+			text: current.map((word) => word.text).join(" "),
+			start: current[0].start,
+			end: current[current.length - 1].end,
+		});
+		current = [];
+	};
+
+	for (const word of words) {
+		const previous = current[current.length - 1];
+		if (previous && word.start - previous.end > SEGMENT_PAUSE_SECONDS) flush();
+		current.push(word);
+		if (SENTENCE_END.test(word.text)) flush();
+	}
+	flush();
+	return segments;
 }

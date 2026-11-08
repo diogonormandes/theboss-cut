@@ -318,6 +318,9 @@ export function buildSubtitleTextElement({
 		name: t("media.subtitles.captionName", { number: index + 1 }),
 		duration: mediaTimeFromSeconds({ seconds: caption.duration }),
 		startTime: mediaTimeFromSeconds({ seconds: caption.startTime }),
+		...(caption.words && caption.words.length > 0
+			? { caption: { words: caption.words } }
+			: {}),
 		params: {
 			...DEFAULTS.text.element.params,
 			content,

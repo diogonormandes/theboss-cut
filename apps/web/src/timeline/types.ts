@@ -132,10 +132,23 @@ export interface ImageElement extends BaseTimelineElement {
 	masks?: Mask[];
 }
 
+/** Legenda automática: cada palavra com o tempo (segundos desde o começo do texto, contando o corte inicial). */
+export interface TextCaptionWord {
+	text: string;
+	start: number;
+	end: number;
+}
+
+export interface TextCaptionData {
+	words: TextCaptionWord[];
+}
+
 export interface TextElement extends BaseTimelineElement {
 	type: "text";
 	hidden?: boolean;
 	effects?: Effect[];
+	/** só nas legendas automáticas: palavra por palavra, para o destaque da palavra falada */
+	caption?: TextCaptionData;
 }
 
 export interface StickerElement extends BaseTimelineElement {

@@ -20,7 +20,10 @@ import type {
 } from "@/transcription/types";
 import { transcriptionService } from "@/services/transcription/service";
 import { decodeAudioToFloat32 } from "@/media/audio";
-import { buildCaptionChunks } from "@/transcription/caption";
+import {
+	buildCaptionChunks,
+	buildCaptionChunksFromWords,
+} from "@/transcription/caption";
 import { insertCaptionChunksAsTextTrack } from "@/subtitles/insert";
 import { parseSubtitleFile } from "@/subtitles/parse";
 import { Spinner } from "@/components/ui/spinner";
@@ -39,7 +42,13 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { DiagnosticSeverity } from "@/diagnostics/types";
-import { t } from "@/i18n";
+import { getLocale, t } from "@/i18n";
+import type { TranscriptionQuality } from "@/transcription/types";
+import {
+	DEFAULT_TRANSCRIPTION_QUALITY,
+	getModelForQuality,
+} from "@/transcription/models";
+import { cn } from "@/utils/ui";
 
 const DIAGNOSTIC_BUTTON_VARIANT: Record<
 	DiagnosticSeverity,
@@ -48,6 +57,27 @@ const DIAGNOSTIC_BUTTON_VARIANT: Record<
 	caution: "caution",
 	error: "destructive-foreground",
 };
+
+const QUALITY_STORAGE_KEY = "thebosscut-legenda-qualidade";
+const QUALITY_OPTIONS: TranscriptionQuality[] = ["fast", "accurate"];
+// idiomas do programa primeiro na lista
+const FEATURED_LANGUAGES = ["pt", "en", "es"];
+
+function readSavedQuality(): TranscriptionQuality {
+	try {
+		const saved = localStorage.getItem(QUALITY_STORAGE_KEY);
+		return saved === "accurate" || saved === "fast"
+			? saved
+			: DEFAULT_TRANSCRIPTION_QUALITY;
+	} catch {
+		return DEFAULT_TRANSCRIPTION_QUALITY;
+	}
+}
+
+/** Vertical: legendas curtas (3 palavras). Horizontal: um pouco mais (5). */
+function getWordsPerCaption(canvasSize: { width: number; height: number }) {
+	return canvasSize.height > canvasSize.width ? 3 : 5;
+}
 
 type ProcessingState =
 	| { status: "idle"; error: string | null; warnings: string[] }
@@ -85,8 +115,10 @@ function processingReducer(
 /* eslint-enable opencut/prefer-object-params */
 
 export function Captions() {
+	// começa no idioma do programa (o mais provável de ser o do vídeo)
 	const [selectedLanguage, setSelectedLanguage] =
-		useState<TranscriptionLanguage>("auto");
+		useState<TranscriptionLanguage>(() => getLocale());
+	const [quality, setQuality] = useState<TranscriptionQuality>(readSavedQuality);
 	const [processing, dispatch] = useReducer(processingReducer, IDLE_STATE);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -138,11 +170,20 @@ export function Captions() {
 			const result = await transcriptionService.transcribe({
 				audioData: samples,
 				language: selectedLanguage === "auto" ? undefined : selectedLanguage,
+				modelId: getModelForQuality(quality).id,
 				onProgress: handleProgress,
 			});
 
 			dispatch({ type: "update_step", step: t("media.subtitles.steps.generating") });
-			const captionChunks = buildCaptionChunks({ segments: result.segments });
+			const canvasSize = editor.project.getActive().settings.canvasSize;
+			// palavra por palavra quando o modelo marca o tempo de cada palavra
+			const captionChunks =
+				result.words.length > 0
+					? buildCaptionChunksFromWords({
+							words: result.words,
+							maxWords: getWordsPerCaption(canvasSize),
+						})
+					: buildCaptionChunks({ segments: result.segments });
 
 			if (!insertCaptions({ captions: captionChunks })) {
 				dispatch({
@@ -240,6 +281,24 @@ export function Captions() {
 		setSelectedLanguage(matchedLanguage.code);
 	};
 
+	const handleQualityChange = (next: TranscriptionQuality) => {
+		setQuality(next);
+		try {
+			localStorage.setItem(QUALITY_STORAGE_KEY, next);
+		} catch {
+			// só não fica lembrado
+		}
+	};
+
+	const sortedLanguages = [
+		...FEATURED_LANGUAGES.flatMap((code) =>
+			TRANSCRIPTION_LANGUAGES.filter((language) => language.code === code),
+		),
+		...TRANSCRIPTION_LANGUAGES.filter(
+			(language) => !FEATURED_LANGUAGES.includes(language.code),
+		),
+	];
+
 	const error = processing.status === "idle" ? processing.error : null;
 	const warnings = processing.status === "idle" ? processing.warnings : [];
 
@@ -304,22 +363,65 @@ export function Captions() {
 									<SelectValue placeholder={t("media.subtitles.chooseLanguage")} />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="auto">
-										{t("media.subtitles.autoDetect")}
-									</SelectItem>
-									{TRANSCRIPTION_LANGUAGES.map((language) => (
+									{sortedLanguages.map((language) => (
 										<SelectItem key={language.code} value={language.code}>
 											{language.name}
 										</SelectItem>
 									))}
+									<SelectItem value="auto">
+										{t("media.subtitles.autoDetect")}
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</SectionField>
+						<SectionField label={t("media.subtitles.quality")}>
+							<div className="grid grid-cols-1 gap-2" role="radiogroup">
+								{QUALITY_OPTIONS.map((option) => {
+									const isOn = option === quality;
+									const model = getModelForQuality(option);
+									return (
+										<button
+											key={option}
+											type="button"
+											role="radio"
+											aria-checked={isOn}
+											disabled={isProcessing}
+											onClick={() => handleQualityChange(option)}
+											className={cn(
+												"tb-quality flex flex-col gap-1 rounded-lg border p-2.5 text-left transition-colors",
+												isOn
+													? "border-primary bg-secondary"
+													: "border-border hover:border-muted-foreground/40",
+											)}
+										>
+											<b className="text-sm font-semibold">
+												{option === "fast"
+													? t("media.subtitles.qualityFast")
+													: t("media.subtitles.qualityAccurate")}
+											</b>
+											<span className="text-muted-foreground text-xs leading-snug">
+												{option === "fast"
+													? t("media.subtitles.qualityFastHint")
+													: t("media.subtitles.qualityAccurateHint")}
+											</span>
+											<span className="text-muted-foreground/80 text-[0.7rem]">
+												{t("media.subtitles.firstDownload", {
+													size: model.downloadSizeMb,
+												})}
+											</span>
+										</button>
+									);
+								})}
+							</div>
+						</SectionField>
 					</SectionFields>
+					<p className="text-muted-foreground text-xs">
+						{t("media.subtitles.privacyNote")}
+					</p>
 
 					<Button
 						type="button"
-						className="mt-auto w-full"
+						className="btn-boss mt-auto w-full"
 						onClick={handleGenerateTranscript}
 						disabled={isProcessing || activeDiagnostics.length > 0}
 					>
