@@ -7,6 +7,8 @@ Próxima versão
 • Formato vertical a cada corte: escolha "Dividido" (câmera em cima, jogo embaixo) ou "Seguir rosto"
 • Exportar em fila: mande vários cortes de uma vez; eles vão para a pasta Vídeos\THEBOSS CUT\nome do projeto
 • Se a live mudar de lugar, aparece "Mídia offline" com o botão "Localizar arquivo"
+• Funciona também com o replay da live baixado do TikTok (vídeo já em pé): o corte usa a imagem inteira
+• Os momentos que já viraram corte ficam marcados como "Corte criado" e os cortes seguem a numeração, sem nomes repetidos
 • Legendas automáticas estilo CapCut: a palavra falada acende na hora certa (em dourado, numa caixa ou no estilo karaokê)
 • 5 modelos de legenda prontos: BOSS dourado, Neon, Clássico, Karaokê e Caixa. Dá para mudar fonte, tamanho, cores, contorno, sombra e o jeito que a legenda entra
 • Escolha a qualidade da transcrição: Rápida ou Precisa (melhor para live com barulho). Tudo é feito no seu PC

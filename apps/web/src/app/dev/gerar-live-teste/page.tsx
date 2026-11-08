@@ -138,16 +138,16 @@ function GeradorLiveTeste() {
 		}
 	};
 
-	const abrirNumProjetoNovo = async (nome: string) => {
+	const abrirNumProjetoNovo = async (nome: string, formatoId = "horizontal") => {
 		if (abrindo) return;
 		setAbrindo(nome);
 		setAvisoAbrir(null);
 		try {
 			const file = await abrirArquivoGerado(nome);
-			const formato169 = PROJECT_FORMATS.find((f) => f.id === "horizontal");
+			const formato = PROJECT_FORMATS.find((f) => f.id === formatoId);
 			const projectId = await editor.project.createNewProject({
 				name: nome.replace(/\.(mp4|mkv)$/, ""),
-				canvasSize: formato169?.canvasSize ?? { width: 1920, height: 1080 },
+				canvasSize: formato?.canvasSize ?? { width: 1920, height: 1080 },
 			});
 			// mesmo caminho da importação do painel de mídia
 			const [processado] = await processMediaAssets({ files: [file] });
@@ -177,6 +177,15 @@ function GeradorLiveTeste() {
 			setAbrindo(null);
 		}
 	};
+
+	// abre um vídeo REAL já guardado no OPFS (ex.: replay de live): pelo console,
+	// window.__abrirVideoOpfs("nome.mp4", "vertical")
+	const abrirRef = useRef(abrirNumProjetoNovo);
+	abrirRef.current = abrirNumProjetoNovo;
+	useEffect(() => {
+		(window as Window & { __abrirVideoOpfs?: (nome: string, formatoId?: string) => Promise<void> }).__abrirVideoOpfs =
+			(nome, formatoId) => abrirRef.current(nome, formatoId);
+	}, []);
 
 	const apagar = async (nome: string) => {
 		try {

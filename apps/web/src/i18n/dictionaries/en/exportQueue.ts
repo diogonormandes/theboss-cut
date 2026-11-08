@@ -21,6 +21,7 @@ const exportQueue = {
 	clear: "Clear list",
 	allDone: "Cuts exported: {n}.",
 	running: "Exporting the cuts. The preview stays paused until it finishes.",
+	fileFallback: "Clip {n}",
 };
 
 export default exportQueue;

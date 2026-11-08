@@ -9,6 +9,7 @@ const framing = {
 	followHint: "The picture follows your face.",
 	cameraTrack: "Camera",
 	gameTrack: "Game",
+	alreadyFits: "Your video is already vertical: the clip uses the whole picture, no adjustment needed.",
 	working: "Adjusting the framing…",
 	doneOne: "Framing applied to 1 clip.",
 	done: "Framing applied to {n} clips.",

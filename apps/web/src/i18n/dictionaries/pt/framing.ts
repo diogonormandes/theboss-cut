@@ -9,6 +9,7 @@ const framing = {
 	followHint: "A imagem acompanha o seu rosto.",
 	cameraTrack: "Câmera",
 	gameTrack: "Jogo",
+	alreadyFits: "Seu vídeo já está em pé: o corte usa a imagem inteira, sem precisar ajustar.",
 	working: "Ajustando o enquadramento…",
 	doneOne: "Enquadramento aplicado em 1 corte.",
 	done: "Enquadramento aplicado em {n} cortes.",

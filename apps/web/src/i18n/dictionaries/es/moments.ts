@@ -11,6 +11,7 @@ const moments: Dictionary["moments"] = {
 	play: "Ver este momento",
 	accept: "Aceptar",
 	accepted: "Aceptado",
+	created: "Clip creado",
 	reject: "Rechazar",
 	undoReject: "Recuperar",
 	rejectedCount: "{n} rechazados",
@@ -22,6 +23,7 @@ const moments: Dictionary["moments"] = {
 	create: "Crear {n} clips",
 	createHintAccepted: "Crea un clip por cada momento aceptado.",
 	createHintAll: "Aún no hay aceptados: crea un clip por cada momento de la lista.",
+	createHintNone: "Los momentos aceptados ya son clips. Acepta otros para crear más.",
 	cutName: "Clip {n} - {reason}",
 	reason: {
 		shout: "Grito fuerte",

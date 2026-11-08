@@ -3,6 +3,7 @@ import {
 	averageBox,
 	coverPlacement,
 	followPositionX,
+	framingMakesSense,
 	placeRegionInArea,
 	sampleTimes,
 	smoothFaceTrack,
@@ -263,5 +264,30 @@ describe("YuNet: leitura das saídas", () => {
 		expect(out[2 * plane]).toBe(10);
 		expect(out[1]).toBe(60);
 		expect(out[640]).toBe(0);
+	});
+});
+
+describe("framingMakesSense", () => {
+	test("live deitada num corte em pé: pode escolher Dividido/Seguir rosto", () => {
+		expect(framingMakesSense(SOURCE, CANVAS)).toBe(true);
+	});
+	test("live já em pé (replay do TikTok) num corte em pé: não precisa", () => {
+		expect(framingMakesSense({ width: 720, height: 1280 }, CANVAS)).toBe(false);
+	});
+	test("vídeo quase do mesmo formato do corte: não precisa", () => {
+		expect(framingMakesSense({ width: 1080, height: 1800 }, CANVAS)).toBe(false);
+	});
+	test("corte deitado com live deitada: não precisa", () => {
+		expect(framingMakesSense(SOURCE, { width: 1920, height: 1080 })).toBe(false);
+	});
+	test("corte quadrado com live deitada: pode escolher", () => {
+		expect(framingMakesSense(SOURCE, { width: 1080, height: 1080 })).toBe(true);
+	});
+	test("live em pé num corte quadrado ou deitado: não oferece", () => {
+		expect(framingMakesSense({ width: 720, height: 1280 }, { width: 1080, height: 1080 })).toBe(false);
+		expect(framingMakesSense({ width: 720, height: 1280 }, { width: 1920, height: 1080 })).toBe(false);
+	});
+	test("tamanho do vídeo desconhecido: deixa escolher", () => {
+		expect(framingMakesSense({}, CANVAS)).toBe(true);
 	});
 });

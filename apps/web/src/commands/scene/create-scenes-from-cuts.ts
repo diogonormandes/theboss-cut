@@ -268,3 +268,17 @@ export class CreateScenesFromCutsCommand extends Command {
 		return this.createdScenes.map((scene) => scene.id);
 	}
 }
+
+/** Número do próximo corte: continua depois do maior que já existe (sem repetir nomes). */
+export function nextCutNumber(scenes: Pick<TScene, "kind" | "name">[]): number {
+	let max = 0;
+	for (const s of scenes) {
+		if (s.kind !== "corte") continue;
+		// só o número do formato padrão ("Corte 05 - …", "Clip 05 - …"): nome mudado pela pessoa
+		// com ano ou placar ("Live 2024") não conta
+		const found = /^\S+\s+(\d{1,4})\s+-/.exec(s.name.trim());
+		const n = found ? Number(found[1]) : 0;
+		max = Math.max(max, Number.isFinite(n) ? n : 0);
+	}
+	return max + 1;
+}

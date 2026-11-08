@@ -37,6 +37,7 @@ import {
 	averageBox,
 	coverPlacement,
 	followPositionX,
+	framingMakesSense,
 	type KeyPoint,
 	keyPointsForPiece,
 	type NormBox,
@@ -392,7 +393,10 @@ export async function applyFraming({
 			| { kind: "follow"; points: KeyPoint[] };
 		let plan: Plan;
 		try {
-			if (mode === "split") {
+			if (mode !== "centered" && !framingMakesSense(source, canvas)) {
+				// vídeo já vertical (ou não mais largo que o corte): a imagem inteira já cabe
+				plan = { kind: "centered", outcome: "applied" };
+			} else if (mode === "split") {
 				let pending = splitCache.get(asset.id);
 				if (!pending) {
 					const duration = asset.duration ?? scene.sourceRange.srcEnd;

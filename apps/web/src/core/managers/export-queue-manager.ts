@@ -61,7 +61,11 @@ export function getDesktopFilesBridge(): DesktopFilesBridge | null {
 	return bridge && typeof bridge.abrir === "function" ? bridge : null;
 }
 
-/** "Corte 01 - <motivo>.mp4" (o motivo é o nome da cena; o programa ainda limpa o nome). */
+/**
+ * Nome do arquivo = nome da cena (que já vem numerado, ex.: "Corte 05 - Grito forte"),
+ * limpo para o Windows. Sem nome: "Corte 01" no idioma da tela. O programa ainda
+ * acrescenta (2), (3)… se já existir um arquivo igual na pasta.
+ */
 export function buildCutFileName({
 	index,
 	motivo,
@@ -78,7 +82,7 @@ export function buildCutFileName({
 		.trim()
 		.slice(0, 80)
 		.trim();
-	const base = limpo ? `Corte ${numero} - ${limpo}` : `Corte ${numero}`;
+	const base = limpo || t("exportQueue.fileFallback", { n: numero });
 	return `${base}${getExportFileExtension({ format })}`;
 }
 

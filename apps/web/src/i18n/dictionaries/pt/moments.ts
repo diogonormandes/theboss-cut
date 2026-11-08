@@ -10,6 +10,7 @@ const moments = {
 	play: "Ver este momento",
 	accept: "Aceitar",
 	accepted: "Aceito",
+	created: "Corte criado",
 	reject: "Recusar",
 	undoReject: "Trazer de volta",
 	rejectedCount: "{n} recusados",
@@ -21,6 +22,7 @@ const moments = {
 	create: "Criar {n} cortes",
 	createHintAccepted: "Vai criar um corte para cada momento aceito.",
 	createHintAll: "Nenhum aceito ainda: vai criar um corte para cada momento da lista.",
+	createHintNone: "Os momentos aceitos já viraram cortes. Aceite outros para criar mais.",
 	cutName: "Corte {n} - {reason}",
 	reason: {
 		shout: "Grito forte",

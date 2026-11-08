@@ -9,6 +9,7 @@ const framing = {
 	followHint: "La imagen sigue tu rostro.",
 	cameraTrack: "Cámara",
 	gameTrack: "Juego",
+	alreadyFits: "Tu video ya es vertical: el clip usa la imagen completa, sin necesidad de ajustar.",
 	working: "Ajustando el encuadre…",
 	doneOne: "Encuadre aplicado a 1 corte.",
 	done: "Encuadre aplicado a {n} cortes.",

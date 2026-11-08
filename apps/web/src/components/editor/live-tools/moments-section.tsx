@@ -13,7 +13,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AddBookmarksCommand, CreateScenesFromCutsCommand } from "@/commands/scene";
-import type { CutSpec } from "@/commands/scene/create-scenes-from-cuts";
+import { type CutSpec, nextCutNumber } from "@/commands/scene/create-scenes-from-cuts";
 import { RemoveBookmarksCommand } from "@/commands/scene/remove-bookmarks";
 import { LIVE_MAP_MIN_DURATION_SEC, formatClock } from "@/components/editor/live-map/live-map-strip";
 import { useLiveMapStore } from "@/components/editor/live-map/store";
@@ -37,6 +37,7 @@ import type { Bookmark, TScene } from "@/timeline/types";
 import { mediaTimeFromSeconds, mediaTimeToSeconds } from "@/wasm";
 import { create } from "zustand";
 import { applyFraming, type FramingMode } from "@/services/face-tracking/apply-framing";
+import { framingMakesSense } from "@/services/face-tracking/framing-math";
 import { FramingChooser } from "./framing-chooser";
 
 /* ---------------- decisões ---------------- */
@@ -46,7 +47,7 @@ import { FramingChooser } from "./framing-chooser";
  * principal (assim desfazer, recarregar e trocar de cena ficam sempre de
  * acordo). Só o "recusado" (que não mexe no projeto) fica aqui, na sessão.
  */
-type Decision = "accepted" | "rejected";
+type Decision = "accepted" | "rejected" | "created";
 type RejectedState = {
 	byKey: Record<string, true | undefined>;
 	set: (key: string, rejected: boolean) => void;
@@ -133,6 +134,17 @@ function findMomentBookmark(bookmarks: Bookmark[], tlStart: number): Bookmark | 
 	return null;
 }
 
+/** Já existe uma cena de corte com este trecho da live? (vem das cenas: desfazer fica de acordo) */
+function hasCutFor(scenes: TScene[], assetId: string, m: SuggestedMoment): boolean {
+	return scenes.some(
+		(s) =>
+			s.kind === "corte" &&
+			s.sourceRange?.mediaId === assetId &&
+			Math.abs(s.sourceRange.srcStart - m.start) < 0.5 &&
+			Math.abs(s.sourceRange.srcEnd - m.end) < 0.5,
+	);
+}
+
 function pickLive(assets: MediaAsset[], main: TScene | null): MediaAsset | null {
 	const longVideos = assets.filter(
 		(a) => a.type === "video" && a.file && (a.duration ?? 0) >= LIVE_MAP_MIN_DURATION_SEC,
@@ -167,7 +179,7 @@ export function MomentsSection() {
 				</p>
 			</header>
 			{asset ? (
-				<MomentsForAsset asset={asset} main={main} />
+				<MomentsForAsset asset={asset} main={main} scenes={scenes} />
 			) : (
 				<p className="text-xs" style={{ color: "var(--tb-text-muted)" }}>
 					{t("moments.noLive")}
@@ -177,7 +189,15 @@ export function MomentsSection() {
 	);
 }
 
-function MomentsForAsset({ asset, main }: { asset: MediaAsset; main: TScene | null }) {
+function MomentsForAsset({
+	asset,
+	main,
+	scenes,
+}: {
+	asset: MediaAsset;
+	main: TScene | null;
+	scenes: TScene[];
+}) {
 	const editor = useEditor();
 	const entry = useLiveMapStore((s) => s.entries[asset.id]);
 	const [count, setCount] = useState(10);
@@ -228,14 +248,25 @@ function MomentsForAsset({ asset, main }: { asset: MediaAsset; main: TScene | nu
 	const indexOf = new Map(allMoments.map((m, i) => [m, i]));
 	const placeOf = (m: SuggestedMoment) => placed[indexOf.get(m) ?? -1];
 	const decisionOf = (m: SuggestedMoment): Decision | undefined => {
+		if (hasCutFor(scenes, asset.id, m)) return "created";
 		if (placeOf(m)?.bookmark) return "accepted";
 		return rejectedKeys[keyOf(m)] ? "rejected" : undefined;
 	};
 	// os N do controle + os aceitos que ficaram de fora (nunca somem da lista)
-	const moments = allMoments.filter((m, i) => i < count || decisionOf(m) === "accepted");
+	const moments = allMoments.filter((m, i) => {
+		const d = decisionOf(m);
+		return i < count || d === "accepted" || d === "created";
+	});
 	const rejected = moments.filter((m) => decisionOf(m) === "rejected");
 	const accepted = moments.filter((m) => decisionOf(m) === "accepted");
-	const toCreate = accepted.length > 0 ? accepted : moments.filter((m) => decisionOf(m) !== "rejected");
+	const created = moments.filter((m) => decisionOf(m) === "created");
+	// nunca cria de novo um momento que já virou corte
+	const toCreate =
+		accepted.length > 0
+			? accepted
+			: created.length > 0
+				? []
+				: moments.filter((m) => decisionOf(m) === undefined);
 	const visible = showRejected ? moments : moments.filter((m) => decisionOf(m) !== "rejected");
 
 	const play = async (m: SuggestedMoment) => {
@@ -340,14 +371,23 @@ function MomentsForAsset({ asset, main }: { asset: MediaAsset; main: TScene | nu
 					className="h-9 rounded-md text-sm font-semibold transition-[filter] hover:brightness-110 disabled:opacity-50"
 					style={{ background: "var(--tb-grad)", color: "var(--tb-on-gold)" }}
 				>
-					{toCreate.length === 1 ? t("moments.createOne") : t("moments.create", { n: toCreate.length })}
+					{toCreate.length === 0
+						? t("moments.dialog.confirm")
+						: toCreate.length === 1
+							? t("moments.createOne")
+							: t("moments.create", { n: toCreate.length })}
 				</button>
 				<p className="text-[11px]" style={{ color: "var(--tb-text-muted)" }}>
-					{accepted.length > 0 ? t("moments.createHintAccepted") : t("moments.createHintAll")}
+					{accepted.length > 0
+						? t("moments.createHintAccepted")
+						: created.length > 0
+							? t("moments.createHintNone")
+							: t("moments.createHintAll")}
 				</p>
 			</div>
 
 			<CreateCutsDialog
+				firstNumber={nextCutNumber(scenes)}
 				open={dialogOpen}
 				onOpenChange={setDialogOpen}
 				editor={editor}
@@ -378,7 +418,8 @@ function MomentRow({
 	onRestore: () => void;
 	first: boolean;
 }) {
-	const isAccepted = decision === "accepted";
+	const isCreated = decision === "created";
+	const isAccepted = decision === "accepted" || isCreated;
 	const isRejected = decision === "rejected";
 	return (
 		<li
@@ -412,7 +453,14 @@ function MomentRow({
 				<ScoreBar score={m.score} />
 			</button>
 			<div className="flex gap-1.5">
-				{isRejected ? (
+				{isCreated ? (
+					<span
+						className="flex h-7 flex-1 items-center justify-center rounded-md border text-xs"
+						style={{ borderColor: "var(--tb-gold)", color: "var(--tb-gold-claro)" }}
+					>
+						✓ {t("moments.created")}
+					</span>
+				) : isRejected ? (
 					<Button variant="ghost" size="sm" className="h-7 flex-1 text-xs" onClick={onRestore}>
 						{t("moments.undoReject")}
 					</Button>
@@ -457,12 +505,14 @@ function ScoreBar({ score }: { score: number }) {
 }
 
 function CreateCutsDialog({
+	firstNumber,
 	open,
 	onOpenChange,
 	editor,
 	asset,
 	moments,
 }: {
+	firstNumber: number;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	editor: EditorCore;
@@ -472,12 +522,16 @@ function CreateCutsDialog({
 	const [format, setFormat] = useState<FormatId>("vertical");
 	const [framing, setFraming] = useState<FramingMode>("centered");
 	const n = moments.length;
+	const canvas = FORMATS.find((f) => f.id === format)?.size ?? FORMATS[0].size;
+	const canFrame = framingMakesSense(asset, canvas);
+	// aviso só quando a live já é em pé (o texto fala disso); nos outros casos o seletor some sem aviso
+	const sourceFits = !canFrame && (asset.height ?? 0) > (asset.width ?? 0);
 
 	const create = () => {
-		const size = FORMATS.find((f) => f.id === format)?.size;
+		const size = canvas;
 		const cuts: CutSpec[] = moments.map((m, i) => ({
 			name: t("moments.cutName", {
-				n: String(i + 1).padStart(2, "0"),
+				n: String(firstNumber + i).padStart(2, "0"),
 				reason: t(`moments.reason.${m.reason}`),
 			}),
 			mediaId: asset.id,
@@ -495,7 +549,7 @@ function CreateCutsDialog({
 		const ids = command.getSceneIds();
 		onOpenChange(false);
 		// enquadramento escolhido (Dividido / Seguir rosto): roda depois de criar, com aviso de andamento
-		if (framing !== "centered" && ids.length > 0) {
+		if (canFrame && framing !== "centered" && ids.length > 0) {
 			void applyChosenFraming({ editor, sceneIds: ids, mode: framing });
 		}
 		toast.success(ids.length === 1 ? t("moments.doneOne") : t("moments.done", { n: ids.length }), {
@@ -556,7 +610,16 @@ function CreateCutsDialog({
 						})}
 					</div>
 
-					<FramingChooser value={framing} onChange={setFraming} />
+					{canFrame ? (
+						<FramingChooser value={framing} onChange={setFraming} />
+					) : sourceFits ? (
+						<p
+							className="rounded-md border px-3 py-2 text-xs"
+							style={{ borderColor: "var(--tb-border)", color: "var(--tb-text-muted)" }}
+						>
+							{t("framing.alreadyFits")}
+						</p>
+					) : null}
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="ghost" onClick={() => onOpenChange(false)}>

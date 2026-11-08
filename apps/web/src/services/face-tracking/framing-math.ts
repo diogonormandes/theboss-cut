@@ -479,3 +479,19 @@ export function sampleTimes({
 	for (let i = 0; i < count; i++) times.push(start + step * (i + 0.5));
 	return times;
 }
+
+/**
+ * Os modos Dividido e Seguir rosto só fazem sentido quando o vídeo é mais
+ * largo que o corte (ex.: live deitada num corte em pé ou quadrado). Live já
+ * vertical num corte em pé, ou vídeo do mesmo formato do corte: a imagem
+ * inteira já cabe.
+ */
+export function framingMakesSense(
+	source: { width?: number; height?: number },
+	canvas: Size,
+): boolean {
+	const w = source.width ?? 0;
+	const h = source.height ?? 0;
+	if (w <= 0 || h <= 0) return true; // sem tamanho conhecido: deixa escolher
+	return w / h > (canvas.width / canvas.height) * 1.1;
+}
