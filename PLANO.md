@@ -54,7 +54,7 @@ Antes de liberar: testar com uma gravação real do OBS do BOSS.
 - [x] Linha do tempo leve com lives longas: só desenha os pedaços que aparecem na tela (de ~8000 para ~600 itens)
 - [x] A prévia e as alças usam o formato da cena (o corte 9:16 aparece em pé mesmo num projeto 16:9)
 - [x] A lista de cenas atualiza na hora quando cortes novos são criados
-- [ ] Aviso interno do React: botão dentro de botão na fileira de marcadores (não aparece para o usuário)
+- [x] Aviso interno do React: botão dentro de botão na fileira de marcadores (não aparece para o usuário)
 
 ## Etapa 4 — Efeitos, transições e modelos
 - [ ] Pacote de efeitos (zoom, tremida, flash, brilho, desfoque, câmera lenta suave)
