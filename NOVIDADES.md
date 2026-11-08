@@ -7,7 +7,7 @@ Próxima versão
 • No vídeo vertical, a legenda já nasce acima dos botões do TikTok, Reels e Shorts
 • Corrigido: editar um texto direto na tela não muda mais a fonte, o tamanho e a posição
 
-Próxima versão
+Versão 1.1.0
 • O THEBOSS CUT agora fala português, inglês e espanhol: escolha o idioma pelas bandeiras na tela de projetos ou no menu do logo dentro do editor
 • Mensagens de aviso mais claras, que dizem o que fazer quando algo não dá certo
 • Datas e nomes de países aparecem no formato do idioma escolhido
