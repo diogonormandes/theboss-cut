@@ -79,6 +79,20 @@ async function criarJanela() {
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false },
   });
   janela.on("page-title-updated", (e) => e.preventDefault());
+  // antes de fechar: o editor salva o projeto (e a miniatura). Se passar de 4 segundos, fecha mesmo assim.
+  let podeFechar = false;
+  janela.on("close", (e) => {
+    if (podeFechar) return;
+    e.preventDefault();
+    const salvar = janela.webContents
+      .executeJavaScript("window.__thebosscutBeforeClose ? window.__thebosscutBeforeClose() : true", true)
+      .catch(() => false);
+    const limite = new Promise((ok) => setTimeout(ok, 4000));
+    Promise.race([salvar, limite]).finally(() => {
+      podeFechar = true;
+      if (janela && !janela.isDestroyed()) janela.close();
+    });
+  });
   janela.once("ready-to-show", () => janela.show());
   await janela.loadFile(path.join(__dirname, "carregando.html"));
   // links de fora abrem no navegador da pessoa

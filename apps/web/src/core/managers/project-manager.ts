@@ -196,8 +196,9 @@ export class ProjectManager {
 		}
 	}
 
-	async saveCurrentProject(): Promise<void> {
-		if (!this.active) return;
+	/** Salva o projeto aberto. Devolve false se não deu para salvar. */
+	async saveCurrentProject(): Promise<boolean> {
+		if (!this.active) return true;
 
 		try {
 			const scenes = this.editor.scenes.getScenes();
@@ -214,8 +215,10 @@ export class ProjectManager {
 			await storageService.saveProject({ project: updatedProject });
 			this.active = updatedProject;
 			this.updateMetadata(updatedProject);
+			return true;
 		} catch (error) {
 			console.error("Failed to save project:", error);
+			return false;
 		}
 	}
 
@@ -545,12 +548,15 @@ export class ProjectManager {
 		if (!this.active) return;
 
 		try {
-			const didUpdateThumbnail = await this.updateThumbnailFromTimeline();
-			if (didUpdateThumbnail) {
-				await this.editor.save.flush();
-			}
+			await this.updateThumbnailFromTimeline();
 		} catch (error) {
 			console.error("Failed to generate project thumbnail on exit:", error);
+		}
+		try {
+			// sempre salva o que faltar antes de sair
+			await this.editor.save.flush();
+		} catch (error) {
+			console.error("Failed to save project on exit:", error);
 		}
 	}
 

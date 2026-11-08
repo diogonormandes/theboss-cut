@@ -190,3 +190,39 @@ html[data-tema="sombras"] body { background: radial-gradient(120% 80% at 80% -10
 @media (prefers-reduced-motion: reduce) {
   .tb-format, .tb-format-shape, .tb-project-card, .tb-project-thumb img { transition: none; }
 }
+
+/* ---------- aviso de recuperação (o programa fechou de repente) ---------- */
+.tb-recovery { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(var(--tb-gold-rgb), 0.45); background: linear-gradient(120deg, rgba(var(--tb-gold-rgb), 0.12), transparent 60%), var(--tb-surface); box-shadow: 0 10px 30px -18px rgba(var(--tb-gold-rgb), 0.7); }
+
+/* ---------- bandeiras dos idiomas, com reflexo de luz passando (iguais às do THEBOSSVERSE) ---------- */
+.tb-bd { position: relative; display: inline-block; flex: none; overflow: hidden; border-radius: 4px; isolation: isolate; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14) inset, 0 2px 6px rgba(0, 0, 0, 0.45); transform: translateZ(0); }
+.tb-bd svg { display: block; width: 100%; height: 100%; }
+/* brilho de vidro fixo (luz de cima) + borda interna clara */
+.tb-bd::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 42%, rgba(0, 0, 0, 0.12) 100%); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16) inset; pointer-events: none; }
+/* o reflexo: uma faixa de luz inclinada que atravessa a bandeira */
+.tb-bd-reflexo {
+  position: absolute; top: -20%; bottom: -20%; left: 0; width: 55%; z-index: 1; pointer-events: none;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0.08) 75%, rgba(255, 255, 255, 0) 100%);
+  transform: translateX(-130%) skewX(-18deg);
+  mix-blend-mode: screen; filter: blur(0.3px);
+  animation: tb-bd-reflexo 5.2s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+  animation-delay: calc(1.2s + var(--bd-atraso, 0s));
+}
+.tb-bd-reflexo::before { content: ""; position: absolute; inset: 0 44%; background: rgba(255, 255, 255, 0.7); filter: blur(1px); }
+@keyframes tb-bd-reflexo { 0% { transform: translateX(-130%) skewX(-18deg); } 22%, 100% { transform: translateX(230%) skewX(-18deg); } }
+/* passar o mouse faz a luz atravessar na hora */
+.tb-lang-btn:hover .tb-bd-reflexo, .tb-lang-item:hover .tb-bd-reflexo, .tb-lang-item:focus-visible .tb-bd-reflexo, .tb-lang-item[data-highlighted] .tb-bd-reflexo { animation: tb-bd-reflexo-ja 0.75s cubic-bezier(0.45, 0, 0.2, 1) both; }
+@keyframes tb-bd-reflexo-ja { from { transform: translateX(-130%) skewX(-18deg); } to { transform: translateX(230%) skewX(-18deg); } }
+.tb-lang-btn .tb-bd { transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1); }
+.tb-lang-btn:hover .tb-bd { transform: translateY(-1px) scale(1.06); }
+.tb-lang-btn:active .tb-bd { transform: scale(0.94); transition-duration: 0.1s; }
+/* menu: bandeira, nome e o código pequeno à direita */
+.tb-lang-item .tb-bd { opacity: 0.82; filter: saturate(0.85); transition: opacity 0.2s ease, filter 0.2s ease; }
+.tb-lang-item:hover .tb-bd, .tb-lang-item[data-highlighted] .tb-bd, .tb-lang-item[data-state="checked"] .tb-bd { opacity: 1; filter: none; }
+.tb-lang-item[data-state="checked"] .tb-bd { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14) inset, 0 0 0 1.5px var(--tb-gold), 0 2px 10px rgba(var(--tb-gold-rgb), 0.35); }
+.tb-lang-code { margin-left: auto; padding-left: 10px; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.5; }
+.tb-lang-item[data-state="checked"] .tb-lang-code { opacity: 0.9; color: var(--tb-gold); }
+@media (prefers-reduced-motion: reduce) {
+  .tb-bd-reflexo { animation: none !important; opacity: 0; }
+  .tb-lang-btn:hover .tb-bd { transform: none; }
+}

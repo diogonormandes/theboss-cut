@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { ExportButton } from "./export-button";
 import { ThemeButton } from "@/theme/components/theme-picker";
 import { Emblem } from "../brand/emblem";
+import { SaveStatus } from "./save-status";
 import { toast } from "sonner";
 import { useEditor } from "@/editor/use-editor";
 import { CommandIcon, Logout05Icon } from "@hugeicons/core-free-icons";
@@ -31,6 +32,7 @@ export function EditorHeader() {
 			<div className="flex items-center gap-1">
 				<ProjectDropdown />
 				<EditableProjectName />
+				<SaveStatus />
 			</div>
 			<nav className="flex items-center gap-2">
 				<ExportButton />

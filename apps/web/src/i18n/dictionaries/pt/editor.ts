@@ -1,4 +1,14 @@
 const editor = {
+	save: {
+		saving: "Salvando…",
+		saved: "Salvo",
+		savedHint: "Tudo salvo no seu PC às {time}",
+		pending: "Salvando…",
+		error: "Não salvo",
+		errorHint: "Não deu para salvar. Libere espaço no PC; o THEBOSS CUT tenta de novo sozinho.",
+		errorToast: "Não deu para salvar o projeto",
+		errorToastText: "Libere espaço no PC (apague arquivos que não usa). O THEBOSS CUT vai tentar salvar de novo sozinho.",
+	},
 	header: {
 		exitProject: "Sair do projeto",
 		shortcuts: "Atalhos",

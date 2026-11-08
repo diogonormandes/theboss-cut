@@ -15,6 +15,7 @@ import {
 	isGpuAvailable,
 } from "@/services/renderer/gpu-renderer";
 import { t } from "@/i18n";
+import { attachEditorSession } from "@/project/session";
 
 interface EditorProviderProps {
 	projectId: string;
@@ -89,6 +90,18 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 			cancelled = true;
 		};
 	}, [projectId, router]);
+
+	// salvar ao fechar a janela + aviso de recuperação se o PC desligar
+	const activeProjectId = activeProject?.metadata.id;
+	const activeProjectName = activeProject?.metadata.name;
+	useEffect(() => {
+		if (isLoading || !activeProjectId) return;
+		return attachEditorSession({
+			editor: EditorCore.getInstance(),
+			projectId: activeProjectId,
+			projectName: activeProjectName ?? "",
+		});
+	}, [isLoading, activeProjectId, activeProjectName]);
 
 	if (error) {
 		return (

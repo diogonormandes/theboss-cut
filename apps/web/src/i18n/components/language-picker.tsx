@@ -1,7 +1,5 @@
 "use client";
 
-import { Globe02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,8 +23,9 @@ import {
 	useLocale,
 	useT,
 } from "../index";
+import { Flag } from "./flag";
 
-type BeforeChange = () => Promise<void> | void;
+type BeforeChange = () => Promise<unknown> | void;
 
 function useChangeLocale(beforeChange?: BeforeChange) {
 	const [isChanging, setIsChanging] = useState(false);
@@ -58,9 +57,16 @@ function LocaleOptions({
 }) {
 	return (
 		<DropdownMenuRadioGroup value={current} onValueChange={onSelect}>
-			{LOCALES.map((locale) => (
-				<DropdownMenuRadioItem key={locale} value={locale} disabled={disabled}>
-					{LOCALE_NATIVE_NAMES[locale]}
+			{LOCALES.map((locale, index) => (
+				<DropdownMenuRadioItem
+					key={locale}
+					value={locale}
+					disabled={disabled}
+					className="tb-lang-item gap-2.5"
+				>
+					<Flag locale={locale} size={22} delay={0.12 * index} />
+					<span>{LOCALE_NATIVE_NAMES[locale]}</span>
+					<span className="tb-lang-code">{locale}</span>
 				</DropdownMenuRadioItem>
 			))}
 		</DropdownMenuRadioGroup>
@@ -78,8 +84,8 @@ export function LanguageSubmenu({
 
 	return (
 		<DropdownMenuSub>
-			<DropdownMenuSubTrigger>
-				<HugeiconsIcon icon={Globe02Icon} className="size-4" />
+			<DropdownMenuSubTrigger className="tb-lang-btn gap-2">
+				<Flag locale={current} size={18} />
 				{isChanging ? t("language.reloading") : t("language.title")}
 			</DropdownMenuSubTrigger>
 			<DropdownMenuSubContent className="z-100">
@@ -104,15 +110,17 @@ export function LanguageButton({ className }: { className?: string }) {
 				<Button
 					variant="ghost"
 					size="sm"
-					className={cn("gap-1.5", className)}
+					className={cn("tb-lang-btn gap-2", className)}
 					aria-label={t("language.choose")}
 					title={t("language.choose")}
 				>
-					<HugeiconsIcon icon={Globe02Icon} className="size-4" />
-					<span className="uppercase">{current}</span>
+					<Flag locale={current} size={22} />
+					<span className="text-xs font-semibold tracking-wider uppercase">
+						{current}
+					</span>
 				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="z-100 w-40">
+			<DropdownMenuContent align="end" className="z-100 w-48">
 				<DropdownMenuLabel>
 					{isChanging ? t("language.reloading") : t("language.title")}
 				</DropdownMenuLabel>

@@ -15,6 +15,13 @@ const projects = {
 	},
 	selectAll: "Selecionar tudo",
 	searchPlaceholder: "Buscar…",
+	recovery: {
+		title: "Seu projeto foi salvo",
+		text: "O THEBOSS CUT fechou de repente enquanto \"{name}\" estava aberto. Tudo o que você fez até ali foi salvo automaticamente.",
+		textNoName: "O THEBOSS CUT fechou de repente. Tudo o que você fez até ali foi salvo automaticamente.",
+		continue: "Continuar editando",
+		dismiss: "Agora não",
+	},
 	start: {
 		title: "Começar um projeto",
 		subtitle: "Escolha o formato. Dá para mudar depois nas configurações do projeto.",

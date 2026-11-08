@@ -16,6 +16,13 @@ const projects: Dictionary["projects"] = {
 	},
 	selectAll: "Seleccionar todo",
 	searchPlaceholder: "Buscar…",
+	recovery: {
+		title: "Tu proyecto se guardó",
+		text: "THEBOSS CUT se cerró de repente mientras \"{name}\" estaba abierto. Todo lo que hiciste hasta ahí se guardó automáticamente.",
+		textNoName: "THEBOSS CUT se cerró de repente. Todo lo que hiciste hasta ahí se guardó automáticamente.",
+		continue: "Seguir editando",
+		dismiss: "Ahora no",
+	},
 	start: {
 		title: "Empezar un proyecto",
 		subtitle: "Elige el formato. Puedes cambiarlo después en la configuración del proyecto.",

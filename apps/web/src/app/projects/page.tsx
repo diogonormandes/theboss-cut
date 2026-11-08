@@ -71,6 +71,7 @@ import {
 	NewProjectDialog,
 	StartProjectStrip,
 } from "@/project/components/project-formats";
+import { RecoveryBanner } from "@/project/components/recovery-banner";
 import { t } from "@/i18n";
 const formatProjectDuration = ({
 	duration,
@@ -125,6 +126,7 @@ export default function ProjectsPage() {
 			<MigrationDialog />
 			<StoragePersistenceDialog />
 			<ProjectsHeader />
+			<RecoveryBanner />
 			{!searchQuery && (
 				<div className="px-4 pt-2 pb-6">
 					<StartProjectStrip />

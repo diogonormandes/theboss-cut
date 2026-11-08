@@ -1,6 +1,16 @@
 import type { Dictionary } from "../../types";
 
 const editor: Dictionary["editor"] = {
+	save: {
+		saving: "Guardando…",
+		saved: "Guardado",
+		savedHint: "Todo guardado en tu PC a las {time}",
+		pending: "Guardando…",
+		error: "Sin guardar",
+		errorHint: "No se pudo guardar. Libera espacio en tu PC; THEBOSS CUT lo intentará de nuevo solo.",
+		errorToast: "No se pudo guardar el proyecto",
+		errorToastText: "Libera espacio en tu PC (borra archivos que no uses). THEBOSS CUT intentará guardar de nuevo solo.",
+	},
 	header: {
 		exitProject: "Salir del proyecto",
 		shortcuts: "Atajos",

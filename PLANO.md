@@ -10,17 +10,16 @@ Ordem sugerida: cada etapa vira uma versão publicada (ferramenta 24).
 - [x] Programa para Windows com instalador automático pelo GitHub
 
 ## Etapa 1 — Cara de THEBOSSVERSE + 3 idiomas
-- [x] Sistema de idiomas (PT padrão, EN, ES) com seletor (globo na tela de projetos e "Idioma" no menu do logo do editor); 100% da interface traduzida
+- [x] Sistema de idiomas (PT padrão, EN, ES) com seletor de bandeiras premium (com reflexo de luz, iguais às do THEBOSSVERSE) na tela de projetos e no menu do logo do editor; 100% da interface traduzida
 - [ ] Ideia: perguntar o idioma na primeira vez que o programa abre (junto com o tour)
 - [x] Temas iguais aos do THEBOSSVERSE (14 temas, Dourado BOSS como padrão) aplicados em tudo (botões, painéis, linha do tempo, diálogos), com botão de paleta na tela de projetos e no editor
 - [x] Fontes do THEBOSSVERSE (Geist no texto, Cormorant Garamond na marca e nos títulos) e o tridente 3D girando no lugar do logo
 - [ ] Ícones premium (trocar os ícones atuais por um conjunto com a cara da marca)
 - [ ] Ideia: o THEBOSS CUT abrir com o mesmo tema escolhido no programa THEBOSSVERSE
 - [x] Tela inicial premium: projetos recentes com miniatura, "Novo projeto" com formatos prontos (9:16, 16:9, 1:1, 4:5 e Automático); o formato escolhido fica travado (o primeiro vídeo não muda o tamanho)
-- [ ] Ideia: atualizar a miniatura do projeto também quando o programa é fechado sem sair do projeto
 - [ ] Tirar da interface links, textos e logos do OpenCut (aviso só no LICENSE)
 - [ ] Tour de boas-vindas curto (primeira vez) e dicas nos botões
-- [ ] Salvamento automático e recuperar projeto se o PC desligar
+- [x] Salvamento automático e recuperar projeto se o PC desligar (salva menos de 1 s depois de cada mudança, salva ao fechar a janela, indicador "Salvo" no topo, aviso de recuperação na tela inicial, aviso se faltar espaço)
 - [ ] Atualização automática do editor (avisa e atualiza sozinho pela página de versões)
 
 ## Etapa 2 — Legendas automáticas estilo CapCut

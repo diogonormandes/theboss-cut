@@ -16,6 +16,13 @@ const projects: Dictionary["projects"] = {
 	},
 	selectAll: "Select all",
 	searchPlaceholder: "Search…",
+	recovery: {
+		title: "Your project was saved",
+		text: "THEBOSS CUT closed unexpectedly while \"{name}\" was open. Everything you did up to that point was saved automatically.",
+		textNoName: "THEBOSS CUT closed unexpectedly. Everything you did up to that point was saved automatically.",
+		continue: "Keep editing",
+		dismiss: "Not now",
+	},
 	start: {
 		title: "Start a project",
 		subtitle: "Pick a format. You can change it later in the project settings.",
