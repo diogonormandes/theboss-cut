@@ -117,6 +117,7 @@ export function drawCaptionText({
 	const byLine = splitWordsByLine({ lines: layout.lines, words });
 	const spaceWidth = ctx.measureText(" ").width;
 	const strokePx = style.strokeWidth * fontPx;
+	const boxPadX = fontPx * 0.18;
 	const shadowBlurPx = style.shadowBlur * fontPx;
 
 	const applyShadow = (on: boolean) => {
@@ -159,12 +160,18 @@ export function drawCaptionText({
 					scale = 1 + (style.popScale - 1) * easeOutBack(ramp);
 				}
 			}
-			return { ...item, width, isSpoken, fill, scale };
+			// a caixa atrás da palavra falada também ocupa espaço na linha
+			const extra =
+				word && isSpoken && style.highlight === "box" ? boxPadX * 2 : 0;
+			return { ...item, width, isSpoken, fill, scale, extra };
 		});
 
 		// a palavra que cresce empurra as vizinhas; a linha continua alinhada
 		const lineWidth =
-			items.reduce((total, item) => total + item.width * item.scale, 0) +
+			items.reduce(
+				(total, item) => total + (item.width + item.extra) * item.scale,
+				0,
+			) +
 			spaceWidth * Math.max(0, items.length - 1);
 		const startX =
 			layout.textAlign === "center"
@@ -174,14 +181,14 @@ export function drawCaptionText({
 					: 0;
 
 		let x = startX;
-		for (const { text, word, width, isSpoken, fill, scale } of items) {
-			const centerX = x + (width * scale) / 2;
+		for (const { text, word, width, isSpoken, fill, scale, extra } of items) {
+			const centerX = x + ((width + extra) * scale) / 2;
 			ctx.save();
 			ctx.translate(centerX, lineY);
 			ctx.scale(scale, scale);
 
 			if (word && isSpoken && style.highlight === "box") {
-				const padX = fontPx * 0.18;
+				const padX = boxPadX;
 				const padY = fontPx * 0.08;
 				const height = layout.lineHeightPx * 0.92 + padY * 2;
 				applyShadow(true);
@@ -214,7 +221,7 @@ export function drawCaptionText({
 			}
 			ctx.restore();
 
-			x += width * scale + spaceWidth;
+			x += (width + extra) * scale + spaceWidth;
 		}
 	}
 

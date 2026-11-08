@@ -320,7 +320,12 @@ export function buildSubtitleTextElement({
 		duration: mediaTimeFromSeconds({ seconds: caption.duration }),
 		startTime: mediaTimeFromSeconds({ seconds: caption.startTime }),
 		...(caption.words && caption.words.length > 0
-			? { caption: { words: caption.words, style: { ...DEFAULT_CAPTION_STYLE } } }
+			? {
+					caption: {
+						words: caption.words,
+						style: { ...(caption.captionStyle ?? DEFAULT_CAPTION_STYLE) },
+					},
+				}
 			: {}),
 		params: {
 			...DEFAULTS.text.element.params,

@@ -6,6 +6,7 @@ import type {
 	TextFontWeight,
 } from "@/text/primitives";
 import type { CaptionChunk } from "@/transcription/types";
+import type { CaptionStyle } from "@/timeline/types";
 
 export interface SubtitlePlacementStyle {
 	verticalAlign?: "top" | "middle" | "bottom";
@@ -43,6 +44,8 @@ export interface SubtitleStyleOverrides {
 
 export interface SubtitleCue extends CaptionChunk {
 	style?: SubtitleStyleOverrides;
+	/** visual da legenda automática (destaque, contorno, sombra, animação) */
+	captionStyle?: CaptionStyle;
 }
 
 export interface ParseSubtitleResult {

@@ -14,7 +14,6 @@ import { TRANSCRIPTION_DIAGNOSTICS_SCOPE } from "@/transcription/diagnostics";
 import { DEFAULT_TRANSCRIPTION_SAMPLE_RATE } from "@/transcription/audio";
 import { TRANSCRIPTION_LANGUAGES } from "@/transcription/supported-languages";
 import type {
-	CaptionChunk,
 	TranscriptionLanguage,
 	TranscriptionProgress,
 } from "@/transcription/types";
@@ -25,6 +24,7 @@ import {
 	buildCaptionChunksFromWords,
 } from "@/transcription/caption";
 import { insertCaptionChunksAsTextTrack } from "@/subtitles/insert";
+import type { SubtitleCue } from "@/subtitles/types";
 import { parseSubtitleFile } from "@/subtitles/parse";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -49,6 +49,13 @@ import {
 	getModelForQuality,
 } from "@/transcription/models";
 import { cn } from "@/utils/ui";
+import { loadFonts } from "@/fonts/google-fonts";
+import {
+	CAPTION_TEMPLATES,
+	DEFAULT_CAPTION_TEMPLATE,
+	cueStyleFromLook,
+} from "@/subtitles/caption-templates";
+import { CaptionStyleSection } from "@/subtitles/components/caption-style";
 
 const DIAGNOSTIC_BUTTON_VARIANT: Record<
 	DiagnosticSeverity,
@@ -146,7 +153,7 @@ export function Captions() {
 	const insertCaptions = ({
 		captions,
 	}: {
-		captions: CaptionChunk[];
+		captions: SubtitleCue[];
 	}): boolean => {
 		const trackId = insertCaptionChunksAsTextTrack({ editor, captions });
 		return trackId !== null;
@@ -176,14 +183,23 @@ export function Captions() {
 
 			dispatch({ type: "update_step", step: t("media.subtitles.steps.generating") });
 			const canvasSize = editor.project.getActive().settings.canvasSize;
+			// as legendas nascem com o modelo BOSS dourado, na posição segura do vertical
+			const look = CAPTION_TEMPLATES[DEFAULT_CAPTION_TEMPLATE];
+			await loadFonts({ families: [look.fontFamily] }).catch(() => undefined);
+			const cueStyle = cueStyleFromLook({ look, canvasSize });
 			// palavra por palavra quando o modelo marca o tempo de cada palavra
-			const captionChunks =
+			const rawChunks =
 				result.words.length > 0
 					? buildCaptionChunksFromWords({
 							words: result.words,
 							maxWords: getWordsPerCaption(canvasSize),
 						})
 					: buildCaptionChunks({ segments: result.segments });
+			const captionChunks = rawChunks.map((chunk) => ({
+				...chunk,
+				style: cueStyle,
+				captionStyle: { ...look.style },
+			}));
 
 			if (!insertCaptions({ captions: captionChunks })) {
 				dispatch({
@@ -442,6 +458,7 @@ export function Captions() {
 							</ul>
 						</div>
 					)}
+					<CaptionStyleSection />
 				</SectionContent>
 			</Section>
 		</PanelView>
