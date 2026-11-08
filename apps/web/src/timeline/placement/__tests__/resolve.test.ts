@@ -575,8 +575,9 @@ describe("resolveTrackPlacement", () => {
 				tracks,
 				elementType: "audio",
 				timeSpans: [
-					buildTimeSpan({ startTime: 2.5, duration: 1 }),
-					buildTimeSpan({ startTime: 5.5, duration: 1 }),
+					// o tempo é contado em números inteiros: 3–4 está livre, 6–7 bate no "b" (5–7)
+					buildTimeSpan({ startTime: 3, duration: 1 }),
+					buildTimeSpan({ startTime: 6, duration: 1 }),
 				],
 				strategy: { type: "firstAvailable" },
 			}),

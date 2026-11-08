@@ -38,6 +38,25 @@ export type SingleCharacterShortcutKey = `${Key}`;
 
 export type ShortcutKey = ModifierBasedShortcutKey | SingleCharacterShortcutKey;
 
+const MODIFIERS: ReadonlySet<string> = new Set<ModifierKeys>([
+	"ctrl",
+	"alt",
+	"shift",
+	"ctrl+shift",
+	"alt+shift",
+	"ctrl+alt",
+	"ctrl+alt+shift",
+]);
+
+/** Confere se um texto (ex.: vindo de um atalho salvo) é uma tecla de atalho válida. */
+export function isShortcutKey(value: string): value is ShortcutKey {
+	if (isKey(value)) return true;
+	// a tecla é o que vem depois do último "+" (o "+" não é uma tecla da lista)
+	const cut = value.lastIndexOf("+");
+	if (cut <= 0) return false;
+	return MODIFIERS.has(value.slice(0, cut)) && isKey(value.slice(cut + 1));
+}
+
 export type KeybindingConfig = {
 	[key in ShortcutKey]?: TActionWithOptionalArgs;
 };

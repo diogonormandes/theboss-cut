@@ -269,3 +269,16 @@ export function getDefaultShortcuts(): Map<
 
 	return shortcuts;
 }
+
+/** Ações que só funcionam com dados extras (não podem ir num atalho de teclado). */
+const ACTIONS_WITH_REQUIRED_ARGS = new Set<string>([
+	"remove-media-asset",
+	"remove-media-assets",
+]);
+
+/** Confere se um texto (ex.: vindo de um atalho salvo) é uma ação que dá para chamar sem dados extras. */
+export function isActionWithOptionalArgs(
+	value: string,
+): value is TActionWithOptionalArgs {
+	return Object.hasOwn(ACTIONS, value) && !ACTIONS_WITH_REQUIRED_ARGS.has(value);
+}

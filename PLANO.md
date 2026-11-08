@@ -49,7 +49,7 @@ Antes de liberar: testar com uma gravação real do OBS do BOSS.
 - [x] Exportar vários cortes em fila (salva em Vídeos\THEBOSS CUT\<projeto>)
   - [ ] Testar a fila no programa do Windows (no navegador foi testada; no programa ainda não)
 
-- [ ] Arrumar 5 testes automáticos antigos que já vinham quebrados do projeto original (máscaras, posicionamento, atalhos)
+- [x] Arrumar 5 testes automáticos antigos que já vinham quebrados do projeto original (máscaras, posicionamento, atalhos) — agora 332 passam; 1 fica pulado fora do navegador (medir texto precisa de tela)
 - [ ] Testar no programa do Windows: permissão para reabrir a live sem copiar depois de fechar o programa
 - [x] Linha do tempo leve com lives longas: só desenha os pedaços que aparecem na tela (de ~8000 para ~600 itens)
 - [x] A prévia e as alças usam o formato da cena (o corte 9:16 aparece em pé mesmo num projeto 16:9)
